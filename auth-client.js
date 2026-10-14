@@ -6,6 +6,7 @@ const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=documen
 if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){msg.textContent='إعداد الاتصال غير مكتمل. راجع ملف supabase-config.js.';return;}
 function getDeviceId(){let id=localStorage.getItem('ha-accounting-device-id');if(!id){id=crypto.randomUUID?crypto.randomUUID():`ha-${Date.now()}-${Math.random().toString(36).slice(2)}`;localStorage.setItem('ha-accounting-device-id',id);}return id;}
 const DEVICE_ID=getDeviceId();
+window.HA_DEVICE_ID=DEVICE_ID;
 const DEVICE_LABEL=`${navigator.userAgentData?.platform||navigator.platform||'جهاز'} / ${/Mobile/i.test(navigator.userAgent)?'موبايل':'حاسبة'}`.slice(0,120);
 const client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{headers:{'x-ha-device-id':DEVICE_ID}}});
 window.HA_AUTH_CLIENT=client;
