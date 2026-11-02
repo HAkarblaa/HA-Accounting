@@ -12,6 +12,7 @@ const hideApp=()=>{document.querySelector('.layout').classList.remove('authentic
 const showApp=()=>{gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;};
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 function readCachedAccess(id){try{return JSON.parse(localStorage.getItem('ha-accounting-access:'+id)||'null');}catch{return null;}}
+function isAccessDenied(err){return ['هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.','الاشتراك موقوف حالياً. راجع الأدمن.','انتهت مدة الاشتراك. راجع الأدمن للتجديد.'].includes(String(err?.message||''));}
 function setWorkspaceKey(id){const desired=userKey(id);localStorage.setItem('ha-accounting-active-user',id);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;if(window.HA_ACCOUNTING_KEY!==desired){location.reload();return false;}return true;}
 function startOfflineFromCache(){
  const id=localStorage.getItem('ha-accounting-active-user');
@@ -44,11 +45,6 @@ if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.HA_AUTH_CLIENT=client;
-function syncNativePushSession(session){
- try{if(window.HAAndroid&&typeof window.HAAndroid.setPushSession==='function')window.HAAndroid.setPushSession(session?.user?.id||'',session?.access_token||'',cfg.url||'',cfg.publishableKey||'');}catch(_){ }
-}
-client.auth.onAuthStateChange((_event,session)=>syncNativePushSession(session));
-client.auth.getSession().then(({data})=>syncNativePushSession(data?.session||null)).catch(()=>{});
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
  if(adminResult.error)throw new Error('تعذر التحقق من صلاحيات الحساب. تأكد من تشغيل ملفات SQL في Supabase.');
@@ -81,9 +77,23 @@ async function prepareWorkspace(user){
  if(initial){localStorage.setItem(key,JSON.stringify(initial));await pushLocalWorkspace(user,initial);}
 }
 async function enter(user){
- if(navigator.onLine){await checkAccess(user);rememberAccess(user);await prepareWorkspace(user);}
- else{
-  const cached=readCachedAccess(user.id);
+ const cached=readCachedAccess(user.id);
+ if(navigator.onLine){
+  try{await checkAccess(user);rememberAccess(user);}
+  catch(err){
+   // A temporary Supabase/network failure must not erase a valid login session.
+   // Reuse the last verified access on this device; explicit inactive/expired
+   // subscription results still block access.
+   if(!cached?.active||isAccessDenied(err))throw err;
+   isAdmin=!!cached.isAdmin;
+  }
+  try{await prepareWorkspace(user);}
+  catch(err){
+   const local=localStorage.getItem(userKey(user.id));
+   if(!readCachedAccess(user.id)?.active||!local)throw err;
+   localStorage.setItem(pendingKey(user.id),'1');
+  }
+ }else{
   if(!cached?.active)throw new Error('أول تسجيل دخول لهذا الحساب يحتاج إنترنت. بعده يشتغل على هذا الجهاز أوفلاين.');
   isAdmin=!!cached.isAdmin;
  }
@@ -99,7 +109,7 @@ form.addEventListener('submit',async e=>{
   const {data,error}=await client.auth.signInWithPassword({email:loginEmail(document.getElementById('loginId').value),password:document.getElementById('loginPassword').value});
   if(error)throw new Error('المعرّف أو كلمة المرور غير صحيحة.');
   await enter(data.user);if(!document.querySelector('.layout').classList.contains('authenticated'))showMessage('');
- }catch(err){await client.auth.signOut();localStorage.removeItem('ha-accounting-active-user');showMessage(err?.message||'تعذر تسجيل الدخول.');}
+ }catch(err){showMessage(err?.message||'تعذر التحقق من الحساب. إذا كان الحساب مسجلاً سابقاً، أعد المحاولة عند توفر الاتصال.');}
  finally{loginBtn.disabled=false;}
 });
 document.getElementById('logoutButton').addEventListener('click',async()=>{
@@ -110,7 +120,13 @@ document.getElementById('logoutButton').addEventListener('click',async()=>{
 window.addEventListener('online',async()=>{
  if(!client||!currentUser)return;
  try{await checkAccess(currentUser);rememberAccess(currentUser);const local=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(local)await pushLocalWorkspace(currentUser,local);}
- catch(err){await client.auth.signOut();localStorage.removeItem('ha-accounting-active-user');hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');}
+ catch(err){
+  if(isAccessDenied(err)){hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');return;}
+  // Keep the session and current workspace while the service is unavailable.
+  // A later reload/reconnect retries access validation and cloud sync.
+  if(readCachedAccess(currentUser.id)?.active){isAdmin=!!readCachedAccess(currentUser.id).isAdmin;showApp();}
+  showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب مفتوحاً وستتم إعادة المزامنة عند عودة الاتصال.');
+ }
 });
 document.getElementById('openAdmin').addEventListener('click',()=>{adminLayer.classList.add('open');adminLayer.setAttribute('aria-hidden','false');loadSubscribers();});
 document.getElementById('closeAdmin').addEventListener('click',()=>{adminLayer.classList.remove('open');adminLayer.setAttribute('aria-hidden','true');});
@@ -124,6 +140,6 @@ document.getElementById('subscriberList').addEventListener('click',async e=>{con
  if(!navigator.onLine&&startOfflineFromCache())return;
  const {data:{session}}=await client.auth.getSession();
  if(!session){localStorage.removeItem('ha-accounting-active-user');if(!navigator.onLine)showMessage('أول تسجيل دخول لهذا الحساب يحتاج إنترنت.');return;}
- try{await enter(session.user);}catch(err){await client.auth.signOut();localStorage.removeItem('ha-accounting-active-user');showMessage(err.message||'تعذر التحقق من الاشتراك.');}
+ try{await enter(session.user);}catch(err){showMessage(err.message||'تعذر التحقق من الاشتراك.');}
 })();
 })();
