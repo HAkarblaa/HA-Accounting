@@ -405,6 +405,7 @@ const overdueNoticeOptIn='ha-accounting-overdue-notifications',overdueNoticeSent
 function toggleOverduePush(){
  if(localStorage.getItem(overdueNoticeOptIn)==='on'){
   localStorage.removeItem(overdueNoticeOptIn);
+  try{window.HAAndroid?.disableOverdueNotifications?.();}catch(_){}
   alert('تم إيقاف إشعارات الاستحقاق على هذا الجهاز.');
   render();
   return;

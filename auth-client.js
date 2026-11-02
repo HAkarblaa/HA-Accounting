@@ -44,6 +44,11 @@ if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.HA_AUTH_CLIENT=client;
+function syncNativePushSession(session){
+ try{if(window.HAAndroid&&typeof window.HAAndroid.setPushSession==='function')window.HAAndroid.setPushSession(session?.user?.id||'',session?.access_token||'',cfg.url||'',cfg.publishableKey||'');}catch(_){ }
+}
+client.auth.onAuthStateChange((_event,session)=>syncNativePushSession(session));
+client.auth.getSession().then(({data})=>syncNativePushSession(data?.session||null)).catch(()=>{});
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
  if(adminResult.error)throw new Error('تعذر التحقق من صلاحيات الحساب. تأكد من تشغيل ملفات SQL في Supabase.');
