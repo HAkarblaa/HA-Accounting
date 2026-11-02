@@ -105,6 +105,61 @@
   .top-actions #logoutButton { padding:6px 7px; }
 }
 </style>
+
+<style id="mobile-layout-coherence-fix">
+/* Mobile and narrow tablets: remove the desktop grid's reserved sidebar column. */
+@media (max-width: 900px) {
+  html, body { width:100%; min-width:0; max-width:100%; overflow-x:clip; }
+  .layout, .layout.authenticated { display:block!important; width:100%!important; min-width:0!important; max-width:100%!important; min-height:100dvh; grid-template-columns:minmax(0,1fr)!important; }
+  .main, #view, .content { display:block; width:100%!important; min-width:0!important; max-width:100%!important; margin:0 auto; }
+  .sidebar { position:fixed!important; inset:0 0 0 auto!important; z-index:40!important; width:min(300px,86vw)!important; height:100dvh!important; overflow-y:auto!important; transform:translateX(105%); transition:transform .22s ease; }
+  .sidebar.open { transform:translateX(0)!important; }
+  .mobile-menu { display:inline-grid!important; place-items:center; flex:0 0 42px; width:42px; height:42px; }
+  .mobile-scrim { display:block; position:fixed; inset:0; z-index:39; background:rgba(8,28,46,.48); opacity:0; visibility:hidden; transition:opacity .2s,visibility .2s; }
+  .mobile-scrim.open { opacity:1; visibility:visible; }
+  .topbar { width:100%; height:auto; min-height:60px; padding:8px 12px; gap:8px; }
+  .top-actions { min-width:0; max-width:55%; gap:5px; }
+  .top-actions > * { min-width:0; }
+  .top-actions .date-chip { display:none; }
+  .top-actions .user-chip { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .top-title { max-width:45vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; }
+  .content { padding:14px 12px max(18px,env(safe-area-inset-bottom)); }
+  .cards { grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:9px; }
+  .two-col, .cashier-layout { grid-template-columns:minmax(0,1fr)!important; gap:10px; }
+  .panel, .stat { min-width:0; }
+  .panel { padding:12px; margin-bottom:11px; }
+  .page-head { flex-wrap:wrap; align-items:flex-start; gap:8px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:7px; }
+  .toolbar > * { flex:1 1 135px; min-width:0; max-width:100%; }
+  .form-grid, .settings-grid, .category-form { grid-template-columns:minmax(0,1fr)!important; }
+  .field.full, .category-form .form-actions { grid-column:auto; }
+  .table-wrap { width:100%; max-width:100%; overflow-x:auto!important; -webkit-overflow-scrolling:touch; }
+  table { min-width:540px; }
+  .dashboard-chart-scroll { width:100%; max-width:100%; overflow-x:auto; }
+  .bar-chart { min-width:420px; }
+  .quick { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .cashier-product-grid, .pos-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+  .cashier-cart { position:static!important; }
+  .cashier-cart-list { max-height:34dvh; }
+  .cashier-category-row { max-width:100%; overflow-x:auto; }
+  .pos-picker-tools { min-width:0; max-width:100%; }
+  .ha-accounting-product-image { width:100%; height:clamp(90px,28vw,128px); object-fit:cover; }
+  .modal { width:calc(100vw - 20px); max-width:620px; max-height:92dvh; overflow:auto; }
+  .modal-inner { padding:14px; }
+}
+@media (max-width: 430px) {
+  .content { padding-inline:9px; }
+  .cards { gap:7px; }
+  .stat { padding:10px 9px; }
+  .stat .value { font-size:15px; }
+  .panel { padding:10px; }
+  .quick button { padding:9px; font-size:11px; }
+  .cashier-product-grid, .pos-grid { gap:7px; }
+  .pos-card { padding:8px; }
+  .line-row, .doc-line { grid-template-columns:minmax(0,1fr) 48px 68px 28px!important; gap:4px; }
+  .line-row input, .line-row select, .doc-line input, .doc-line select { min-width:0; padding:7px 5px; font-size:10px; }
+}
+</style>
 </head>
 <body>
 <div id="authGate" role="dialog" aria-modal="true" aria-labelledby="authTitle">
