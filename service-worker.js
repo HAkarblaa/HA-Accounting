@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v17-login-required';
+const CACHE='ha-accounting-shell-v19-offline-admin-demos';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js','./supabase-config.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

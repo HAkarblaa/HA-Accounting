@@ -21,7 +21,7 @@
 .profit-preview{background:#e8fbf4;border-color:#bcebdd;color:#174e49;line-height:2}.profit-positive{color:#087f65!important;font-weight:800}
 .layout:not(.authenticated){display:none!important}.layout.authenticated{display:grid!important}@media(max-width:700px){.layout.authenticated{display:block!important}}
 </style>
-<script src="./ha-accounting-product-photos.js?v=photos1"></script></head>
+<script src="./ha-accounting-product-photos.js"></script></head>
 <body>
 <div id="authGate" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <section class="auth-card">
@@ -79,7 +79,12 @@
 </div>
 <dialog class="modal" id="modal"><div class="modal-inner" id="modalBody"></div></dialog>
 <input id="importFile" type="file" accept="application/json" class="hidden">
-<script>const previousLocalUser=localStorage.getItem("ha-accounting-active-user");window.HA_ACCOUNTING_KEY=previousLocalUser?"ha-accounting-v1:"+previousLocalUser:"ha-accounting-v1";</script>
+<script>
+const previousLocalUser=localStorage.getItem("ha-accounting-active-user");
+let cachedAccountAccess=null;try{cachedAccountAccess=previousLocalUser?JSON.parse(localStorage.getItem("ha-accounting-access:"+previousLocalUser)||"null"):null;}catch{}
+window.HA_ACCOUNTING_IS_ADMIN=!!(cachedAccountAccess&&cachedAccountAccess.active&&cachedAccountAccess.isAdmin);
+window.HA_ACCOUNTING_KEY=previousLocalUser?"ha-accounting-v1:"+previousLocalUser:"ha-accounting-v1";
+</script>
 <script>
 (()=>{
 let KEY=window.HA_ACCOUNTING_KEY||'ha-accounting-v1';
@@ -171,23 +176,29 @@ function demoState(){
  const payroll={id:'demo-payroll-1',entryId:'demo-entry-payroll',employeeId:employee.id,employeeName:employee.name,period:demoDate(0).slice(0,7),number:'PR-HA-001',gross:800000,deductions:50000,net:750000,paid:false,date:demoDate(-4)};
  return {company:{name:'شركة النور التجارية',currency:'د.ع',phone:'',address:'بيانات افتراضية للعرض',fiscalStart:'01-01'},accounts,entries,documents:docs,contacts:[customer,supplier],products,stockMovements,employees:[employee],payroll:[payroll],demoMode:true,demoOptOut:false};
 }
+function stripDemoData(data){
+ for(const key of ['entries','documents','contacts','products','stockMovements','employees','payroll'])if(Array.isArray(data[key]))data[key]=data[key].filter(item=>!String(item?.id||'').startsWith('demo-'));
+ data.demoMode=false;data.demoOptOut=true;return data;
+}
 function load(){
+ const isAdmin=window.HA_ACCOUNTING_IS_ADMIN===true;
  try{
   let raw=localStorage.getItem(KEY);
   if(raw){
    let x=JSON.parse(raw);
    if(x&&Array.isArray(x.accounts)){
     x.company={name:'شركتي',currency:'د.ع',phone:'',address:'',fiscalStart:'01-01',...(x.company||{})};
-    x.entries||=[];x.documents||=[];x.contacts||=[];x.products||=[];x.stockMovements||=[];x.employees||=[];x.payroll||=[];
+    x.entries||=[];x.documents||=[];x.contacts||=[];x.products||=[];x.stockMovements||=[];x.employees||=[];x.payroll||[];
     accountSeed.forEach(seed=>{if(!x.accounts.some(a=>a.code===seed.code))x.accounts.push({...seed,id:'ha-account-'+seed.code});});
+    const hasRecords=[x.entries,x.documents,x.contacts,x.products,x.stockMovements,x.employees,x.payroll].some(a=>a.length>0);
+    if(!isAdmin)return stripDemoData(x);
     if(x.demoOptOut){x.demoMode=false;return x;}
-    let hasRecords=[x.entries,x.documents,x.contacts,x.products,x.stockMovements,x.employees,x.payroll].some(a=>a.length>0);
     if(!hasRecords){let d=demoState();if(x.company.name&&x.company.name!=='شركتي')d.company={...d.company,...x.company};return d;}
     x.demoMode=!!x.demoMode;return x;
    }
   }
  }catch(e){}
- return demoState();
+ return isAdmin?demoState():blankState();
 }
 let state=load();
 state.productCategories=Array.isArray(state.productCategories)?state.productCategories:[];
@@ -327,9 +338,9 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 <script>
 (function(){function sync(){try{if(window.HAAndroid&&window.HAAndroid.saveLocalData){var key=window.HA_ACCOUNTING_KEY||'ha-accounting-v1';window.HAAndroid.saveLocalData(localStorage.getItem(key)||'{}');}}catch(e){}}window.addEventListener('ha-accounting-save',sync);setTimeout(sync,900);})();
 </script>
-<script src="./ha-business-print.js?v=print2"></script>
+<script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
-<script src="./supabase-config.js?v=login1"></script>
-<script src="./auth-client.js?v=login1"></script>
+<script src="./supabase-config.js"></script>
+<script src="./auth-client.js"></script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 </body></html>
