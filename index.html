@@ -62,6 +62,39 @@ const accountSeed=[
 const typeNames={asset:'الأصول',liability:'الالتزامات',equity:'حقوق الملكية',revenue:'الإيرادات',expense:'المصروفات'};
 function demoDate(offset){let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function blankState(company){return {company:{name:'شركتي',currency:'د.ع',phone:'',address:'',fiscalStart:'01-01',...(company||{})},accounts:accountSeed.map(a=>({...a,id:'ha-account-'+a.code})),entries:[],documents:[],contacts:[],products:[],stockMovements:[],employees:[],payroll:[],demoMode:false,demoOptOut:true};}
+function extraDemoProducts(){return [
+{id:'demo-product-catalog-01',sku:'HA-007',barcode:'2900000000100',name:'سماعة بلوتوث',category:'أجهزة',minQty:2,unit:'قطعة',qty:12,cost:12000,salePrice:18000,openingQty:12,openingCost:12000,imagePreset:'phone'},
+{id:'demo-product-catalog-02',sku:'HA-008',barcode:'2900000000101',name:'شاحن سريع',category:'أجهزة',minQty:3,unit:'قطعة',qty:18,cost:7000,salePrice:11000,openingQty:18,openingCost:7000,imagePreset:'phone'},
+{id:'demo-product-catalog-03',sku:'HA-009',barcode:'2900000000102',name:'ماوس لاسلكي',category:'أجهزة',minQty:2,unit:'قطعة',qty:10,cost:9000,salePrice:14000,openingQty:10,openingCost:9000,imagePreset:'phone'},
+{id:'demo-product-catalog-04',sku:'HA-010',barcode:'2900000000103',name:'لوحة مفاتيح',category:'أجهزة',minQty:2,unit:'قطعة',qty:8,cost:15000,salePrice:22000,openingQty:8,openingCost:15000,imagePreset:'phone'},
+{id:'demo-product-catalog-05',sku:'HA-011',barcode:'2900000000104',name:'بطارية متنقلة',category:'أجهزة',minQty:2,unit:'قطعة',qty:9,cost:18000,salePrice:26000,openingQty:9,openingCost:18000,imagePreset:'phone'},
+{id:'demo-product-catalog-06',sku:'HA-012',barcode:'2900000000105',name:'رز بسمتي',category:'مواد غذائية',minQty:4,unit:'كيس',qty:22,cost:18000,salePrice:24000,openingQty:22,openingCost:18000,imagePreset:'grocery'},
+{id:'demo-product-catalog-07',sku:'HA-013',barcode:'2900000000106',name:'سكر أبيض',category:'مواد غذائية',minQty:5,unit:'كيس',qty:30,cost:1500,salePrice:2000,openingQty:30,openingCost:1500,imagePreset:'grocery'},
+{id:'demo-product-catalog-08',sku:'HA-014',barcode:'2900000000107',name:'زيت طبخ',category:'مواد غذائية',minQty:4,unit:'عبوة',qty:24,cost:3500,salePrice:4500,openingQty:24,openingCost:3500,imagePreset:'grocery'},
+{id:'demo-product-catalog-09',sku:'HA-015',barcode:'2900000000108',name:'معجون طماطم',category:'مواد غذائية',minQty:6,unit:'علبة',qty:36,cost:1000,salePrice:1500,openingQty:36,openingCost:1000,imagePreset:'grocery'},
+{id:'demo-product-catalog-10',sku:'HA-016',barcode:'2900000000109',name:'شاي أسود',category:'مواد غذائية',minQty:3,unit:'علبة',qty:15,cost:4000,salePrice:5500,openingQty:15,openingCost:4000,imagePreset:'grocery'},
+{id:'demo-product-catalog-11',sku:'HA-017',barcode:'2900000000110',name:'ماء معدني',category:'مشروبات',minQty:8,unit:'قنينة',qty:48,cost:250,salePrice:500,openingQty:48,openingCost:250,imagePreset:'juice'},
+{id:'demo-product-catalog-12',sku:'HA-018',barcode:'2900000000111',name:'مشروب غازي',category:'مشروبات',minQty:6,unit:'علبة',qty:36,cost:750,salePrice:1250,openingQty:36,openingCost:750,imagePreset:'juice'},
+{id:'demo-product-catalog-13',sku:'HA-019',barcode:'2900000000112',name:'لبن',category:'مشروبات',minQty:4,unit:'عبوة',qty:20,cost:1000,salePrice:1500,openingQty:20,openingCost:1000,imagePreset:'juice'},
+{id:'demo-product-catalog-14',sku:'HA-020',barcode:'2900000000113',name:'حليب طويل الأمد',category:'مشروبات',minQty:4,unit:'عبوة',qty:20,cost:1250,salePrice:1750,openingQty:20,openingCost:1250,imagePreset:'juice'},
+{id:'demo-product-catalog-15',sku:'HA-021',barcode:'2900000000114',name:'قهوة سريعة',category:'مشروبات',minQty:3,unit:'علبة',qty:14,cost:5000,salePrice:7000,openingQty:14,openingCost:5000,imagePreset:'juice'},
+{id:'demo-product-catalog-16',sku:'HA-022',barcode:'2900000000115',name:'مسحوق غسيل',category:'منظفات',minQty:3,unit:'كيس',qty:16,cost:6000,salePrice:8500,openingQty:16,openingCost:6000,imagePreset:'grocery'},
+{id:'demo-product-catalog-17',sku:'HA-023',barcode:'2900000000116',name:'سائل جلي',category:'منظفات',minQty:3,unit:'عبوة',qty:18,cost:2000,salePrice:3000,openingQty:18,openingCost:2000,imagePreset:'grocery'},
+{id:'demo-product-catalog-18',sku:'HA-024',barcode:'2900000000117',name:'صابون يدين',category:'منظفات',minQty:4,unit:'قطعة',qty:25,cost:1000,salePrice:1500,openingQty:25,openingCost:1000,imagePreset:'grocery'},
+{id:'demo-product-catalog-19',sku:'HA-025',barcode:'2900000000118',name:'شامبو',category:'منظفات',minQty:2,unit:'عبوة',qty:12,cost:4500,salePrice:6500,openingQty:12,openingCost:4500,imagePreset:'grocery'},
+{id:'demo-product-catalog-20',sku:'HA-026',barcode:'2900000000119',name:'مناديل ورقية',category:'منظفات',minQty:4,unit:'علبة',qty:24,cost:1250,salePrice:2000,openingQty:24,openingCost:1250,imagePreset:'grocery'},
+{id:'demo-product-catalog-21',sku:'HA-027',barcode:'2900000000120',name:'قدر ألمنيوم',category:'أدوات منزلية',minQty:1,unit:'قطعة',qty:5,cost:18000,salePrice:26000,openingQty:5,openingCost:18000,imagePreset:'grocery'},
+{id:'demo-product-catalog-22',sku:'HA-028',barcode:'2900000000121',name:'كوب زجاجي',category:'أدوات منزلية',minQty:4,unit:'قطعة',qty:24,cost:1500,salePrice:2500,openingQty:24,openingCost:1500,imagePreset:'grocery'},
+{id:'demo-product-catalog-23',sku:'HA-029',barcode:'2900000000122',name:'مصباح LED',category:'أدوات منزلية',minQty:3,unit:'قطعة',qty:18,cost:2500,salePrice:4000,openingQty:18,openingCost:2500,imagePreset:'grocery'},
+{id:'demo-product-catalog-24',sku:'HA-030',barcode:'2900000000123',name:'مقلاة',category:'أدوات منزلية',minQty:1,unit:'قطعة',qty:7,cost:12000,salePrice:18000,openingQty:7,openingCost:12000,imagePreset:'grocery'},
+{id:'demo-product-catalog-25',sku:'HA-031',barcode:'2900000000124',name:'حافظة طعام',category:'أدوات منزلية',minQty:2,unit:'قطعة',qty:10,cost:4000,salePrice:6500,openingQty:10,openingCost:4000,imagePreset:'grocery'},
+{id:'demo-product-catalog-26',sku:'HA-032',barcode:'2900000000125',name:'خبز صمون',category:'أطعمة ومخبوزات',minQty:8,unit:'قطعة',qty:40,cost:250,salePrice:500,openingQty:40,openingCost:250,imagePreset:'burger'},
+{id:'demo-product-catalog-27',sku:'HA-033',barcode:'2900000000126',name:'كيك شوكولاتة',category:'أطعمة ومخبوزات',minQty:3,unit:'قطعة',qty:15,cost:1500,salePrice:2500,openingQty:15,openingCost:1500,imagePreset:'burger'},
+{id:'demo-product-catalog-28',sku:'HA-034',barcode:'2900000000127',name:'بسكويت',category:'أطعمة ومخبوزات',minQty:4,unit:'علبة',qty:24,cost:1000,salePrice:1500,openingQty:24,openingCost:1000,imagePreset:'burger'},
+{id:'demo-product-catalog-29',sku:'HA-035',barcode:'2900000000128',name:'رقائق بطاطا',category:'أطعمة ومخبوزات',minQty:4,unit:'كيس',qty:20,cost:750,salePrice:1250,openingQty:20,openingCost:750,imagePreset:'burger'},
+{id:'demo-product-catalog-30',sku:'HA-036',barcode:'2900000000129',name:'ساندويش دجاج',category:'أطعمة ومخبوزات',minQty:2,unit:'وجبة',qty:10,cost:2500,salePrice:4500,openingQty:10,openingCost:2500,imagePreset:'burger'}
+];}
+
 function demoState(){
  const accounts=accountSeed.map(a=>({...a,id:'ha-account-'+a.code}));
  const aid=code=>'ha-account-'+code;
@@ -73,7 +106,8 @@ function demoState(){
   {id:'demo-product-ink',sku:'HA-003',barcode:'2900000000035',name:'حبر طابعة',category:'مستلزمات',minQty:10,unit:'قطعة',qty:37,cost:10000,salePrice:18000,openingQty:20,openingCost:10000,imagePreset:'grocery'},
   {id:'demo-product-burger',sku:'HA-004',barcode:'2900000000042',name:'وجبة برغر',category:'مطاعم وأطعمة',minQty:2,unit:'وجبة',qty:12,cost:2500,salePrice:5000,openingQty:12,openingCost:2500,imagePreset:'burger'},
   {id:'demo-product-juice',sku:'HA-005',barcode:'2900000000059',name:'عصير برتقال',category:'مشروبات',minQty:4,unit:'عبوة',qty:24,cost:750,salePrice:1500,openingQty:24,openingCost:750,imagePreset:'juice'},
-  {id:'demo-product-grocery',sku:'HA-006',barcode:'2900000000066',name:'مواد غذائية',category:'مواد غذائية',minQty:3,unit:'قطعة',qty:20,cost:2000,salePrice:3500,openingQty:20,openingCost:2000,imagePreset:'grocery'}
+  {id:'demo-product-grocery',sku:'HA-006',barcode:'2900000000066',name:'مواد غذائية',category:'مواد غذائية',minQty:3,unit:'قطعة',qty:20,cost:2000,salePrice:3500,openingQty:20,openingCost:2000,imagePreset:'grocery'},
+  ...extraDemoProducts()
  ];
  const docs=[
   {id:'demo-doc-sale-1',kind:'sale',number:'SI-0001',date:demoDate(-20),party:customer.name,memo:'فاتورة عرض توضيحية - بيع آجل',amount:1200000,subtotal:1200000,discount:0,tax:0,taxRate:0,paymentMode:'credit',downPayment:300000,payments:250000,firstDue:demoDate(-12),installments:[],paid:false,items:[{productId:products[0].id,name:products[0].name,qty:2,price:600000}]},
@@ -82,8 +116,9 @@ function demoState(){
   {id:'demo-doc-purchase-1',kind:'purchase',number:'PI-0001',date:demoDate(-40),party:supplier.name,memo:'فاتورة عرض توضيحية - شراء آجل',amount:1200000,subtotal:1200000,discount:0,tax:0,taxRate:0,paymentMode:'credit',downPayment:0,payments:250000,firstDue:demoDate(15),installments:[],paid:false,items:[{productId:products[0].id,name:products[0].name,qty:4,price:300000}]},
   {id:'demo-doc-purchase-2',kind:'purchase',number:'PI-0002',date:demoDate(-32),party:supplier.name,memo:'فاتورة عرض توضيحية - شراء نقدي',amount:200000,subtotal:200000,discount:0,tax:0,taxRate:0,paymentMode:'cash',downPayment:200000,payments:0,firstDue:demoDate(-32),installments:[],paid:true,items:[{productId:products[2].id,name:products[2].name,qty:20,price:10000}]}
  ];
+ const extraStockValue=extraDemoProducts().reduce((sum,p)=>sum+(+p.openingQty||0)*(+p.openingCost||0),0);
  const entries=[
-  {id:'demo-entry-opening',number:'OB-HA-001',date:new Date().getFullYear()+'-01-01',memo:'أرصدة افتتاحية توضيحية',lines:[{accountId:aid('1101'),debit:5000000,credit:0},{accountId:aid('1102'),debit:8000000,credit:0},{accountId:aid('1301'),debit:3488000,credit:0},{accountId:aid('1501'),debit:2000000,credit:0},{accountId:aid('3101'),debit:0,credit:18488000}],total:18488000,source:'opening'},
+  {id:'demo-entry-opening',number:'OB-HA-001',date:new Date().getFullYear()+'-01-01',memo:'أرصدة افتتاحية توضيحية',lines:[{accountId:aid('1101'),debit:5000000,credit:0},{accountId:aid('1102'),debit:8000000,credit:0},{accountId:aid('1301'),debit:3488000+extraStockValue,credit:0},{accountId:aid('1501'),debit:2000000,credit:0},{accountId:aid('3101'),debit:0,credit:18488000+extraStockValue}],total:18488000+extraStockValue,source:'opening'},
   {id:'demo-entry-sale-1',number:'JE-S-SI-0001',date:demoDate(-20),memo:'فاتورة مبيعات SI-0001 · بيع آجل توضيحي',lines:[{accountId:aid('1101'),debit:300000,credit:0},{accountId:aid('1201'),debit:900000,credit:0},{accountId:aid('4101'),debit:0,credit:1200000},{accountId:aid('5101'),debit:600000,credit:0},{accountId:aid('1301'),debit:0,credit:600000}],total:1800000,source:'document',docId:'demo-doc-sale-1'},
   {id:'demo-entry-sale-2',number:'JE-S-SI-0002',date:demoDate(-14),memo:'فاتورة مبيعات SI-0002 · بيع نقدي توضيحي',lines:[{accountId:aid('1101'),debit:354000,credit:0},{accountId:aid('4101'),debit:0,credit:354000},{accountId:aid('5101'),debit:190000,credit:0},{accountId:aid('1301'),debit:0,credit:190000}],total:544000,source:'document',docId:'demo-doc-sale-2'},
   {id:'demo-entry-sale-3',number:'JE-S-SI-0003',date:demoDate(-8),memo:'فاتورة مبيعات SI-0003 · بيع بالأقساط توضيحي',lines:[{accountId:aid('1101'),debit:240000,credit:0},{accountId:aid('1201'),debit:1000000,credit:0},{accountId:aid('4101'),debit:0,credit:1240000},{accountId:aid('5101'),debit:600000,credit:0},{accountId:aid('1301'),debit:0,credit:600000}],total:1840000,source:'document',docId:'demo-doc-sale-3'},
@@ -126,6 +161,7 @@ function load(){
  return demoState();
 }
 let state=load();
+if(state.demoMode){let additions=extraDemoProducts().filter(p=>!(state.products||[]).some(x=>x.id===p.id));if(additions.length){state.products.push(...additions);let delta=additions.reduce((sum,p)=>sum+(+p.openingQty||0)*(+p.openingCost||0),0),opening=state.entries.find(e=>e.id==='demo-entry-opening');if(opening){let inventory=opening.lines.find(l=>l.accountId==='ha-account-1301'),capital=opening.lines.find(l=>l.accountId==='ha-account-3101');if(inventory)inventory.debit=(+inventory.debit||0)+delta;if(capital)capital.credit=(+capital.credit||0)+delta;opening.total=(+opening.total||0)+delta;}}}
 for(const p of state.products||[]){if(String(p.id||'').startsWith('demo-product-')){p.imagePreset=p.imagePreset||({'demo-product-phone':'phone','demo-product-printer':'printer','demo-product-ink':'grocery','demo-product-burger':'burger','demo-product-juice':'juice','demo-product-grocery':'grocery'})[p.id]||'';p.name=String(p.name||'').replace(/ تجريبي(?:ة)?/g,'');}}
 if(state.demoMode){for(const list of [state.contacts,state.documents,state.entries])for(const item of list||[]){for(const k of ['name','party','memo'])if(typeof item[k]==='string')item[k]=item[k].replace(/ تجريبي(?:ة)?/g,'').replace('أحمد للتجربة','أحمد علي');}}
 localStorage.setItem(KEY,JSON.stringify(state)); let cashierCart=[],cashierCheckoutActive=false,cashierPrintOnSave=false,cashierCategory=null,inventoryCategory=null; let page=new URLSearchParams(location.search).get('page')==='installments'?'installments':'dashboard';
