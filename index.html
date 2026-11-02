@@ -12,18 +12,46 @@
 .demand-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;white-space:nowrap}.demand-badge.high{background:#dcf8e8;color:#087443;border:1px solid #a8e9c4}.demand-badge.medium{background:#fff3cf;color:#805700;border:1px solid #f4d36f}.demand-badge.none{background:#eef1f4;color:#586575;border:1px solid #d8dee5}.pos-demand{margin-top:2px}.pos-picker{margin:12px 0 17px;padding:13px;background:#f7fafb;border:1px solid var(--line);border-radius:13px}.pos-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.pos-picker-head small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.pos-picker-tools{display:flex;gap:7px;min-width:min(420px,55%)}.pos-picker-tools input{min-width:0;flex:1}.pos-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-height:220px;overflow:auto;padding:2px}.pos-card{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:11px;background:#fff;border:1px solid #dce6ea;border-radius:11px;text-align:right;transition:.16s}.pos-card:hover:not(:disabled){border-color:var(--teal);box-shadow:0 5px 14px #159a8c20;transform:translateY(-1px)}.pos-card:disabled{opacity:.48;cursor:not-allowed}.pos-card-icon{align-self:flex-end;width:29px;height:29px;border-radius:9px;display:grid;place-items:center;color:#117e74;background:#e1f5f1;font-size:17px}.pos-card strong{font-size:12px;line-height:1.4}.pos-card small,.pos-card-stock{color:var(--muted);font-size:10px}.pos-card-price{font-weight:700;color:#117e74;font-size:12px}.pos-card-stock{margin-top:auto}@media(max-width:700px){.pos-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:190px}.pos-picker-head{align-items:stretch;flex-direction:column}.pos-picker-tools{min-width:0;flex-direction:column}}
 .pos-picker-tools [data-camera-scan]{white-space:nowrap}.barcode-camera-overlay{position:absolute;inset:0;z-index:50;background:#071b2beF;display:grid;place-items:center;padding:18px;border-radius:16px}.barcode-camera-box{position:relative;width:min(560px,100%);background:#fff;border-radius:16px;padding:16px;text-align:center;overflow:hidden}.barcode-camera-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.barcode-camera-video{display:block;width:100%;max-height:55vh;min-height:220px;object-fit:cover;background:#0b1720;border-radius:12px}.barcode-camera-guide{pointer-events:none;position:absolute;left:15%;right:15%;top:47%;height:70px;border:3px solid #25c5a8;border-radius:10px;box-shadow:0 0 0 999px #0002}.barcode-camera-box p{margin:12px 0 0;color:var(--muted);font-size:12px}
 #authGate{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 15% 15%,#d9f2ed 0,transparent 33%),linear-gradient(135deg,#edf3f6,#e7eff2)}.layout{display:none}.auth-card{width:min(430px,100%);padding:32px;background:#fff;border:1px solid #e1e9ed;border-radius:22px;box-shadow:0 25px 70px #102a4320;text-align:center}.auth-logo{margin:0 auto 12px;width:54px;height:54px;border-radius:17px;background:linear-gradient(140deg,#34b6a5,#127c7b);display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px}.auth-card h1{margin:0;color:var(--navy);font-size:23px}.auth-card p{color:var(--muted);margin:8px 0 22px}.auth-card form{text-align:right;display:grid;gap:9px}.auth-card label{font-weight:700;color:#516273;font-size:12px}.auth-card input{padding:12px;border:1px solid #dce4e9;border-radius:10px;margin-bottom:6px;direction:ltr;text-align:left}.auth-card button{border:0;border-radius:10px;padding:12px;background:var(--teal);color:#fff;font-weight:700}.auth-card button:disabled{opacity:.6}.auth-card small{display:block;color:#80909e;margin-top:17px;line-height:1.7}.auth-card #authMessage,.admin-card #adminMessage{min-height:20px;color:#b44747;font-size:12px;line-height:1.6}.auth-card #authMessage.success,.admin-card #adminMessage.success{color:#14866d}#subscriberAdmin{display:none;position:fixed;inset:0;z-index:1001;background:#102a4380;place-items:center;padding:14px}#subscriberAdmin.open{display:grid}.admin-card{width:min(880px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 25px 80px #071b2b55}.admin-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.admin-head h2{margin:0;color:var(--navy)}.admin-head p{margin:5px 0 16px;color:var(--muted);font-size:12px}.admin-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end;gap:10px;padding:13px;background:#f5f8f9;border-radius:12px}.admin-form label{display:grid;gap:6px;font-size:11px;font-weight:700;color:#586b7b}.admin-form input{min-width:0;padding:10px;border:1px solid #dce4e9;border-radius:9px}.subscriber-row{display:grid;grid-template-columns:1.1fr .8fr 1fr 1.4fr auto auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line);font-size:12px}.subscriber-row button{border:0;border-radius:8px;padding:7px 9px;background:#edf2f5}.subscriber-status{font-weight:700}.subscriber-status.off{color:#b44747}@media(max-width:700px){.auth-card{padding:25px 20px}.admin-form{grid-template-columns:1fr 1fr}.subscriber-row{grid-template-columns:1fr 1fr}.subscriber-row button{grid-column:1/-1}}
-#authGate,#subscriberAdmin{display:none!important}.layout{display:grid!important}@media(max-width:700px){.layout{display:block!important;width:100%;max-width:100%}.main{width:100%;min-width:0}.content{width:100%;max-width:100%}html,body{width:100%;max-width:100%;overflow-x:hidden}}
+#authGate{display:grid}.layout{display:none}.layout.authenticated{display:grid!important}#openAdmin.hidden{display:none}@media(max-width:700px){.layout{display:block!important;width:100%;max-width:100%}.layout.authenticated{display:block!important}.main{width:100%;min-width:0}.content{width:100%;max-width:100%}html,body{width:100%;max-width:100%;overflow-x:hidden}}
 .cashier-category-row{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 12px;margin-bottom:2px}.cashier-category{flex:0 0 auto;border:1px solid #dce6ea;border-radius:20px;background:#fff;color:var(--category-color,#3c5364);border-color:var(--category-color,#dce6ea);padding:8px 14px;font-size:12px;font-weight:700;white-space:nowrap}.cashier-category.active{background:var(--category-color,var(--teal));border-color:var(--category-color,var(--teal));color:#fff;box-shadow:0 4px 12px #159a8c30}.cashier-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.85fr);gap:16px;align-items:start}.cashier-product-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none}.cashier-cart{position:sticky;top:90px}.cashier-cart-list{display:grid;gap:8px;max-height:45vh;overflow:auto}.cashier-cart-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px}.cashier-cart-row strong{display:block;font-size:12px}.cashier-cart-row small{color:var(--muted)}.cashier-qty{display:flex;align-items:center;gap:7px}.cashier-qty button{width:28px;height:28px;border:1px solid var(--line);background:#f6f8f9;border-radius:7px}.cashier-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:14px;margin-top:14px;font-size:17px;font-weight:700}.stock-low{color:#b44747;font-weight:700}.stock-ok{color:#14866d;font-weight:700}@media(max-width:900px){.cashier-layout{grid-template-columns:1fr}.cashier-cart{position:static}.cashier-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 :root{--navy:#164e9b;--navy2:#2467c7;--teal:#00a896;--teal2:#e1fff7;--gold:#ffbd36;--ink:#18324f;--muted:#71849a;--line:#deebf5;--bg:#f2f8ff;--green:#0b9a74;--shadow:0 12px 30px #17477716}
 .sidebar{background:linear-gradient(165deg,#123c79,#1762b5 62%,#05a99a)}.brand-mark{background:linear-gradient(140deg,#ffcc4d,#ff8b42);color:#173d70;box-shadow:0 7px 18px #f7a73d55}.nav button.active{background:#ffffff24;box-shadow:inset -3px 0 #ffd45b}.topbar{background:linear-gradient(90deg,#fff,#f0fbff)}.btn{background:linear-gradient(135deg,#00a896,#078bd3);box-shadow:0 5px 12px #078bd325}.btn.dark{background:linear-gradient(135deg,#164e9b,#2677d7)}.stat{border-top:3px solid var(--tint,#12b9a6)}.stat::after{opacity:.48}.panel{border-top:2px solid #e8f4ff}.cashier-product-grid{gap:14px}.pos-card{background:linear-gradient(180deg,#fff,#f7fcff);border:1px solid #d8eaf7;box-shadow:0 8px 22px #1d5b8c12;overflow:hidden}.pos-card:hover{border-color:#24c2ae;transform:translateY(-2px);box-shadow:0 12px 24px #1d5b8c20}.ha-accounting-product-image{width:100%;height:122px;object-fit:cover;background:linear-gradient(135deg,#e8f7ff,#e2fff5);border-radius:12px;display:block;margin:0 0 9px}.ha-accounting-product-image.small{width:56px;height:46px;object-fit:cover;display:inline-block;vertical-align:middle;margin:0 8px 0 0;border-radius:9px}.pos-card-icon.small{width:56px;height:46px;display:inline-grid;place-items:center;background:#e9f7ff;border-radius:9px;vertical-align:middle;margin-left:8px}.pos-card-price{color:#008d80!important}.cashier-total strong{color:#087b74}.tag{background:#def9f2;color:#087b74}
 @media(max-width:700px){.cashier-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ha-accounting-product-image{height:105px}.content{padding:16px 12px}.panel{padding:14px}}
 .profit-preview{background:#e8fbf4;border-color:#bcebdd;color:#174e49;line-height:2}.profit-positive{color:#087f65!important;font-weight:800}
+.layout:not(.authenticated){display:none!important}.layout.authenticated{display:grid!important}@media(max-width:700px){.layout.authenticated{display:block!important}}
 </style>
 <script src="./ha-accounting-product-photos.js?v=photos1"></script></head>
 <body>
-
-
+<div id="authGate" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <section class="auth-card">
+    <div class="auth-logo">HA</div>
+    <h1 id="authTitle">تسجيل الدخول إلى HA محاسبة</h1>
+    <p>أدخل المعرّف وكلمة المرور التي استلمتها من الأدمن.</p>
+    <form id="authForm" autocomplete="on">
+      <label for="loginId">معرّف الحساب</label>
+      <input id="loginId" name="username" autocomplete="username" required placeholder="المعرّف" dir="ltr">
+      <label for="loginPassword">كلمة المرور</label>
+      <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="كلمة المرور" dir="ltr">
+      <button id="loginButton" type="submit">دخول</button>
+    </form>
+    <div id="authMessage" role="status" aria-live="polite"></div>
+    <small>الحسابات ينشئها الأدمن الرئيسي فقط. ماكو تسجيل حساب ذاتي.</small>
+  </section>
+</div>
+<section id="subscriberAdmin" aria-hidden="true">
+  <div class="admin-card">
+    <div class="admin-head"><div><h2>إدارة الحسابات</h2><p>أنشئ حسابات المشتركين وأوقفها عند الحاجة.</p></div><button id="closeAdmin" type="button" class="btn secondary">إغلاق</button></div>
+    <form id="createSubscriber" class="admin-form">
+      <label>المعرّف<input name="loginId" required minlength="4" maxlength="32" pattern="[a-zA-Z0-9_-]+" placeholder="اسم الدخول" dir="ltr"></label>
+      <label>كلمة المرور<input name="password" type="password" required minlength="10" placeholder="10 أحرف على الأقل" dir="ltr"></label>
+      <label>تاريخ الانتهاء<input name="expiresAt" type="date"></label>
+      <button class="btn" type="submit">إنشاء الحساب</button>
+    </form>
+    <div id="adminMessage" role="status" aria-live="polite"></div>
+    <div id="subscriberList"></div>
+  </div>
+</section>
 <div class="layout">
 <aside class="sidebar" id="sidebar">
   <div class="brand"><div class="brand-mark">HA</div><div><strong>HA محاسبة</strong><small>نظام الإدارة المالية</small></div></div>
@@ -42,10 +70,10 @@
     <button data-page="reports"><span class="ico">▥</span>التقارير المالية</button>
     <button data-page="settings"><span class="ico">⚙</span>إعدادات الشركة</button>
   </nav>
-  <div class="side-foot">مساحة عمل محاسبية مستقلة<br>البيانات محفوظة على هذا الجهاز فقط</div>
+  <div class="side-foot">مساحة محاسبية لكل حساب<br>مزامنة عند الاتصال بالإنترنت</div>
 </aside>
 <main class="main">
-  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
   <section class="content" id="view"></section>
 </main>
 </div>
@@ -300,5 +328,8 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 (function(){function sync(){try{if(window.HAAndroid&&window.HAAndroid.saveLocalData){var key=window.HA_ACCOUNTING_KEY||'ha-accounting-v1';window.HAAndroid.saveLocalData(localStorage.getItem(key)||'{}');}}catch(e){}}window.addEventListener('ha-accounting-save',sync);setTimeout(sync,900);})();
 </script>
 <script src="./ha-business-print.js?v=print2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+<script src="./supabase-config.js?v=login1"></script>
+<script src="./auth-client.js?v=login1"></script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 </body></html>

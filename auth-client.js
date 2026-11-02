@@ -13,8 +13,8 @@ let currentUser=null,isAdmin=false,syncTimer=0;
 const userKey=id=>'ha-accounting-v1:'+id;
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
-const hideApp=()=>{document.querySelector('.layout').style.display='none';gate.style.display='grid';};
-const showApp=()=>{gate.style.display='none';document.querySelector('.layout').style.display='grid';document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);};
+const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.style.display='grid';};
+const showApp=()=>{gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);};
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
