@@ -1,15 +1,15 @@
 (()=>{
 'use strict';
 const cfg=window.HA_SUPABASE_CONFIG||{};
-const gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
+const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
 let client=null,currentUser=null,isAdmin=false,syncTimer=0;
 const userKey=id=>'ha-accounting-v1:'+id;
 const pendingKey=id=>'ha-accounting-pending-sync:'+id;
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
-const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.style.display='grid';};
-const showApp=()=>{gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;};
+const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
+const showApp=()=>{boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;};
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 function readCachedAccess(id){try{return JSON.parse(localStorage.getItem('ha-accounting-access:'+id)||'null');}catch{return null;}}
 function isAccessDenied(err){return ['هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.','الاشتراك موقوف حالياً. راجع الأدمن.','انتهت مدة الاشتراك. راجع الأدمن للتجديد.'].includes(String(err?.message||''));}
@@ -41,7 +41,7 @@ window.addEventListener('ha-accounting-save',()=>{
 });
 if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
  if(!navigator.onLine&&startOfflineFromCache())return;
- showMessage('لأول دخول أو مزامنة الحساب، اتصل بالإنترنت.');return;
+ hideApp();showMessage('لأول دخول أو مزامنة الحساب، اتصل بالإنترنت.');return;
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.HA_AUTH_CLIENT=client;
@@ -120,10 +120,12 @@ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 document.getElementById('createSubscriber').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,d=new FormData(f);adminMsg('جارٍ إنشاء الحساب…');try{const result=await adminCall({action:'create',loginId:d.get('loginId'),password:d.get('password'),expiresAt:d.get('expiresAt')||null});adminMsg(`تم إنشاء الحساب ${result.user.login_id}. أرسل له المعرّف وكلمة المرور الآن واحفظهما بمكان آمن.`,true);f.reset();await loadSubscribers();}catch(err){adminMsg(err.message);}});
 document.getElementById('subscriberList').addEventListener('click',async e=>{const b=e.target.closest('[data-sub-user]');if(!b)return;try{await adminCall({action:'update',userId:b.dataset.subUser,active:b.dataset.subActive==='true'});await loadSubscribers();adminMsg('تم تحديث حالة الحساب.',true);}catch(err){adminMsg(err.message);}});
 (async()=>{
- hideApp();
  if(!navigator.onLine&&startOfflineFromCache())return;
- const {data:{session}}=await client.auth.getSession();
- if(!session){localStorage.removeItem('ha-accounting-active-user');if(!navigator.onLine)showMessage('أول تسجيل دخول لهذا الحساب يحتاج إنترنت.');return;}
- try{await enter(session.user);}catch(err){showMessage(err.message||'تعذر التحقق من الاشتراك.');}
+ try{
+  const {data:{session},error}=await client.auth.getSession();
+  if(error)throw error;
+  if(!session){localStorage.removeItem('ha-accounting-active-user');hideApp();if(!navigator.onLine)showMessage('أول تسجيل دخول لهذا الحساب يحتاج إنترنت.');return;}
+  try{await enter(session.user);}catch(err){hideApp();showMessage(err.message||'تعذر التحقق من الاشتراك.');}
+ }catch(err){hideApp();showMessage('تعذر استعادة جلسة الدخول. سجّل الدخول مرة ثانية عند توفر الاتصال.');}
 })();
 })();
