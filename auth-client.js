@@ -80,19 +80,9 @@ async function enter(user){
  const cached=readCachedAccess(user.id);
  if(navigator.onLine){
   try{await checkAccess(user);rememberAccess(user);}
-  catch(err){
-   // A temporary Supabase/network failure must not erase a valid login session.
-   // Reuse the last verified access on this device; explicit inactive/expired
-   // subscription results still block access.
-   if(!cached?.active||isAccessDenied(err))throw err;
-   isAdmin=!!cached.isAdmin;
-  }
+  catch(err){if(!cached?.active||isAccessDenied(err))throw err;isAdmin=!!cached.isAdmin;}
   try{await prepareWorkspace(user);}
-  catch(err){
-   const local=localStorage.getItem(userKey(user.id));
-   if(!readCachedAccess(user.id)?.active||!local)throw err;
-   localStorage.setItem(pendingKey(user.id),'1');
-  }
+  catch(err){const local=localStorage.getItem(userKey(user.id));if(!readCachedAccess(user.id)?.active||!local)throw err;localStorage.setItem(pendingKey(user.id),'1');}
  }else{
   if(!cached?.active)throw new Error('أول تسجيل دخول لهذا الحساب يحتاج إنترنت. بعده يشتغل على هذا الجهاز أوفلاين.');
   isAdmin=!!cached.isAdmin;
@@ -120,13 +110,7 @@ document.getElementById('logoutButton').addEventListener('click',async()=>{
 window.addEventListener('online',async()=>{
  if(!client||!currentUser)return;
  try{await checkAccess(currentUser);rememberAccess(currentUser);const local=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(local)await pushLocalWorkspace(currentUser,local);}
- catch(err){
-  if(isAccessDenied(err)){hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');return;}
-  // Keep the session and current workspace while the service is unavailable.
-  // A later reload/reconnect retries access validation and cloud sync.
-  if(readCachedAccess(currentUser.id)?.active){isAdmin=!!readCachedAccess(currentUser.id).isAdmin;showApp();}
-  showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب مفتوحاً وستتم إعادة المزامنة عند عودة الاتصال.');
- }
+ catch(err){if(isAccessDenied(err)){hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');return;}const cached=readCachedAccess(currentUser.id);if(cached?.active){isAdmin=!!cached.isAdmin;showApp();}showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب مفتوحاً وستتم إعادة المزامنة عند عودة الاتصال.');}
 });
 document.getElementById('openAdmin').addEventListener('click',()=>{adminLayer.classList.add('open');adminLayer.setAttribute('aria-hidden','false');loadSubscribers();});
 document.getElementById('closeAdmin').addEventListener('click',()=>{adminLayer.classList.remove('open');adminLayer.setAttribute('aria-hidden','true');});
