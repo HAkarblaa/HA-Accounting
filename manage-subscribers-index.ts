@@ -12,6 +12,8 @@ const url = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
+const allowedModules = new Set(["restaurant", "wholesale", "market", "full"]);
+const moduleFor = (value: unknown) => typeof value === "string" && allowedModules.has(value) ? value : "full";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
     if (!adminRow) return json({ error: "forbidden" }, 403);
 
     if (body.action === "list") {
-      const { data, error } = await adminClient.from("subscriptions").select("user_id,login_id,active,expires_at,created_at").order("created_at", { ascending: false });
+      const { data, error } = await adminClient.from("subscriptions").select("user_id,login_id,active,expires_at,module_type,created_at").order("created_at", { ascending: false });
       if (error) throw error;
       const { data: devices, error: deviceError } = await adminClient.from("account_devices").select("user_id,device_label,bound_at");
       if (deviceError) throw deviceError;
@@ -62,14 +64,15 @@ Deno.serve(async (req) => {
       const loginId = String(body.loginId ?? "").trim().toLowerCase();
       const password = String(body.password ?? "");
       const expiresAt = body.expiresAt ? new Date(body.expiresAt).toISOString() : null;
+      const moduleType = moduleFor(body.moduleType);
       if (!/^[a-z0-9_-]{4,32}$/.test(loginId)) return json({ error: "id_format" }, 400);
       if (password.length < 10) return json({ error: "password_too_short" }, 400);
       const email = `${loginId}@ha-accounting.invalid`;
       const { data: created, error: createError } = await adminClient.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { login_id: loginId } });
       if (createError) return json({ error: createError.message }, 400);
-      const { error: subError } = await adminClient.from("subscriptions").insert({ user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt });
+      const { error: subError } = await adminClient.from("subscriptions").insert({ user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType });
       if (subError) { await adminClient.auth.admin.deleteUser(created.user.id); throw subError; }
-      return json({ user: { user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt } }, 201);
+      return json({ user: { user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType } }, 201);
     }
     if (body.action === "update") {
       const userId = String(body.userId ?? "");
@@ -77,6 +80,10 @@ Deno.serve(async (req) => {
       const update: Record<string, unknown> = {};
       if (typeof body.active === "boolean") update.active = body.active;
       if (body.expiresAt !== undefined) update.expires_at = body.expiresAt ? new Date(body.expiresAt).toISOString() : null;
+      if (body.moduleType !== undefined) {
+        if (typeof body.moduleType !== "string" || !allowedModules.has(body.moduleType)) return json({ error: "invalid_module_type" }, 400);
+        update.module_type = body.moduleType;
+      }
       if (!Object.keys(update).length) return json({ error: "nothing_to_update" }, 400);
       const { error } = await adminClient.from("subscriptions").update(update).eq("user_id", userId);
       if (error) throw error;
