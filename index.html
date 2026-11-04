@@ -21,7 +21,8 @@
 .profit-preview{background:#e8fbf4;border-color:#bcebdd;color:#174e49;line-height:2}.profit-positive{color:#087f65!important;font-weight:800}
 .layout:not(.authenticated){display:none!important}.layout.authenticated{display:grid!important}@media(max-width:700px){.layout.authenticated{display:block!important}}
 </style>
-<script src="./ha-accounting-product-photos.js"></script></head>
+<script src="./ha-accounting-product-photos.js"></script><style id="mobile-keyboard-stability">@media(max-width:700px){:root{--ha-visual-height:100dvh}#modal.modal[open]{position:fixed;inset:8px 8px auto!important;margin:0!important;width:calc(100vw - 16px)!important;max-height:calc(var(--ha-visual-height,100dvh) - 16px)!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-block:16px}.modal-inner{padding:14px!important}.modal input:not([type=checkbox]):not([type=radio]),.modal select,.modal textarea,#authGate input{font-size:16px!important;scroll-margin-block:20px}.modal input,.modal textarea{touch-action:pan-y}input,select,textarea{scroll-margin-block:20px}}</style>
+</head>
 <body>
 <div id="authGate" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <section class="auth-card">
@@ -353,5 +354,6 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
 <script src="./auth-client.js"></script>
+<script>(function(){const root=document.documentElement,modal=document.getElementById('modal'),vv=window.visualViewport;let activeField=null,timer=0;function viewport(){const top=vv?.offsetTop||0,height=vv?.height||window.innerHeight;return{top,bottom:top+height};}function syncHeight(){const h=vv?.height||window.innerHeight;if(h>0)root.style.setProperty('--ha-visual-height',Math.round(h)+'px');schedule();}function keepFieldVisible(){const field=activeField;if(!field||!field.isConnected||document.activeElement!==field)return;const view=viewport(),rect=field.getBoundingClientRect(),pad=18,dialog=field.closest('#modal.modal[open]');if(rect.bottom>view.bottom-pad){const delta=rect.bottom-(view.bottom-pad);if(dialog)dialog.scrollTop+=delta;else window.scrollBy(0,delta);}else if(rect.top<view.top+pad){const delta=(view.top+pad)-rect.top;if(dialog)dialog.scrollTop-=delta;else window.scrollBy(0,-delta);}}function schedule(){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(keepFieldVisible),140);}syncHeight();vv?.addEventListener('resize',syncHeight,{passive:true});vv?.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',syncHeight,{passive:true});document.addEventListener('focusin',e=>{activeField=e.target.closest('input,textarea,select');if(activeField)schedule();});document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches('input,textarea,select'))activeField=null;},80));})();</script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 </body></html>
