@@ -12,7 +12,7 @@ const url = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
-const allowedModules = new Set(["restaurant", "wholesale", "market", "full"]);
+const allowedModules = new Set(["restaurant", "wholesale", "market", "personal", "full"]);
 const moduleFor = (value: unknown) => typeof value === "string" && allowedModules.has(value) ? value : "full";
 
 Deno.serve(async (req) => {
@@ -73,6 +73,29 @@ Deno.serve(async (req) => {
       const { error: subError } = await adminClient.from("subscriptions").insert({ user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType });
       if (subError) { await adminClient.auth.admin.deleteUser(created.user.id); throw subError; }
       return json({ user: { user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType } }, 201);
+    }
+    if (body.action === "delete") {
+      const userId = String(body.userId ?? "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: "معرّف الحساب غير صحيح." }, 400);
+      if (userId === user.id) return json({ error: "لا يمكن للأدمن حذف حسابه الحالي من هنا." }, 400);
+      const { data: protectedAdmin, error: protectedAdminError } = await adminClient.from("super_admins").select("user_id").eq("user_id", userId).maybeSingle();
+      if (protectedAdminError) throw protectedAdminError;
+      if (protectedAdmin) return json({ error: "لا يمكن حذف حساب الأدمن الرئيسي." }, 403);
+      const { data: subscription, error: subscriptionError } = await adminClient.from("subscriptions").select("user_id,login_id").eq("user_id", userId).maybeSingle();
+      if (subscriptionError) throw subscriptionError;
+      if (!subscription) return json({ error: "الحساب غير موجود ضمن قائمة المشتركين." }, 404);
+      const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
+      if (deleteError) return json({ error: `تعذر حذف الحساب من تسجيل الدخول: ${deleteError.message}` }, 400);
+      const cleanupWarnings: string[] = [];
+      for (const table of ["subscriptions", "account_devices", "accounting_workspaces"]) {
+        const { error } = await adminClient.from(table).delete().eq("user_id", userId);
+        if (error) cleanupWarnings.push(`${table}: ${error.message}`);
+      }
+      if (cleanupWarnings.length) {
+        console.error("Deleted Auth user but public data cleanup reported errors", userId, cleanupWarnings);
+        return json({ ok: true, warning: "تم حذف تسجيل الدخول. توجد بيانات مرتبطة لم تُحذف تلقائياً؛ راجع مسؤول قاعدة البيانات." });
+      }
+      return json({ ok: true });
     }
     if (body.action === "update") {
       const userId = String(body.userId ?? "");
