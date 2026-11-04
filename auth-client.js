@@ -3,9 +3,22 @@
 const cfg=window.HA_SUPABASE_CONFIG||{};
 const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
-let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0;
+let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null;
 const userKey=id=>'ha-accounting-v1:'+id;
 const pendingKey=id=>'ha-accounting-pending-sync:'+id;
+function watchWorkspace(user){
+ if(!client||!user?.id)return;
+ if(workspaceChannel)client.removeChannel(workspaceChannel);
+ workspaceChannel=client.channel('ha-accounting-workspace-'+user.id).on('postgres_changes',{event:'UPDATE',schema:'public',table:'accounting_workspaces',filter:`user_id=eq.${user.id}`},payload=>{
+  const remote=payload.new?.data;if(!remote)return;
+  if(localStorage.getItem(pendingKey(user.id))==='1'){showMessage('وصل تحديث محاسبة من جهاز آخر. اتصل بالإنترنت ثم أعد تحميل الصفحة قبل متابعة التعديل.');return;}
+  let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
+  if(JSON.stringify(local)===JSON.stringify(remote))return;
+  localStorage.setItem(userKey(user.id),JSON.stringify(remote));
+  const reloadWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(reloadWhenSafe,700);return;}location.reload();};
+  reloadWhenSafe();
+ }).subscribe();
+}
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
@@ -90,6 +103,7 @@ async function enter(user){
  currentUser=user;window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;
  if(!setWorkspaceKey(user.id))return;
  showApp();
+ watchWorkspace({id});
  const company=(()=>{try{return JSON.parse(localStorage.getItem(userKey(user.id))||'{}').company?.name;}catch{return'';}})();
  if(company)document.getElementById('companyShort').textContent=company;
 }
