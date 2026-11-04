@@ -103,7 +103,7 @@ async function enter(user){
  currentUser=user;window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;
  if(!setWorkspaceKey(user.id))return;
  showApp();
- watchWorkspace(user);
+ try{if(user?.id)watchWorkspace(user);}catch(syncError){console.warn('تعذر تشغيل المزامنة المباشرة',syncError);}
  const company=(()=>{try{return JSON.parse(localStorage.getItem(userKey(user.id))||'{}').company?.name;}catch{return'';}})();
  if(company)document.getElementById('companyShort').textContent=company;
 }
