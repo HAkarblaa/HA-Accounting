@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v55-per-module-full-width-dashboard';
+const CACHE='ha-accounting-shell-v56-scan-first-cashier';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js','./supabase-config.js','./ha-pos-operations.js','./restaurant-orders.html','./restaurant-qr-menu.html','./restaurant-qr-tables.html'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
