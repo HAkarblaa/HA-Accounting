@@ -4,6 +4,7 @@ const cfg=window.HA_SUPABASE_CONFIG||{};
 const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
 let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null;
+Object.defineProperty(window,'HA_ACCOUNTING_ACTOR',{configurable:true,get:()=>currentUser?.email||currentUser?.phone||currentUser?.user_metadata?.login_id||currentUser?.id||'مستخدم مسجل'});
 const userKey=id=>'ha-accounting-v1:'+id;
 const pendingKey=id=>'ha-accounting-pending-sync:'+id;
 const revisionKey=id=>'ha-accounting-sync-revision:'+id;
