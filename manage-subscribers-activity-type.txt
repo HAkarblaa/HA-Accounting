@@ -1,0 +1,9 @@
+في المصدر المنشور حالياً لدالة manage-subscribers، ابحث عن السطر الذي يبدأ بـ:
+
+const allowedModules = new Set([...]);
+
+أضف "detergents" إلى القيم الموجودة داخل القائمة، ولا تحذف أو تستبدل أي قيمة حالية. مثال:
+
+const allowedModules = new Set(["restaurant", "wholesale", "market", "service", "personal", "detergents", "full"]);
+
+إذا كانت قائمتك تحتوي قيم إضافية مثل generator، اتركها كما هي وأضف "detergents" فقط. احفظ وانشر التحديث للدالة.
