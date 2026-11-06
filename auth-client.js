@@ -59,6 +59,19 @@ if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.HA_AUTH_CLIENT=client;
+// Share the active accounting session with the same-origin generator module iframe.
+window.HA_CONNECT_GENERATOR=async function(frame){
+ try{
+  if(!frame||!frame.contentWindow||!client)return;
+  const target=new URL(frame.src,location.href);
+  if(target.origin!==location.origin||!target.pathname.includes('/generator-manager/'))return;
+  const {data,error}=await client.auth.getSession();
+  if(error)throw error;
+  const session=data&&data.session;
+  if(!session||!session.access_token||!session.refresh_token)return;
+  frame.contentWindow.postMessage({type:'ha-accounting-session',session:{access_token:session.access_token,refresh_token:session.refresh_token}},target.origin);
+ }catch(error){console.error('تعذر تمرير جلسة المحاسبة لقسم المولدة',error);}
+};
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
  if(adminResult.error)throw new Error('تعذر التحقق من صلاحيات الحساب. تأكد من تشغيل ملفات SQL في Supabase.');
