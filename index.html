@@ -91,7 +91,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
       <label>المعرّف<input name="loginId" required minlength="4" maxlength="32" pattern="[a-zA-Z0-9_-]+" placeholder="اسم الدخول" dir="ltr"></label>
       <label>كلمة المرور<input name="password" type="password" required minlength="10" placeholder="10 أحرف على الأقل" dir="ltr"></label>
       <label>تاريخ الانتهاء<input name="expiresAt" type="date"></label>
-      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="restaurant">مطعم / مقهى</option><option value="wholesale">جملة</option><option value="market">أسواق / تجزئة</option><option value="service">مركز صيانة واستبدال</option><option value="personal">حسابات شخصية</option><option value="detergents">منظفات · مفرد وجملة وموزعين</option></select></label>
+      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="restaurant">مطعم / مقهى</option><option value="wholesale">جملة</option><option value="market">أسواق / تجزئة</option><option value="service">مركز صيانة واستبدال</option><option value="detergents">منظفات · مفرد وجملة وموزعين</option><option value="personal">حسابات شخصية</option></select></label>
       <button class="btn" type="submit">إنشاء الحساب</button>
     </form>
     <div id="adminMessage" role="status" aria-live="polite"></div>
@@ -544,7 +544,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 <script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
-<script src="./auth-client.js?v=48"></script>
+<script src="./auth-client.js?v=49"></script>
 <script>(function(){const root=document.documentElement,modal=document.getElementById('modal'),vv=window.visualViewport;let activeField=null,timer=0;function viewport(){const top=vv?.offsetTop||0,height=vv?.height||window.innerHeight;return{top,bottom:top+height};}function syncHeight(){const h=vv?.height||window.innerHeight;if(h>0)root.style.setProperty('--ha-visual-height',Math.round(h)+'px');schedule();}function keepFieldVisible(){const field=activeField;if(!field||!field.isConnected||document.activeElement!==field)return;const view=viewport(),rect=field.getBoundingClientRect(),pad=18,dialog=field.closest('#modal.modal[open]');if(rect.bottom>view.bottom-pad){const delta=rect.bottom-(view.bottom-pad);if(dialog)dialog.scrollTop+=delta;else window.scrollBy(0,delta);}else if(rect.top<view.top+pad){const delta=(view.top+pad)-rect.top;if(dialog)dialog.scrollTop-=delta;else window.scrollBy(0,-delta);}}function schedule(){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(keepFieldVisible),140);}syncHeight();vv?.addEventListener('resize',syncHeight,{passive:true});vv?.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',syncHeight,{passive:true});document.addEventListener('focusin',e=>{activeField=e.target.closest('input,textarea,select');if(activeField)schedule();});document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches('input,textarea,select'))activeField=null;},80));})();</script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 
