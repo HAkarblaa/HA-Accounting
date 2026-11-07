@@ -60,6 +60,17 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 .engineering-choice-page{max-width:1100px;margin:0 auto}.engineering-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin:24px 0}.engineering-choice-card{appearance:none;width:100%;min-height:330px;aspect-ratio:1.25/1;border:1px solid #d9e7ef;border-top:5px solid #159a8c;border-radius:24px;background:linear-gradient(145deg,#fff,#edf7ff);box-shadow:0 14px 35px #102a4312;padding:28px;color:#173f5f;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:transform .18s,box-shadow .18s}.engineering-choice-card.processor-choice{border-top-color:#dfaa43;background:linear-gradient(145deg,#fff,#fff8ea)}.engineering-choice-card:hover{transform:translateY(-3px);box-shadow:0 20px 40px #102a4320}.engineering-choice-icon{font-size:48px}.engineering-choice-card h2{font-size:25px;margin:2px 0;color:#173f5f}.engineering-choice-card p{font-size:14px;line-height:1.9;color:#65798b;margin:0;max-width:440px}.engineering-choice-cta{margin-top:6px;padding:11px 18px;border-radius:11px;background:#159a8c;color:#fff;font-weight:700}.processor-choice .engineering-choice-cta{background:#bd8320}.engineering-choice-note{padding:13px 16px;border-radius:12px;background:#e9f5f3;color:#27685f;text-align:center;line-height:1.8}
 @media(max-width:700px){.engineering-choice-grid{gap:10px;margin:16px 0}.engineering-choice-card{min-height:0;aspect-ratio:.88/1;padding:12px 9px;gap:7px;border-radius:16px}.engineering-choice-icon{font-size:34px}.engineering-choice-card h2{font-size:17px}.engineering-choice-card p{font-size:11px;line-height:1.55}.engineering-choice-cta{font-size:10px;padding:8px 9px}.engineering-choice-note{font-size:11px}}
 </style>
+<style id="engineering-mobile-page-head-fix">
+@media(max-width:700px){
+ .engineering-page .page-head{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;gap:12px}
+ .engineering-page .page-head>div:first-child{width:100%;min-width:0}
+ .engineering-page .page-head h1{font-size:20px;line-height:1.4;overflow-wrap:anywhere}
+ .engineering-page .page-head p{font-size:12px;line-height:1.65}
+ .engineering-page .page-head>.toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;min-width:0;margin:0;gap:8px;align-items:stretch}
+ .engineering-page .page-head>.toolbar>*{flex:none;width:100%;min-width:0;min-height:50px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.35;padding:9px 7px}
+ .engineering-page .page-head>button[data-print-current]{width:100%;min-height:48px;white-space:normal;text-align:center}
+}
+</style>
 </head>
 <body>
 <div id="authBoot" role="status" aria-live="polite"><div class="boot-card"><div class="boot-logo">HA</div><span>جارٍ التحقق من جلسة الدخول…</span><i class="boot-spinner" aria-hidden="true"></i></div></div><div id="authGate" class="auth-pending" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -244,7 +255,7 @@ function load(){
     x.company={name:'شركتي',currency:'د.ع',phone:'',address:'',receiptTitle:'',fiscalStart:'01-01',...(x.company||{})};
     x.entries||=[];x.documents||=[];x.contacts||=[];x.products||=[];x.stockMovements||=[];x.employees||=[];x.payroll||[];
     accountSeed.forEach(seed=>{if(!x.accounts.some(a=>a.code===seed.code))x.accounts.push({...seed,id:'ha-account-'+seed.code});});
-    const hasRecords=[x.entries,x.documents,x.contacts,x.products,x.stockMovements,x.employees,x.payroll].some(a=>a.length>0)||[x.processorData?.products,x.processorData?.contacts,x.processorData?.docs].some(a=>Array.isArray(a)&&a.length>0);
+    const hasRecords=[x.entries,x.documents,x.contacts,x.products,x.stockMovements,x.employees,x.payroll,x.engineeringProjects,x.engineeringMaterials,x.engineeringTransactions,x.engineeringPayees,x.simpleExpenses,x.serviceTickets,x.generatorSubscribers].some(a=>Array.isArray(a)&&a.length>0)||[x.processorData?.products,x.processorData?.contacts,x.processorData?.docs].some(a=>Array.isArray(a)&&a.length>0);
     if(!isAdmin)return stripDemoData(x);
     if(x.demoOptOut){x.demoMode=false;return x;}
     if(!hasRecords){let d=demoState();if(x.company.name&&x.company.name!=='شركتي')d.company={...d.company,...x.company};return d;}
