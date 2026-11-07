@@ -72,7 +72,7 @@ async function checkAccess(user){
  isAdmin=false;moduleType=['restaurant','wholesale','market','engineering','simple','service','personal','generator','full'].includes(sub.module_type)?sub.module_type:'full';
 }
 function rememberAccess(user){localStorage.setItem('ha-accounting-access:'+user.id,JSON.stringify({isAdmin,moduleType:isAdmin?'full':moduleType,active:true,checkedAt:Date.now()}));}
-function hasTransactions(data){return ['entries','documents','contacts','products','stockMovements','employees','payroll'].some(k=>Array.isArray(data?.[k])&&data[k].length>0);}
+function hasTransactions(data){return ['entries','documents','contacts','products','stockMovements','employees','payroll'].some(k=>Array.isArray(data?.[k])&&data[k].length>0)||['products','contacts','docs'].some(k=>Array.isArray(data?.processorData?.[k])&&data.processorData[k].length>0);}
 function stableJson(value){return JSON.stringify(value??null);}
 function stockTouched(base,next){const before=new Map((base?.stockMovements||[]).map(x=>[x.id,stableJson(x)])),after=new Map((next?.stockMovements||[]).map(x=>[x.id,stableJson(x)])),products=new Set();for(const m of [...(base?.stockMovements||[]),...(next?.stockMovements||[])])if(before.get(m.id)!==after.get(m.id)&&m.productId)products.add(String(m.productId));const bp=new Map((base?.products||[]).map(x=>[x.id,stableJson(x)])),ap=new Map((next?.products||[]).map(x=>[x.id,stableJson(x)]));for(const p of [...(base?.products||[]),...(next?.products||[])])if(bp.get(p.id)!==ap.get(p.id))products.add(String(p.id));return products;}
 function mergeWorkspaces(base,local,remote){
