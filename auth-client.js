@@ -24,7 +24,7 @@ function watchWorkspace(user){
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
-const showApp=()=>{boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE);};
+const showApp=()=>{boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE,{entry:true});};
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 function readCachedAccess(id){try{return JSON.parse(localStorage.getItem('ha-accounting-access:'+id)||'null');}catch{return null;}}
 function isAccessDenied(err){return ['هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.','الاشتراك موقوف حالياً. راجع الأدمن.','انتهت مدة الاشتراك. راجع الأدمن للتجديد.'].includes(String(err?.message||''));}
