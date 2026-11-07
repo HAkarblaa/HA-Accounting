@@ -12,8 +12,40 @@ const url = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
-const allowedModules = new Set(["restaurant", "wholesale", "market", "personal", "full"]);
+const allowedModules = new Set(["restaurant", "wholesale", "market", "engineering", "service", "personal", "generator", "detergents", "full"]);
 const moduleFor = (value: unknown) => typeof value === "string" && allowedModules.has(value) ? value : "full";
+
+async function ensureGeneratorProfile(userId: string, loginId: string, nameValue?: unknown, ownerValue?: unknown) {
+  const { data: existing, error: profileLookupError } = await adminClient
+    .from("generator_profiles").select("user_id").eq("user_id", userId).maybeSingle();
+  if (profileLookupError) throw profileLookupError;
+  if (existing) return;
+
+  const clean = (value: unknown, fallback: string) => {
+    const text = String(value ?? "").trim().slice(0, 100);
+    return text || fallback;
+  };
+  const ownerName = clean(ownerValue, loginId);
+  const generatorName = clean(nameValue, `${ownerName} - مولدة`);
+  const { data: workspace, error: workspaceError } = await adminClient
+    .from("generator_workspaces")
+    .insert({ generator_name: generatorName, owner_name: ownerName })
+    .select("id").single();
+  if (workspaceError) throw workspaceError;
+
+  const { error: profileError } = await adminClient.from("generator_profiles").insert({
+    user_id: userId,
+    workspace_id: workspace.id,
+    username: loginId,
+    display_name: ownerName,
+    role: "owner",
+    active: true,
+  });
+  if (profileError) {
+    await adminClient.from("generator_workspaces").delete().eq("id", workspace.id);
+    throw profileError;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -26,9 +58,6 @@ Deno.serve(async (req) => {
     if (userError || !user) return json({ error: "unauthorized" }, 401);
     const body = await req.json();
     if (body.action === "claim-device") {
-      const deviceId = String(body.deviceId ?? "");
-      const deviceLabel = String(body.deviceLabel ?? "جهاز غير معروف").slice(0, 120);
-      if (!/^[a-zA-Z0-9-]{20,80}$/.test(deviceId)) return json({ error: "invalid_device" }, 400);
       const { data: adminAccess } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
       if (!adminAccess) {
         const { data: subscription, error: subscriptionError } = await adminClient.from("subscriptions").select("active,expires_at").eq("user_id", user.id).maybeSingle();
@@ -37,17 +66,7 @@ Deno.serve(async (req) => {
           return json({ error: "subscription_inactive" }, 403);
         }
       }
-      const { data: existing, error: existingError } = await adminClient.from("account_devices").select("device_id").eq("user_id", user.id).maybeSingle();
-      if (existingError) throw existingError;
-      if (existing && existing.device_id !== deviceId) return json({ error: "device_locked" }, 409);
-      if (!existing) {
-        const { error: insertError } = await adminClient.from("account_devices").insert({ user_id: user.id, device_id: deviceId, device_label: deviceLabel });
-        if (insertError) {
-          const { data: afterRace } = await adminClient.from("account_devices").select("device_id").eq("user_id", user.id).maybeSingle();
-          if (!afterRace || afterRace.device_id !== deviceId) return json({ error: "device_locked" }, 409);
-        }
-      }
-      return json({ ok: true });
+      return json({ ok: true, multiDevice: true });
     }
     const { data: adminRow } = await adminClient.from("super_admins").select("user_id").eq("user_id", user.id).maybeSingle();
     if (!adminRow) return json({ error: "forbidden" }, 403);
@@ -72,6 +91,15 @@ Deno.serve(async (req) => {
       if (createError) return json({ error: createError.message }, 400);
       const { error: subError } = await adminClient.from("subscriptions").insert({ user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType });
       if (subError) { await adminClient.auth.admin.deleteUser(created.user.id); throw subError; }
+      if (moduleType === "generator") {
+        try {
+          await ensureGeneratorProfile(created.user.id, loginId, body.generatorName, body.generatorOwner);
+        } catch (error) {
+          await adminClient.from("subscriptions").delete().eq("user_id", created.user.id);
+          await adminClient.auth.admin.deleteUser(created.user.id);
+          throw error;
+        }
+      }
       return json({ user: { user_id: created.user.id, login_id: loginId, active: true, expires_at: expiresAt, module_type: moduleType } }, 201);
     }
     if (body.action === "delete") {
@@ -84,12 +112,18 @@ Deno.serve(async (req) => {
       const { data: subscription, error: subscriptionError } = await adminClient.from("subscriptions").select("user_id,login_id").eq("user_id", userId).maybeSingle();
       if (subscriptionError) throw subscriptionError;
       if (!subscription) return json({ error: "الحساب غير موجود ضمن قائمة المشتركين." }, 404);
+      const { data: generatorProfile, error: generatorProfileError } = await adminClient.from("generator_profiles").select("workspace_id").eq("user_id", userId).maybeSingle();
+      if (generatorProfileError) throw generatorProfileError;
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
       if (deleteError) return json({ error: `تعذر حذف الحساب من تسجيل الدخول: ${deleteError.message}` }, 400);
       const cleanupWarnings: string[] = [];
-      for (const table of ["subscriptions", "account_devices", "accounting_workspaces"]) {
+      for (const table of ["subscriptions", "account_devices", "accounting_workspaces", "generator_profiles"]) {
         const { error } = await adminClient.from(table).delete().eq("user_id", userId);
         if (error) cleanupWarnings.push(`${table}: ${error.message}`);
+      }
+      if (generatorProfile?.workspace_id) {
+        const { error } = await adminClient.from("generator_workspaces").delete().eq("id", generatorProfile.workspace_id);
+        if (error) cleanupWarnings.push(`generator_workspaces: ${error.message}`);
       }
       if (cleanupWarnings.length) {
         console.error("Deleted Auth user but public data cleanup reported errors", userId, cleanupWarnings);
@@ -101,6 +135,12 @@ Deno.serve(async (req) => {
       const userId = String(body.userId ?? "");
       if (!/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: "invalid_user" }, 400);
       const update: Record<string, unknown> = {};
+      if (body.moduleType === "generator") {
+        const { data: subscription, error: lookupError } = await adminClient.from("subscriptions").select("login_id").eq("user_id", userId).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (!subscription) return json({ error: "الحساب غير موجود ضمن قائمة المشتركين." }, 404);
+        await ensureGeneratorProfile(userId, subscription.login_id, body.generatorName, body.generatorOwner);
+      }
       if (typeof body.active === "boolean") update.active = body.active;
       if (body.expiresAt !== undefined) update.expires_at = body.expiresAt ? new Date(body.expiresAt).toISOString() : null;
       if (body.moduleType !== undefined) {
@@ -122,6 +162,10 @@ Deno.serve(async (req) => {
     return json({ error: "unknown_action" }, 400);
   } catch (error) {
     console.error("manage-subscribers error", error);
+    const detail = error instanceof Error ? error.message : String(error);
+    if (/foreign key|violates.*constraint/i.test(detail)) {
+      return json({ error: "لا يمكن حذف الحساب لأن له فواتير أو طلبات مرتبطة به. الحساب وبياناته محفوظة؛ أوقفه من القائمة إذا تريد منع دخوله دون حذف سجلاته." }, 409);
+    }
     return json({ error: "server_error" }, 500);
   }
 });
