@@ -12,7 +12,7 @@ const url = Deno.env.get("SUPABASE_URL")!;
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
-const allowedModules = new Set(["restaurant", "wholesale", "market", "service", "personal", "generator", "full"]);
+const allowedModules = new Set(["restaurant", "wholesale", "market", "engineering", "yemen", "service", "personal", "generator", "detergents", "full"]);
 const moduleFor = (value: unknown) => typeof value === "string" && allowedModules.has(value) ? value : "full";
 
 async function ensureGeneratorProfile(userId: string, loginId: string, nameValue?: unknown, ownerValue?: unknown) {
