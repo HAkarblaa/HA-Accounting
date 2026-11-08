@@ -55,6 +55,9 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 
 .generator-page{padding:14px}.generator-frame{display:block;width:100%;height:calc(100dvh - 190px);min-height:620px;border:1px solid #dce8f6;border-radius:12px;background:#f4f8ff}@media(max-width:700px){.generator-frame{height:calc(100dvh - 165px);min-height:580px}.generator-page{padding:10px}.generator-page .panel-head{align-items:flex-start;flex-wrap:wrap}}.service-center .cell-sub{display:block;color:var(--muted);font-size:11px;margin-top:4px}.service-center .tag.green{background:#e3f7ee;color:#14866d}.service-center .toolbar{align-items:center}.service-center .form-grid textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--ink)}.service-center .actions{flex-wrap:wrap}@media(max-width:700px){.service-center .toolbar .search{min-width:0;width:100%}.service-center .actions button{padding:7px 9px;font-size:11px}}
 </style>
+<style id="admin-interface-preview-styles">
+.preview-interface-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.preview-interface-card{appearance:none;border:1px solid #d7e6f1;border-right:4px solid #168cbb;border-radius:12px;background:linear-gradient(140deg,#fff,#f2f8ff);padding:14px;text-align:right;color:#173f5f;min-height:86px;display:grid;align-content:center;gap:7px}.preview-interface-card:hover{border-color:#159a8c;box-shadow:0 7px 18px #102a4312;transform:translateY(-1px)}.preview-interface-card strong{font-size:14px}.preview-interface-card small{font-size:11px;color:#6d7f90;line-height:1.5}.preview-interface-card:disabled{opacity:.45;cursor:not-allowed}@media(max-width:700px){.top-actions{gap:5px}.top-actions #adminInterfacePreview{padding:6px 7px;font-size:10px;max-width:105px;white-space:normal;line-height:1.25}.preview-interface-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.preview-interface-card{padding:10px;min-height:76px}.preview-interface-card strong{font-size:12px}.preview-interface-card small{font-size:10px}}
+</style>
 <script src="./ha-accounting-product-photos.js"></script><style id="mobile-keyboard-stability">#authBoot{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;background:linear-gradient(135deg,#edf7ff,#e6fff8);color:#164e9b;font:700 16px Tahoma,Arial}#authBoot .boot-card{display:grid;justify-items:center;gap:12px;padding:24px 32px;background:#fff;border:1px solid #deebf5;border-radius:18px;box-shadow:0 12px 30px #17477716}#authBoot .boot-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(140deg,#ffcc4d,#ff8b42);color:#173d70;font-size:19px}#authBoot .boot-spinner{width:22px;height:22px;border:3px solid #dceaf5;border-top-color:#00a896;border-radius:50%;animation:haBootSpin .8s linear infinite}@keyframes haBootSpin{to{transform:rotate(360deg)}}#authGate.auth-pending{display:none!important}@media(max-width:700px){:root{--ha-visual-height:100dvh}#modal.modal[open]{position:fixed;inset:8px 8px auto!important;margin:0!important;width:calc(100vw - 16px)!important;max-height:calc(var(--ha-visual-height,100dvh) - 16px)!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-block:16px}.modal-inner{padding:14px!important}.modal input:not([type=checkbox]):not([type=radio]),.modal select,.modal textarea,#authGate input{font-size:16px!important;scroll-margin-block:20px}.modal input,.modal textarea{touch-action:pan-y}input,select,textarea{scroll-margin-block:20px}}</style>
 <style id="engineering-section-choice-styles">
 .engineering-choice-page{max-width:1100px;margin:0 auto}.engineering-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin:24px 0}.engineering-choice-card{appearance:none;width:100%;min-height:330px;aspect-ratio:1.25/1;border:1px solid #d9e7ef;border-top:5px solid #159a8c;border-radius:24px;background:linear-gradient(145deg,#fff,#edf7ff);box-shadow:0 14px 35px #102a4312;padding:28px;color:#173f5f;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:transform .18s,box-shadow .18s}.engineering-choice-card.processor-choice{border-top-color:#dfaa43;background:linear-gradient(145deg,#fff,#fff8ea)}.engineering-choice-card:hover{transform:translateY(-3px);box-shadow:0 20px 40px #102a4320}.engineering-choice-icon{font-size:48px}.engineering-choice-card h2{font-size:25px;margin:2px 0;color:#173f5f}.engineering-choice-card p{font-size:14px;line-height:1.9;color:#65798b;margin:0;max-width:440px}.engineering-choice-cta{margin-top:6px;padding:11px 18px;border-radius:11px;background:#159a8c;color:#fff;font-weight:700}.processor-choice .engineering-choice-cta{background:#bd8320}.engineering-choice-note{padding:13px 16px;border-radius:12px;background:#e9f5f3;color:#27685f;text-align:center;line-height:1.8}
@@ -138,7 +141,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
   <div class="side-foot">مساحة محاسبية لكل حساب<br>مزامنة عند الاتصال بالإنترنت</div>
 </aside>
 <main class="main">
-  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
   <section class="content" id="view"></section>
 </main>
 </div>
@@ -660,7 +663,58 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 <script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
-<script src="./auth-client.js?v=49-simple-interface"></script>
+<script src="./auth-client.js?v=50-admin-interface-preview"></script>
+<script>
+(function(){
+ const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
+ if(!button||!modal||!body)return;
+ let original=null,previewing=false;
+ const choices=[
+  ['full','الواجهة الكاملة','جميع الأقسام المتاحة'],
+  ['engineering','الهندسة والمقاولات','المشاريع والمواد والحركات الهندسية'],
+  ['service','مركز الصيانة والاستبدال','تسجيل ومتابعة طلبات الصيانة'],
+  ['simple','الواجهة البسيطة','المبيعات والمشتريات والمخزون والجهات'],
+  ['market','الأسواق والتجزئة','المبيعات والمشتريات والمخزون'],
+  ['wholesale','الجملة','المبيعات والمشتريات والحسابات'],
+  ['restaurant','المطاعم','الكاشير والمبيعات والمشتريات'],
+  ['personal','الحسابات الشخصية','الميزانية والالتزامات والادخار'],
+  ['generator','المولدات','واجهة إدارة المولدات']
+ ];
+ function openPicker(){
+  if(window.HA_ACCOUNTING_IS_ADMIN!==true){alert('هذا الخيار متاح للأدمن الرئيسي فقط.');return;}
+  body.innerHTML='<div class="modal-head"><div><h2>تجربة الواجهات</h2><p class="hint">اختر واجهة لمعاينتها مؤقتاً. لن يتغير اختصاص الحساب أو بيانات المشتركين.</p></div><button type="button" class="btn secondary small" data-preview-close>إغلاق</button></div><div class="preview-interface-grid">'+choices.map(([key,title,description])=>'<button type="button" class="preview-interface-card" data-preview-module="'+key+'"><strong>'+title+'</strong><small>'+description+'</small></button>').join('')+'</div><div class="form-actions" style="justify-content:space-between;margin-top:16px"><small class="hint">التبديل للاختبار على هذا الجهاز والجلسة فقط.</small><button type="button" class="btn secondary" data-preview-restore '+(previewing?'':'disabled')+'>العودة لواجهتي الأصلية</button></div>';
+  modal.showModal();
+ }
+ function setPreview(type){
+  if(window.HA_ACCOUNTING_IS_ADMIN!==true)return;
+  if(!previewing){
+   original={type:window.HA_ACCOUNTING_MODULE_TYPE||'full',page:new URLSearchParams(location.search).get('page')||'dashboard'};
+   previewing=true;
+  }
+  modal.close();
+  window.HA_APPLY_MODULE_ACCESS?.(type,{entry:true});
+  button.textContent='تجربة الواجهات · معاينة';
+ }
+ function restore(){
+  if(!previewing||!original)return;
+  const saved=original;previewing=false;original=null;modal.close();
+  window.HA_APPLY_MODULE_ACCESS?.(saved.type);
+  const pageButton=document.querySelector('#nav button[data-page="'+saved.page+'"]');
+  if(pageButton&&!pageButton.classList.contains('hidden'))pageButton.click();
+  else document.querySelector('#nav button[data-page="dashboard"]')?.click();
+  button.textContent='تجربة الواجهات';
+ }
+ button.addEventListener('click',openPicker);
+ body.addEventListener('click',e=>{
+  if(e.target.closest('[data-preview-close]')){modal.close();return;}
+  const choice=e.target.closest('[data-preview-module]');
+  if(choice){setPreview(choice.dataset.previewModule);return;}
+  if(e.target.closest('[data-preview-restore]'))restore();
+ });
+ modal.addEventListener('close',()=>{if(window.HA_ACCOUNTING_IS_ADMIN!==true){previewing=false;original=null;button.classList.add('hidden');}});
+ window.addEventListener('ha-accounting-admin-state',()=>{const admin=window.HA_ACCOUNTING_IS_ADMIN===true;button.classList.toggle('hidden',!admin);if(!admin){previewing=false;original=null;button.textContent='تجربة الواجهات';}});
+})();
+</script>
 <script>(function(){const root=document.documentElement,modal=document.getElementById('modal'),vv=window.visualViewport;let activeField=null,timer=0;function viewport(){const top=vv?.offsetTop||0,height=vv?.height||window.innerHeight;return{top,bottom:top+height};}function syncHeight(){const h=vv?.height||window.innerHeight;if(h>0)root.style.setProperty('--ha-visual-height',Math.round(h)+'px');schedule();}function keepFieldVisible(){const field=activeField;if(!field||!field.isConnected||document.activeElement!==field)return;const view=viewport(),rect=field.getBoundingClientRect(),pad=18,dialog=field.closest('#modal.modal[open]');if(rect.bottom>view.bottom-pad){const delta=rect.bottom-(view.bottom-pad);if(dialog)dialog.scrollTop+=delta;else window.scrollBy(0,delta);}else if(rect.top<view.top+pad){const delta=(view.top+pad)-rect.top;if(dialog)dialog.scrollTop-=delta;else window.scrollBy(0,-delta);}}function schedule(){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(keepFieldVisible),140);}syncHeight();vv?.addEventListener('resize',syncHeight,{passive:true});vv?.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',syncHeight,{passive:true});document.addEventListener('focusin',e=>{activeField=e.target.closest('input,textarea,select');if(activeField)schedule();});document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches('input,textarea,select'))activeField=null;},80));})();</script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 
