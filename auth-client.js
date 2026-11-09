@@ -97,7 +97,7 @@ function mergeWorkspaces(base,local,remote){
 async function pushLocalWorkspace(user,data){
  const key=userKey(user.id),baseText=localStorage.getItem(baseKey(user.id)),base=(()=>{try{return JSON.parse(baseText||'null');}catch{return null;}})(),baseRevision=localStorage.getItem(revisionKey(user.id));
  const {data:remoteRow,error:readError}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();
- if(readError)throw new Error('تعذر فحص آخر نسخة قبل المزامنة. بقيت الفواتير محفوظة بهذا الجهاز.');
+ if(readError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر فحص آخر نسخة قبل المزامنة. بقيت الفواتير محفوظة بهذا الجهاز وستتم إعادة المحاولة عند عودة الاتصال.');}
  let outgoing=data;
  if(remoteRow?.data){
   if(!baseRevision&&!base&&stableJson(data)!==stableJson(remoteRow.data)){localStorage.setItem(pendingKey(user.id),'1');window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:'لا توجد نسخة مقارنة لهذا الجهاز. التعديلات محفوظة محلياً ولم نستبدل نسخة السحابة.'}}));throw new Error('توجد نسخة سحابية سابقة ولا توجد نسخة مقارنة لهذا الجهاز. بقيت التعديلات محلياً حتى لا نستبدل بيانات الحساب.');}
