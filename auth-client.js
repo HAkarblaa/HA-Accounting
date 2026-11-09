@@ -68,6 +68,18 @@ if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.HA_AUTH_CLIENT=client;
+const manualSyncButton=document.getElementById('manualSyncButton');
+let syncToastTimer=0;
+function showSyncToast(text,ok=false){let toast=document.getElementById('manualSyncToast');if(!toast){toast=document.createElement('div');toast.id='manualSyncToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.style.cssText='position:fixed;z-index:2000;right:50%;bottom:22px;transform:translateX(50%);max-width:calc(100vw - 24px);padding:12px 16px;border-radius:12px;background:#173f5f;color:#fff;box-shadow:0 8px 28px #102a4340;font:600 13px Tahoma,Arial,sans-serif;text-align:center;';document.body.appendChild(toast);}toast.style.background=ok?'#087c69':'#173f5f';toast.textContent=text;toast.hidden=false;clearTimeout(syncToastTimer);syncToastTimer=setTimeout(()=>{toast.hidden=true;},4500);}
+manualSyncButton?.addEventListener('click',async()=>{
+ if(manualSyncButton.disabled)return;
+ if(document.getElementById('modal')?.open){showSyncToast('احفظ الفاتورة أو أغلقها قبل تحديث البيانات.');return;}
+ if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. تبقى البيانات محفوظة بهذا الجهاز إلى أن يرجع الاتصال.');return;}
+ if(!client||!currentUser){showSyncToast('تعذر تحديد الحساب. أعد تسجيل الدخول ثم حاول مرة ثانية.');return;}
+ manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
+ try{clearTimeout(syncTimer);let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{}if(!data)throw new Error('ما لكيت بيانات هذا الحساب بهذا الجهاز.');await pushLocalWorkspace(currentUser,data);showSyncToast('تمت مزامنة البيانات وجلب آخر التغييرات.',true);setTimeout(()=>location.reload(),650);}
+ catch(error){console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر تحديث البيانات. حاول عند استقرار الإنترنت.');manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
+});
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
  if(adminResult.error)throw new Error('تعذر التحقق من صلاحيات الحساب. تأكد من تشغيل ملفات SQL في Supabase.');

@@ -358,7 +358,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
   <div class="side-foot">مساحة محاسبية لكل حساب<br>مزامنة عند الاتصال بالإنترنت</div>
 </aside>
 <main class="main">
-  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="manualSyncButton" type="button" class="btn secondary small" title="جلب آخر البيانات ومزامنة تعديلات هذا الجهاز">⟳ تحديث البيانات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
   <section class="content" id="view"></section>
 </main>
 </div>
@@ -1042,7 +1042,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
 <script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
-<script src="./auth-client.js?v=54-offline-mobile-pending-sync"></script>
+<script src="./auth-client.js?v=55-manual-mobile-sync"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
