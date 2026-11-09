@@ -25,7 +25,7 @@ function watchWorkspace(user){
   let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
   if(JSON.stringify(local)===JSON.stringify(remote)){localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);return;}
   localStorage.setItem(userKey(user.id),JSON.stringify(remote));localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);
-  if(window.HA_ACCOUNTING_MODULE_TYPE==='simple'&&typeof window.HA_APPLY_REMOTE_WORKSPACE==='function'){const applyWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,700);return;}window.HA_APPLY_REMOTE_WORKSPACE(remote);};applyWhenSafe();return;}
+  if(typeof window.HA_APPLY_REMOTE_WORKSPACE==='function'){const applyWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,700);return;}window.HA_APPLY_REMOTE_WORKSPACE(remote);};applyWhenSafe();return;}
   const reloadWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(reloadWhenSafe,700);return;}location.reload();};
   reloadWhenSafe();
  }).subscribe();
@@ -49,7 +49,7 @@ function startOfflineFromCache(){
   try{const projectRef=new URL(cfg.url).hostname.split('.')[0];localStorage.removeItem(cfg.auth?.storageKey||`sb-${projectRef}-auth-token`);}catch{}
   localStorage.removeItem('ha-accounting-active-user');location.reload();
  });
- window.addEventListener('online',()=>location.reload(),{once:true});
+ window.addEventListener('online',()=>{if(!currentUser||!client)return;let data=null;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null')}catch{}if(data)pushLocalWorkspace(currentUser,data).then(()=>{const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest)}).catch(error=>console.error('HA reconnect sync requires review',error));});
  return true;
 }
 window.addEventListener('ha-accounting-save',()=>{
@@ -77,7 +77,7 @@ manualSyncButton?.addEventListener('click',async()=>{
  if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. تبقى البيانات محفوظة بهذا الجهاز إلى أن يرجع الاتصال.');return;}
  if(!client||!currentUser){showSyncToast('تعذر تحديد الحساب. أعد تسجيل الدخول ثم حاول مرة ثانية.');return;}
  manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
- try{clearTimeout(syncTimer);let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{}if(!data)throw new Error('ما لكيت بيانات هذا الحساب بهذا الجهاز.');await pushLocalWorkspace(currentUser,data);showSyncToast('تمت مزامنة البيانات وجلب آخر التغييرات.',true);setTimeout(()=>location.reload(),650);}
+ try{clearTimeout(syncTimer);let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{}if(!data)throw new Error('ما لكيت بيانات هذا الحساب بهذا الجهاز.');await pushLocalWorkspace(currentUser,data);const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);showSyncToast('تمت مزامنة البيانات وجلب آخر التغييرات.',true);}
  catch(error){console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر تحديث البيانات. حاول عند استقرار الإنترنت.');manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
 });
 async function checkAccess(user){
