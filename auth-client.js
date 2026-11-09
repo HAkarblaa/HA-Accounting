@@ -25,6 +25,7 @@ function watchWorkspace(user){
   let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
   if(JSON.stringify(local)===JSON.stringify(remote)){localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);return;}
   localStorage.setItem(userKey(user.id),JSON.stringify(remote));localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);
+  if(window.HA_ACCOUNTING_MODULE_TYPE==='simple'&&typeof window.HA_APPLY_REMOTE_WORKSPACE==='function'){const applyWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,700);return;}window.HA_APPLY_REMOTE_WORKSPACE(remote);};applyWhenSafe();return;}
   const reloadWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(reloadWhenSafe,700);return;}location.reload();};
   reloadWhenSafe();
  }).subscribe();
