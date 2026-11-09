@@ -306,7 +306,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
       <label>المعرّف<input name="loginId" required minlength="4" maxlength="32" pattern="[a-zA-Z0-9_-]+" placeholder="اسم الدخول" dir="ltr"></label>
       <label>كلمة المرور<input name="password" type="password" required minlength="10" placeholder="10 أحرف على الأقل" dir="ltr"></label>
       <label>تاريخ الانتهاء<input name="expiresAt" type="date"></label>
-      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="wholesale">جملة</option><option value="market">أسواق / تجزئة</option><option value="engineering">هندسة ومقاولات</option><option value="processor">المعالجات</option><option value="yemen">قسم ورشة صناعية</option><option value="simple">واجهة بسيطة</option><option value="service">مركز صيانة واستبدال</option><option value="personal">حسابات شخصية</option><option value="generator">مولدة كهرباء</option></select></label>
+      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="market">أسواق / تجزئة</option><option value="engineering">هندسة ومقاولات</option><option value="processor">المعالجات</option><option value="yemen">قسم ورشة صناعية</option><option value="simple">واجهة بسيطة</option><option value="service">مركز صيانة واستبدال</option><option value="personal">حسابات شخصية</option></select></label>
       <label id="generatorNameField" class="hidden">اسم المولدة<input name="generatorName" maxlength="100" placeholder="مثال: مولدة الحي"></label>
       <label id="generatorOwnerField" class="hidden">اسم صاحب المولدة<input name="generatorOwner" maxlength="100" placeholder="اسم صاحب الحساب"></label>
       <button class="btn" type="submit">إنشاء الحساب</button>
@@ -342,7 +342,6 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
     <button data-page="processor-suppliers" data-module-nav="processor" class="hidden"><span class="ico">🏭</span>المجهزون</button>
     <button data-page="processor-reports" data-module-nav="processor" class="hidden"><span class="ico">▥</span>التقارير المالية</button>
     <button data-page="service" data-module-nav="service" class="hidden"><span class="ico">🛠</span>مركز الصيانة والاستبدال</button>
-    <button data-page="generator" data-module-nav="generator" class="hidden"><span class="ico">⚡</span>إدارة المولدة</button>
     <button data-page="yemen" data-module-nav="yemen" class="hidden"><span class="ico">🏭</span>قسم ورشة صناعية</button>
     <button data-page="budget" data-module-nav="personal" class="hidden"><span class="ico">▥</span>ميزانية الشهر</button>
     <button data-page="savings" data-module-nav="personal" class="hidden"><span class="ico">◉</span>أهداف الادخار</button>
@@ -1056,9 +1055,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('ar-I
     ['service','مركز الصيانة والاستبدال','تسجيل ومتابعة طلبات الصيانة'],
   ['simple','الواجهة البسيطة','المبيعات والمشتريات والمخزون والجهات'],
   ['market','الأسواق والتجزئة','المبيعات والمشتريات والمخزون'],
-  ['wholesale','الجملة','المبيعات والمشتريات والحسابات'],
-  ['personal','الحسابات الشخصية','الميزانية والالتزامات والادخار'],
-  ['generator','المولدات','واجهة إدارة المولدات']
+  ['personal','الحسابات الشخصية','الميزانية والالتزامات والادخار']
  ];
  function openPicker(){
   if(window.HA_ACCOUNTING_IS_ADMIN!==true){alert('هذا الخيار متاح للأدمن الرئيسي فقط.');return;}
