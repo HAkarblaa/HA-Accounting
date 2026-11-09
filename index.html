@@ -56,8 +56,8 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 .generator-page{padding:14px}.generator-frame{display:block;width:100%;height:calc(100dvh - 190px);min-height:620px;border:1px solid #dce8f6;border-radius:12px;background:#f4f8ff}@media(max-width:700px){.generator-frame{height:calc(100dvh - 165px);min-height:580px}.generator-page{padding:10px}.generator-page .panel-head{align-items:flex-start;flex-wrap:wrap}}.service-center .cell-sub{display:block;color:var(--muted);font-size:11px;margin-top:4px}.service-center .tag.green{background:#e3f7ee;color:#14866d}.service-center .toolbar{align-items:center}.service-center .form-grid textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--ink)}.service-center .actions{flex-wrap:wrap}@media(max-width:700px){.service-center .toolbar .search{min-width:0;width:100%}.service-center .actions button{padding:7px 9px;font-size:11px}}
 </style>
 <style id="ha-universal-export-actions">
-.ha-export-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:12px}.ha-export-bar button,.side-tools button{border:1px solid #d3e4f3;border-radius:9px;background:#f2f8ff;color:#2456a6;padding:9px 11px;font-weight:700}.ha-export-bar button:hover,.side-tools button:hover{background:#e1f5f1;border-color:#9cdbd2}.side-tools{margin:12px 0;padding:12px 9px;border:1px solid #ffffff24;border-radius:12px;background:#ffffff0d}.side-tools h3{margin:0 0 9px;color:#e8f2fa;font-size:12px}.side-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.side-tools button{min-width:0;padding:8px 5px;font-size:11px;line-height:1.35;white-space:normal}.side-tools button:first-child,.side-tools button:nth-child(2){grid-column:span 1}.ha-export-status{align-self:center;color:#60758a;font-size:12px}
-@media(max-width:700px){.ha-export-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ha-export-bar button{min-width:0;white-space:normal;line-height:1.35}.side-tools{margin-top:8px}}
+.ha-export-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:12px}.ha-export-bar button{border:1px solid #d3e4f3;border-radius:9px;background:#f2f8ff;color:#2456a6;padding:9px 11px;font-weight:700}.ha-export-bar button:hover{background:#e1f5f1;border-color:#9cdbd2}.ha-export-status{align-self:center;color:#60758a;font-size:12px}
+@media(max-width:700px){.ha-export-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ha-export-bar button{min-width:0;white-space:normal;line-height:1.35}}
 </style>
 <style id="admin-interface-preview-styles">
 .preview-interface-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.preview-interface-card{appearance:none;border:1px solid #d7e6f1;border-right:4px solid #168cbb;border-radius:12px;background:linear-gradient(140deg,#fff,#f2f8ff);padding:14px;text-align:right;color:#173f5f;min-height:86px;display:grid;align-content:center;gap:7px}.preview-interface-card:hover{border-color:#159a8c;box-shadow:0 7px 18px #102a4312;transform:translateY(-1px)}.preview-interface-card strong{font-size:14px}.preview-interface-card small{font-size:11px;color:#6d7f90;line-height:1.5}.preview-interface-card:disabled{opacity:.45;cursor:not-allowed}@media(max-width:700px){.top-actions{gap:5px}.top-actions #adminInterfacePreview{padding:6px 7px;font-size:10px;max-width:105px;white-space:normal;line-height:1.25}.preview-interface-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.preview-interface-card{padding:10px;min-height:76px}.preview-interface-card strong{font-size:12px}.preview-interface-card small{font-size:10px}}
@@ -198,15 +198,6 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
     <button data-page="reports"><span class="ico">▥</span>التقارير المالية</button>
     <button data-page="settings"><span class="ico">⚙</span>إعدادات الشركة</button>
   </nav>
-  <section class="side-tools" aria-label="اختصارات الطباعة والحفظ والمشاركة">
-    <h3>طباعة ومشاركة</h3>
-    <div class="side-tools-grid">
-      <button type="button" data-export-action="print">🖨️ طباعة الصفحة</button>
-      <button type="button" data-export-action="pdf">⬇️ حفظ PDF</button>
-      <button type="button" data-export-action="whatsapp">واتساب</button>
-      <button type="button" data-export-action="telegram">تلغرام</button>
-    </div>
-  </section>
   <div class="language-switch"><label for="haLanguage">🌐 اللغة / Language</label><select id="haLanguage" aria-label="Language"><option value="ar">العربية</option><option value="en">English</option><option value="ku">کوردی</option></select></div>
   <div class="side-foot">مساحة محاسبية لكل حساب<br>مزامنة عند الاتصال بالإنترنت</div>
 </aside>
