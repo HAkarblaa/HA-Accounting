@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v123-clickable-dashboard-summary-cards';
+const CACHE='ha-accounting-shell-v124-compact-dual-finance-charts';
 const ASSETS=['./','./index.html','./yemen-section.js','./yemen-section.css','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
