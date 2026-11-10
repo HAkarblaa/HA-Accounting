@@ -1,7 +1,5 @@
-HA Accounting — External Income Update
+HA Accounting — Market Dashboard Shortcut Layout
 
-Replace index.html and service-worker.js in the existing site with the included files.
-The update adds external income entry and dashboard totals separately to Architecture and Processor modules.
-Fields: date, optional invoice number, reason, and amount.
-External income increases the selected module's revenue and net profit. It is treated as cash received.
-No other modules' external income data is changed or shared.
+Replace index.html and service-worker.js in the current site with the included files.
+On the market (التسوق) dashboard, the quick-action tiles remain five across on desktop and three across on mobile. The final incomplete row is centered for a balanced layout.
+This visual adjustment is scoped to the market dashboard and includes the current cumulative accounting files.
