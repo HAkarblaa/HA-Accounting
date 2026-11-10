@@ -1,9 +1,7 @@
-HA Accounting — Direct Sale Shortcuts
+HA Accounting — Simple Home Card Design
 
 Files: index.html and service-worker.js.
 
-The direct sale entry is specific to the shopping/market module. It is available as a dashboard card, a quick action card, and a sidebar shortcut. It creates a normal sales invoice for unregistered items, with internal purchase cost and sale price; the purchase cost is not printed on the customer receipt, and no inventory quantity is added or deducted.
+The simple interface home screen now has styled cards for the main sections and receipt/payment shortcuts. Desktop shows four section cards per row and two voucher cards; mobile uses two section cards per row and two voucher cards (one column on very narrow screens). Existing shopping direct-sale entries remain in the package.
 
-This package includes the earlier simple-interface shortcut card styling as well.
-
-Install by replacing these files in the existing project.
+Install by replacing these files in the current project.
