@@ -1,7 +1,9 @@
-HA Accounting — Simple Dashboard Shortcut Cards
+HA Accounting — Direct Sale Shortcuts
 
 Files: index.html and service-worker.js.
 
-This update restyles the simple interface dashboard quick actions as aligned cards: five per row on desktop and three per row on mobile. The styling is scoped to the simple interface. The package also retains the earlier market direct-sale update in the current source.
+The direct sale entry is specific to the shopping/market module. It is available as a dashboard card, a quick action card, and a sidebar shortcut. It creates a normal sales invoice for unregistered items, with internal purchase cost and sale price; the purchase cost is not printed on the customer receipt, and no inventory quantity is added or deducted.
+
+This package includes the earlier simple-interface shortcut card styling as well.
 
 Install by replacing these files in the existing project.
