@@ -330,7 +330,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
       <label>المعرّف<input name="loginId" required minlength="4" maxlength="32" pattern="[a-zA-Z0-9_-]+" placeholder="اسم الدخول" dir="ltr"></label>
       <label>كلمة المرور<input name="password" type="password" required minlength="10" placeholder="10 أحرف على الأقل" dir="ltr"></label>
       <label>تاريخ الانتهاء<input name="expiresAt" type="date"></label>
-      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="market">أسواق / تجزئة</option><option value="engineering">الهندسة المعمارية</option><option value="processor">المعالجات</option><option value="yemen">الورشة الصناعية · التسوق بدون باركود</option><option value="simple">واجهة بسيطة</option><option value="service">مركز صيانة واستبدال</option><option value="personal">حسابات شخصية</option></select></label>
+      <label>نوع النشاط<select name="moduleType"><option value="full">نشاط آخر · كل الأقسام</option><option value="market">أسواق / تجزئة</option><option value="engineering">الهندسة المعمارية</option><option value="processor">المعالجات</option><option value="yemen">الورشة الصناعية</option><option value="simple">واجهة بسيطة</option><option value="service">مركز صيانة واستبدال</option><option value="personal">حسابات شخصية</option></select></label>
       <label id="generatorNameField" class="hidden">اسم المولدة<input name="generatorName" maxlength="100" placeholder="مثال: مولدة الحي"></label>
       <label id="generatorOwnerField" class="hidden">اسم صاحب المولدة<input name="generatorOwner" maxlength="100" placeholder="اسم صاحب الحساب"></label>
       <button class="btn" type="submit">إنشاء الحساب</button>
@@ -549,7 +549,7 @@ function entryNumberExists(number){return state.entries.some(e=>String(e.number)
 function amountFor(accountId){let d=0,c=0;state.entries.forEach(e=>(e.lines||[]).forEach(l=>{if(l.accountId===accountId){d+=+l.debit||0;c+=+l.credit||0}}));return d-c}
 function normalBalance(a){let n=amountFor(a.id);return ['liability','equity','revenue'].includes(a.type)?-n:n}
 function sumType(t){return state.accounts.filter(a=>a.type===t).reduce((s,a)=>s+normalBalance(a),0)}
-function fmtTitle(p){return ({dashboard:'لوحة التحكم',cashier:'الكاشير / نقطة البيع',journal:'القيود اليومية',accounts:'دليل الحسابات',sales:'المبيعات والفواتير',purchases:'المشتريات',installments:'الأقساط والاستحقاقات',debts:'الديون','daily-report':'التقرير اليومي',expenses:'المصروفات',treasury:'الصندوق والبنوك',inventory:'المخزون',payroll:'الموظفون والرواتب',contacts:'الزبائن والمجهزون',budget:'ميزانية الشهر',savings:'أهداف الادخار',obligations:'الالتزامات المتكررة',networth:'صافي الممتلكات',reports:'التقارير المالية',settings:'إعدادات الشركة','engineering-report':'تفاصيل الهندسة','yemen':'قسم ورشة صناعية','engineering-projects':'مشاريع ومواد الهندسة','engineering-payees':'مستلمو الهندسة','engineering-payees':'مستلمو الهندسة','processor-dashboard':'لوحة المعالجات','processor-sales':'مبيعات المعالجات','processor-purchases':'مشتريات المعالجات','processor-inventory':'مخزون المعالجات','processor-contacts':'زبائن ومجهزو المعالجات','processor-customers':'زبائن المعالجات','processor-suppliers':'مجهزو المعالجات','processor-debts':'ديون المعالجات','processor-reports':'تقارير المعالجات','processor-stocktake':'جرد مخزون المعالجات','processor-contact-ledger':'كشف حساب جهة المعالجات',engineering:'الهندسة المعمارية',service:'مركز الصيانة والاستبدال',generator:'إدارة المولدة'})[p]||'HA محاسبة'}
+function fmtTitle(p){return ({dashboard:'لوحة التحكم',cashier:'الكاشير / نقطة البيع',journal:'القيود اليومية',accounts:'دليل الحسابات',sales:'المبيعات والفواتير',purchases:'المشتريات',installments:'الأقساط والاستحقاقات',debts:'الديون','daily-report':'التقرير اليومي',expenses:'المصروفات',treasury:'الصندوق والبنوك',inventory:'المخزون',payroll:'الموظفون والرواتب',contacts:'الزبائن والمجهزون',budget:'ميزانية الشهر',savings:'أهداف الادخار',obligations:'الالتزامات المتكررة',networth:'صافي الممتلكات',reports:'التقارير المالية',settings:'إعدادات الشركة','engineering-report':'تفاصيل الهندسة','yemen':'الورشة الصناعية','engineering-projects':'مشاريع ومواد الهندسة','engineering-payees':'مستلمو الهندسة','engineering-payees':'مستلمو الهندسة','processor-dashboard':'لوحة المعالجات','processor-sales':'مبيعات المعالجات','processor-purchases':'مشتريات المعالجات','processor-inventory':'مخزون المعالجات','processor-contacts':'زبائن ومجهزو المعالجات','processor-customers':'زبائن المعالجات','processor-suppliers':'مجهزو المعالجات','processor-debts':'ديون المعالجات','processor-reports':'تقارير المعالجات','processor-stocktake':'جرد مخزون المعالجات','processor-contact-ledger':'كشف حساب جهة المعالجات',engineering:'الهندسة المعمارية',service:'مركز الصيانة والاستبدال',generator:'إدارة المولدة'})[p]||'HA محاسبة'}
 function go(p,options={}){if(!appPages.includes(p)||!moduleAllowsPage(p))return;if(p!==page&&options.history!==false){const url=new URL(location.href);url.searchParams.set('page',p);history.pushState({haAccountingPage:p},'',url);}page=p;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));document.getElementById('topTitle').textContent=fmtTitle(p);document.getElementById('sidebar').classList.remove('open');render();}window.addEventListener('popstate',event=>{const target=appPages.includes(event.state?.haAccountingPage)?event.state.haAccountingPage:(new URLSearchParams(location.search).get('page')||'dashboard');go(moduleAllowsPage(target)?target:'dashboard',{history:false});});
 
 let serviceReportDate=iso();
@@ -1121,7 +1121,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 <script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
-<script src="./auth-client.js?v=67-yemen-market-only"></script>
+<script src="./auth-client.js?v=68-yemen-title"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -1131,7 +1131,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
   ['full','الواجهة الكاملة','جميع الأقسام المتاحة'],
   ['engineering','الهندسة المعمارية','المشاريع والمواد والحركات الهندسية'],
   ['processor','المعالجات','مبيعات ومشتريات ومخزون وحسابات مستقلة'],
-  ['yemen','الورشة الصناعية · تسوق بدون باركود','مبيعات ومشتريات ومخزون وبقية صفحات التسوق'],
+  ['yemen','الورشة الصناعية','مبيعات ومشتريات ومخزون وبقية صفحات التسوق'],
     ['service','التسوق والتجزئة · بدون قارئ باركود','مبيعات ومشتريات ومخزون وبقية صفحات التسوق'],
   ['simple','الواجهة البسيطة','المبيعات والمشتريات والمخزون والجهات'],
   ['market','الأسواق والتجزئة','المبيعات والمشتريات والمخزون'],
