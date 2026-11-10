@@ -1,9 +1,7 @@
-HA Accounting — بيع مباشر ضمن التسوق
+HA Accounting — Simple Dashboard Shortcut Cards
 
-محتويات التعديل:
-- index.html
-- service-worker.js
+Files: index.html and service-worker.js.
 
-التغيير يضيف مربعاً واختصاراً للبيع المباشر في لوحة التسوق. تنشأ فاتورة مبيعات اعتيادية مع اسم مادة غير مسجلة، وكمية، وسعر شراء داخلي، وسعر بيع. سعر الشراء يحسب كلفة البضاعة والربح، ولا يظهر في طباعة فاتورة الزبون. المادة تبقى غير مرتبطة بصنف المخزون ولا تتغير كمية المخزون.
+This update restyles the simple interface dashboard quick actions as aligned cards: five per row on desktop and three per row on mobile. The styling is scoped to the simple interface. The package also retains the earlier market direct-sale update in the current source.
 
-التثبيت: استبدل الملفين في ملفات المشروع الحالية.
+Install by replacing these files in the existing project.
