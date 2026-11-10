@@ -1,10 +1,7 @@
-تعديل إشارة الديون في قسم المعالجات
+HA Accounting — External Income Update
 
-طريقة عرض الرصيد:
-- المجهز يطلب المتجر: يظهر المبلغ بالسالب.
-- المتجر يطلب الزبون: يظهر المبلغ بالموجب.
-
-يشمل ذلك لوحة المعالجات، الفواتير، قائمة الديون، المستحقات، كشف الحساب، التقارير، والطباعة. الإشارة للعرض فقط؛ طريقة احتساب الفواتير والتسديد لم تتغير.
-
-ارفع index.html وservice-worker.js إلى جذر موقع HA-Accounting واستبدل النسختين الموجودتين ثم حدّث الموقع.
-وتتضمن نسخة index.html آخر تعديل إخفاء بطاقات الهندسة من لوحة التحكم وتعديل الدفع لفواتير المعالجات.
+Replace index.html and service-worker.js in the existing site with the included files.
+The update adds external income entry and dashboard totals separately to Architecture and Processor modules.
+Fields: date, optional invoice number, reason, and amount.
+External income increases the selected module's revenue and net profit. It is treated as cash received.
+No other modules' external income data is changed or shared.
