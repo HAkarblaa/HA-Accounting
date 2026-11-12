@@ -1,5 +1,5 @@
-const CACHE='ha-accounting-shell-v177-yemen-no-cashier';
-const ASSETS=['./','./index.html','./yemen-section.js','./yemen-section.css','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=68-yemen-title','./supabase-config.js','./ha-pos-operations.js'];
+const CACHE='ha-accounting-shell-v165-processor-mobile-scroll-fix';
+const ASSETS=['./','./index.html','./yemen-section.js','./yemen-section.css','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=66-architecture-activity','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
