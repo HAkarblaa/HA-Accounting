@@ -305,6 +305,30 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 @media(max-width:900px){.engineering-page:has(.engineering-dashboard-actions) .page-head{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.engineering-page:has(.engineering-dashboard-actions) .page-head{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.engineering-page:has(.engineering-dashboard-actions) .page-head>.btn,.engineering-page .page-head .engineering-dashboard-actions>.btn{min-height:82px;padding:10px 7px;border-radius:13px;font-size:12px}}
 </style>
+
+<style id="simple-home-colorful-cards-v2">
+#view .simple-home .simple-section-shortcut{border:1px solid color-mix(in srgb,var(--simple-card-color) 34%,#dce7f0);border-top:5px solid var(--simple-card-color);background:linear-gradient(145deg,#fff 0%,var(--simple-card-bg) 100%);box-shadow:0 8px 18px color-mix(in srgb,var(--simple-card-color) 13%,transparent)}
+#view .simple-home .simple-section-shortcut:focus-visible{outline:3px solid color-mix(in srgb,var(--simple-card-color) 40%,white);outline-offset:2px}
+#view .simple-home .simple-section-shortcut:hover{border-color:var(--simple-card-color);box-shadow:0 13px 24px color-mix(in srgb,var(--simple-card-color) 23%,transparent)}
+#view .simple-home .simple-section-shortcut:nth-child(1){--simple-card-color:#2563eb;--simple-card-bg:#eaf1ff}
+#view .simple-home .simple-section-shortcut:nth-child(2){--simple-card-color:#d97706;--simple-card-bg:#fff4df}
+#view .simple-home .simple-section-shortcut:nth-child(3){--simple-card-color:#7c3aed;--simple-card-bg:#f4ebff}
+#view .simple-home .simple-section-shortcut:nth-child(4){--simple-card-color:#ea580c;--simple-card-bg:#fff0e5}
+#view .simple-home .simple-section-shortcut:nth-child(5){--simple-card-color:#0f9f8f;--simple-card-bg:#e8faf6}
+#view .simple-home .simple-section-shortcut:nth-child(6){--simple-card-color:#0891b2;--simple-card-bg:#e7f8fc}
+#view .simple-home .simple-section-shortcut:nth-child(7){--simple-card-color:#db2777;--simple-card-bg:#fff0f6}
+#view .simple-home .simple-section-shortcut:nth-child(8){--simple-card-color:#4f46e5;--simple-card-bg:#eef0ff}
+#view .simple-home .simple-section-icon{background:var(--simple-card-color);color:#fff;box-shadow:0 5px 12px color-mix(in srgb,var(--simple-card-color) 26%,transparent)}
+#view .simple-home .simple-section-shortcut b{color:var(--simple-card-color)}
+#view .simple-home .simple-section-arrow{color:var(--simple-card-color)}
+#view .simple-home .simple-voucher-card.receipt{--voucher-color:#008f79;--voucher-bg:#e4f8f2}
+#view .simple-home .simple-voucher-card.payment{--voucher-color:#d94841;--voucher-bg:#fff0ed}
+#view .simple-home .simple-voucher-card{border:1px solid color-mix(in srgb,var(--voucher-color) 32%,#d9e8f1);border-top:5px solid var(--voucher-color);box-shadow:0 8px 18px color-mix(in srgb,var(--voucher-color) 14%,transparent)}
+#view .simple-home .simple-voucher-icon{background:var(--voucher-color);color:#fff}
+#view .simple-home .simple-voucher-card b{color:var(--voucher-color)}
+#view .simple-home .simple-voucher-arrow{color:var(--voucher-color)}
+@media(max-width:700px){#view .simple-home .simple-section-shortcut{min-height:108px;padding:10px 8px;border-top-width:4px}#view .simple-home .simple-voucher-card{min-height:92px;border-top-width:4px}}
+</style>
 </head>
 <body>
 <div id="authBoot" role="status" aria-live="polite"><div class="boot-card"><div class="boot-logo">HA</div><span>جارٍ التحقق من جلسة الدخول…</span><i class="boot-spinner" aria-hidden="true"></i></div></div><div id="authGate" class="auth-pending" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1122,7 +1146,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 <script src="./ha-business-print.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script src="./supabase-config.js"></script>
-<script src="./auth-client.js?v=69-service-center-dashboard-fixed"></script>
+<script src="./auth-client.js?v=70-simple-colorful-home-cards"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
