@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v169-simple-device-sync';
+const CACHE='ha-accounting-shell-v170-market-invoice-order';
 const ASSETS=['./','./index.html','./yemen-section.js','./yemen-section.css','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=67-simple-device-sync','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
