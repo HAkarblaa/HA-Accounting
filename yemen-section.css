@@ -35,3 +35,16 @@
 .haym-dashboard-tile:hover,.haym-dashboard-feature:hover{transform:translateY(-2px);box-shadow:0 10px 22px #19365218}
 @media(max-width:700px){.haym-dashboard-primary,.haym-dashboard-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.haym-dashboard-feature{min-height:132px;padding:12px 5px 10px;border-radius:20px}.haym-dashboard-feature span{font-size:30px}.haym-dashboard-feature small{font-size:10px}.haym-dashboard-feature i{width:40px;height:5px}.haym-quick-access{margin:-10px 8px 12px;padding:15px 10px 12px;border-radius:22px}.haym-quick-access h2{font-size:17px}.haym-quick-actions{gap:4px}.haym-quick-actions button span{font-size:30px}.haym-quick-actions button b{font-size:12px}.haym-dashboard-tile{min-height:135px;padding:12px 4px;border-radius:20px;gap:10px}.haym-dashboard-tile span{font-size:32px}.haym-dashboard-tile i{width:42px;height:5px}}
 @media(max-width:360px){.haym-dashboard-primary,.haym-dashboard-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.haym-dashboard-feature{min-height:120px}.haym-dashboard-feature b,.haym-dashboard-tile b{font-size:12px}.haym-dashboard-tile{min-height:125px}.haym-quick-actions button span{font-size:27px}.haym-quick-actions button b{font-size:11px}}
+
+/* Customer requests and maintenance cards */
+.haym-dashboard-feature{border-top:5px solid var(--feature-color,#2d62bb);background:linear-gradient(145deg,#fff,var(--feature-bg,#f3f8ff));transition:transform .16s,box-shadow .16s}
+.haym-dashboard-feature:nth-child(1){--feature-color:#4778ee;--feature-bg:#f1f5ff}
+.haym-dashboard-feature:nth-child(2){--feature-color:#0f9f8f;--feature-bg:#eafaf5}
+.haym-dashboard-feature:nth-child(3){--feature-color:#e58a27;--feature-bg:#fff7e9}
+.haym-dashboard-feature:hover{transform:translateY(-2px);box-shadow:0 12px 24px #19365220}
+.haym-account-card{appearance:none;width:100%;font:inherit;text-align:right;cursor:pointer;transition:transform .16s,box-shadow .16s}
+.haym-account-card.orders{border-top:4px solid #4778ee;background:linear-gradient(145deg,#fff,#f1f5ff)}
+.haym-account-card.maintenance{border-top:4px solid #0f9f8f;background:linear-gradient(145deg,#fff,#eafaf5)}
+.haym-account-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px #19365220}
+.haym-account-card.orders .haym-value{color:#315fc4}
+.haym-account-card.maintenance .haym-value{color:#087d70}
