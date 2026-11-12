@@ -3,7 +3,7 @@
 const cfg=window.HA_SUPABASE_CONFIG||{};
 const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
-let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null;
+let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0;
 const selfWriteSnapshots=new Map();
 function rememberSelfWrite(userId,data){const token={signature:stableJson(data)};selfWriteSnapshots.set(userId,token);setTimeout(()=>{if(selfWriteSnapshots.get(userId)===token)selfWriteSnapshots.delete(userId);},30000);}
 const userKey=id=>'ha-accounting-v1:'+id;
@@ -13,22 +13,64 @@ const baseKey=id=>'ha-accounting-sync-base:'+id;
 function watchWorkspace(user){
  if(!client||!user?.id)return;
  if(workspaceChannel)client.removeChannel(workspaceChannel);
- workspaceChannel=client.channel('ha-accounting-workspace-'+user.id).on('postgres_changes',{event:'UPDATE',schema:'public',table:'accounting_workspaces',filter:`user_id=eq.${user.id}`},payload=>{
-  const remote=payload.new?.data;if(!remote)return;
-  const ownWrite=selfWriteSnapshots.get(user.id);
-  if(ownWrite&&stableJson(remote)===ownWrite.signature){
+ const receiveWorkspace=payload=>{
+  const remote=payload?.new?.data,revision=payload?.new?.updated_at;
+  if(!remote||typeof remote!=='object')return;
+  const applyWhenSafe=()=>{
+   if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,500);return;}
+   const ownWrite=selfWriteSnapshots.get(user.id);
+   if(ownWrite&&stableJson(remote)===ownWrite.signature){
+    localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
+    if(revision)localStorage.setItem(revisionKey(user.id),revision);
+    return;
+   }
+   if(localStorage.getItem(pendingKey(user.id))==='1'){showMessage('توجد تغييرات محفوظة بهذا الجهاز بانتظار المزامنة؛ لن نستبدلها بنسخة الجهاز الآخر.');return;}
+   let local=null,base=null;
+   try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
+   try{base=JSON.parse(localStorage.getItem(baseKey(user.id))||'null');}catch{}
+   const seen=localStorage.getItem(revisionKey(user.id));
+   if(revision&&seen&&Date.parse(revision)<=Date.parse(seen))return;
+   if(stableJson(local)===stableJson(remote)){
+    localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
+    if(revision)localStorage.setItem(revisionKey(user.id),revision);
+    return;
+   }
+   const localDirty=!!local&&stableJson(local)!==stableJson(base||remote);
+   if(localDirty){
+    const result=mergeWorkspaces(base||{},local,remote);
+    if(result.conflicts.length){
+     localStorage.setItem(pendingKey(user.id),'1');
+     const warning='وجدنا تعديلات متزامنة على نفس البيانات. احتفظنا بتغييرات هذا الجهاز ولم نستبدلها.';
+     window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));
+     showMessage(warning);
+     return;
+    }
+    localStorage.setItem(userKey(user.id),JSON.stringify(result.data));
+    localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
+    if(revision)localStorage.setItem(revisionKey(user.id),revision);
+    localStorage.setItem(pendingKey(user.id),'1');
+    window.HA_APPLY_REMOTE_WORKSPACE?.(result.data);
+    window.dispatchEvent(new Event('ha-accounting-save'));
+    return;
+   }
+   localStorage.setItem(userKey(user.id),JSON.stringify(remote));
    localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
-   if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);
-   return;
-  }
-  if(localStorage.getItem(pendingKey(user.id))==='1'){showMessage('توجد فواتير من هذا الجهاز بانتظار المزامنة. لن نستبدلها بتحديث الجهاز الآخر.');return;}
-  let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
-  if(JSON.stringify(local)===JSON.stringify(remote)){localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);return;}
-  localStorage.setItem(userKey(user.id),JSON.stringify(remote));localStorage.setItem(baseKey(user.id),JSON.stringify(remote));if(payload.new?.updated_at)localStorage.setItem(revisionKey(user.id),payload.new.updated_at);
-  if(typeof window.HA_APPLY_REMOTE_WORKSPACE==='function'){const applyWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,700);return;}window.HA_APPLY_REMOTE_WORKSPACE(remote);};applyWhenSafe();return;}
-  const reloadWhenSafe=()=>{if(document.getElementById('modal')?.open){setTimeout(reloadWhenSafe,700);return;}location.reload();};
-  reloadWhenSafe();
- }).subscribe();
+   if(revision)localStorage.setItem(revisionKey(user.id),revision);
+   window.HA_APPLY_REMOTE_WORKSPACE?.(remote);
+  };
+  applyWhenSafe();
+ };
+ workspaceChannel=client.channel('ha-accounting-workspace-'+user.id)
+  .on('postgres_changes',{event:'*',schema:'public',table:'accounting_workspaces',filter:`user_id=eq.${user.id}`},receiveWorkspace)
+  .subscribe(status=>{
+   const ready=status==='SUBSCRIBED';
+   if(!ready&&(status==='CHANNEL_ERROR'||status==='TIMED_OUT'))console.warn('HA workspace realtime unavailable; using periodic refresh.');
+  });
+ if(workspacePollTimer)clearInterval(workspacePollTimer);
+ workspacePollTimer=setInterval(async()=>{
+  if(!currentUser||currentUser.id!==user.id||!navigator.onLine||document.visibilityState==='hidden'||localStorage.getItem(pendingKey(user.id))==='1')return;
+  try{const {data,error}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();if(!error&&data?.data)receiveWorkspace({new:data});}catch(error){console.warn('HA workspace refresh failed',error);}
+ },45000);
 }
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
@@ -54,7 +96,8 @@ function startOfflineFromCache(){
 }
 window.addEventListener('ha-accounting-save',()=>{
  if(!currentUser)return;
- if(!navigator.onLine){localStorage.setItem(pendingKey(currentUser.id),'1');return;}
+ localStorage.setItem(pendingKey(currentUser.id),'1');
+ if(!navigator.onLine)return;
  if(!client)return;
  clearTimeout(syncTimer);syncTimer=setTimeout(async()=>{
   let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{return;}
@@ -172,7 +215,7 @@ document.getElementById('logoutButton').addEventListener('click',async()=>{
 });
 window.addEventListener('online',async()=>{
  if(!client||!currentUser)return;
- try{await checkAccess(currentUser);rememberAccess(currentUser);window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE);const local=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(local)await pushLocalWorkspace(currentUser,local);}
+ try{await checkAccess(currentUser);rememberAccess(currentUser);window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE);const local=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(local){await pushLocalWorkspace(currentUser,local);const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);}}
  catch(err){if(isAccessDenied(err)){hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');return;}const cached=readCachedAccess(currentUser.id);if(cached?.active){isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';showApp();}showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب مفتوحاً وستتم إعادة المزامنة عند عودة الاتصال.');}
 });
 const adminDeleteStyles=document.createElement('style');adminDeleteStyles.textContent='#subscriberAdmin .admin-card{width:min(1000px,100%)}#subscriberAdmin .subscriber-row{grid-template-columns:minmax(90px,1fr) auto minmax(80px,.8fr) minmax(120px,1fr) auto auto auto}#subscriberAdmin .subscriber-row [data-sub-delete]:hover{background:#ffdede}@media(max-width:700px){#subscriberAdmin .subscriber-row{grid-template-columns:1fr 1fr}#subscriberAdmin .subscriber-row button{grid-column:1/-1}}';document.head.appendChild(adminDeleteStyles);
