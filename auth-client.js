@@ -3,7 +3,7 @@
 const cfg=window.HA_SUPABASE_CONFIG||{};
 const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
-let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0;
+let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0,logoutRequested=false,reconnectRunning=false,needsReconnect=false,displayedModuleType=null;
 const selfWriteSnapshots=new Map();
 function rememberSelfWrite(userId,data){const token={signature:stableJson(data)};selfWriteSnapshots.set(userId,token);setTimeout(()=>{if(selfWriteSnapshots.get(userId)===token)selfWriteSnapshots.delete(userId);},30000);}
 const userKey=id=>'ha-accounting-v1:'+id;
@@ -20,8 +20,10 @@ function watchWorkspace(user){
    if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,500);return;}
    const ownWrite=selfWriteSnapshots.get(user.id);
    if(ownWrite&&stableJson(remote)===ownWrite.signature){
-    localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
-    if(revision)localStorage.setItem(revisionKey(user.id),revision);
+    if(localStorage.getItem(pendingKey(user.id))!=='1'){
+     localStorage.setItem(baseKey(user.id),JSON.stringify(remote));
+     if(revision)localStorage.setItem(revisionKey(user.id),revision);
+    }
     return;
    }
    if(localStorage.getItem(pendingKey(user.id))==='1'){showMessage('توجد تغييرات محفوظة بهذا الجهاز بانتظار المزامنة؛ لن نستبدلها بنسخة الجهاز الآخر.');return;}
@@ -75,25 +77,36 @@ function watchWorkspace(user){
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
-const showApp=()=>{boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);document.getElementById('adminInterfacePreview')?.classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE,{entry:true});};
+const showApp=()=>{const layout=document.querySelector('.layout'),wasOpen=layout.classList.contains('authenticated');boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';layout.classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);document.getElementById('adminInterfacePreview')?.classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;if(!wasOpen||displayedModuleType!==window.HA_ACCOUNTING_MODULE_TYPE){displayedModuleType=window.HA_ACCOUNTING_MODULE_TYPE;window.HA_APPLY_MODULE_ACCESS?.(displayedModuleType,{entry:!wasOpen});}};
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 function readCachedAccess(id){try{return JSON.parse(localStorage.getItem('ha-accounting-access:'+id)||'null');}catch{return null;}}
 function isAccessDenied(err){return ['هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.','الاشتراك موقوف حالياً. راجع الأدمن.','انتهت مدة الاشتراك. راجع الأدمن للتجديد.'].includes(String(err?.message||''));}
 function setWorkspaceKey(id){const desired=userKey(id);localStorage.setItem('ha-accounting-active-user',id);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;if(window.HA_ACCOUNTING_KEY!==desired){location.reload();return false;}return true;}
+function applyCachedAccess(cached){isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';}
+function denyCachedAccess(user,err){if(user?.id){const cached=readCachedAccess(user.id)||{};localStorage.setItem('ha-accounting-access:'+user.id,JSON.stringify({...cached,active:false}));}currentUser=null;isAdmin=false;hideApp();showMessage(err?.message||'تم إيقاف الوصول لهذا الحساب.');}
 function startOfflineFromCache(){
- const id=localStorage.getItem('ha-accounting-active-user');
- const cached=id&&readCachedAccess(id);
- if(!id||!cached?.active)return false;
- currentUser={id};isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;showApp();
- const company=(()=>{try{return JSON.parse(localStorage.getItem(userKey(id))||'{}').company?.name;}catch{return'';}})();
- if(company)document.getElementById('companyShort').textContent=company;
- document.getElementById('logoutButton').addEventListener('click',()=>{
-  try{const projectRef=new URL(cfg.url).hostname.split('.')[0];localStorage.removeItem(cfg.auth?.storageKey||`sb-${projectRef}-auth-token`);}catch{}
-  localStorage.removeItem('ha-accounting-active-user');location.reload();
- });
- window.addEventListener('online',()=>{if(!currentUser||!client)return;let data=null;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null')}catch{}if(data)pushLocalWorkspace(currentUser,data).then(()=>{const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest)}).catch(error=>console.error('HA reconnect sync requires review',error));});
+ if(logoutRequested)return false;
+ const id=localStorage.getItem('ha-accounting-active-user'),cached=id&&readCachedAccess(id);let local=null;try{local=id&&JSON.parse(localStorage.getItem(userKey(id))||'null');}catch{}
+ if(!id||!cached?.active||!local||typeof local!=='object'||Array.isArray(local))return false;
+ currentUser={id};applyCachedAccess(cached);needsReconnect=true;
+ if(!setWorkspaceKey(id))return true;
+ showApp();if(local.company?.name)document.getElementById('companyShort').textContent=local.company.name;
  return true;
 }
+function applySyncedWorkspace(user,before){
+ if(logoutRequested||currentUser?.id!==user.id)return;
+ if(document.getElementById('modal')?.open){setTimeout(()=>applySyncedWorkspace(user,before),500);return;}
+ if(localStorage.getItem(pendingKey(user.id))==='1')return;
+ let latest=null;try{latest=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
+ if(latest&&stableJson(latest)!==before)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);
+}
+document.getElementById('logoutButton').addEventListener('click',async()=>{
+ logoutRequested=true;currentUser=null;clearTimeout(syncTimer);clearInterval(workspacePollTimer);
+ localStorage.removeItem('ha-accounting-active-user');
+ try{const projectRef=new URL(cfg.url).hostname.split('.')[0];localStorage.removeItem(cfg.auth?.storageKey||`sb-${projectRef}-auth-token`);}catch{}
+ try{if(client)await Promise.race([client.auth.signOut({scope:'local'}),new Promise(resolve=>setTimeout(resolve,1200))]);}catch{}finally{location.reload();}
+});
+window.addEventListener('offline',()=>{needsReconnect=true;});
 window.addEventListener('ha-accounting-save',()=>{
  if(!currentUser)return;
  localStorage.setItem(pendingKey(currentUser.id),'1');
@@ -102,11 +115,11 @@ window.addEventListener('ha-accounting-save',()=>{
  clearTimeout(syncTimer);syncTimer=setTimeout(async()=>{
   let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{return;}
   if(!data)return;
-  try{await pushLocalWorkspace(currentUser,data);}catch(error){console.error('HA cloud sync requires review',error);showMessage(error?.message||'المزامنة تنتظر مراجعة تعارض البيانات.');}
+  try{const user=currentUser,before=stableJson(data);await pushLocalWorkspace(user,data);applySyncedWorkspace(user,before);}catch(error){needsReconnect=true;console.error('HA cloud sync requires review',error);showMessage(error?.message||'المزامنة تنتظر مراجعة تعارض البيانات.');}
  },900);
 });
 if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
- if(!navigator.onLine&&startOfflineFromCache())return;
+ if(startOfflineFromCache())return;
  hideApp();showMessage('لأول دخول أو مزامنة الحساب، اتصل بالإنترنت.');return;
 }
 client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -151,6 +164,7 @@ function mergeWorkspaces(base,local,remote){
  return {data:merged,conflicts:[...conflicts]};
 }
 async function pushLocalWorkspace(user,data){
+ const inputSignature=stableJson(data);
  const key=userKey(user.id),baseText=localStorage.getItem(baseKey(user.id)),base=(()=>{try{return JSON.parse(baseText||'null');}catch{return null;}})(),baseRevision=localStorage.getItem(revisionKey(user.id));
  const {data:remoteRow,error:readError}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();
  if(readError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر فحص آخر نسخة قبل المزامنة. بقيت الفواتير محفوظة بهذا الجهاز وستتم إعادة المحاولة عند عودة الاتصال.');}
@@ -168,12 +182,14 @@ async function pushLocalWorkspace(user,data){
  if(remoteRow){const {data:written,error}=await client.from('accounting_workspaces').update({data:outgoing,updated_at:revision}).eq('user_id',user.id).eq('updated_at',remoteRow.updated_at).select('updated_at').maybeSingle();writeError=error;if(!error&&!written){localStorage.setItem(pendingKey(user.id),'1');const warning='تغيّر دفتر جهاز آخر أثناء المزامنة. بقيت تعديلات هذا الجهاز محفوظة ولم نستبدل آخر نسخة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning);}}
  else{const {error}=await client.from('accounting_workspaces').insert({user_id:user.id,data:outgoing,updated_at:revision});writeError=error;}
  if(writeError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر مزامنة البيانات مع السحابة. بقيت الفواتير محفوظة بهذا الجهاز.');}
- localStorage.setItem(key,JSON.stringify(outgoing));localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));localStorage.setItem(revisionKey(user.id),revision);localStorage.removeItem(pendingKey(user.id));window.dispatchEvent(new Event('ha-accounting-synced'));
+ let currentLocal=null;try{currentLocal=JSON.parse(localStorage.getItem(key)||'null');}catch{}const newerLocal=stableJson(currentLocal)!==inputSignature;
+ if(newerLocal){if(!base){localStorage.setItem(baseKey(user.id),inputSignature);if(remoteRow?.updated_at)localStorage.setItem(revisionKey(user.id),remoteRow.updated_at);}localStorage.setItem(pendingKey(user.id),'1');needsReconnect=true;}else{localStorage.setItem(key,JSON.stringify(outgoing));localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));localStorage.setItem(revisionKey(user.id),revision);localStorage.removeItem(pendingKey(user.id));window.dispatchEvent(new Event('ha-accounting-synced'));}
 }
 async function prepareWorkspace(user){
- const key=userKey(user.id),pending=localStorage.getItem(pendingKey(user.id))==='1';
+ const key=userKey(user.id);
  const {data,error}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();
  if(error)throw new Error('تعذر تحميل بيانات الحساب من السحابة.');
+ const pending=localStorage.getItem(pendingKey(user.id))==='1';
  if(data?.data&&!pending){localStorage.setItem(key,JSON.stringify(data.data));localStorage.setItem(baseKey(user.id),JSON.stringify(data.data));if(data.updated_at)localStorage.setItem(revisionKey(user.id),data.updated_at);return;}
  let initial=null;try{initial=JSON.parse(localStorage.getItem(key)||'null');}catch{}
  if(isAdmin&&initial&&!hasTransactions(initial))initial=null;
@@ -183,19 +199,20 @@ async function prepareWorkspace(user){
  if(initial){localStorage.setItem(key,JSON.stringify(initial));await pushLocalWorkspace(user,initial);}
 }
 async function enter(user){
+ if(logoutRequested)return;const before=localStorage.getItem(userKey(user.id));
  const cached=readCachedAccess(user.id);
  if(navigator.onLine){
   try{await checkAccess(user);rememberAccess(user);}
-  catch(err){if(!cached?.active||isAccessDenied(err))throw err;isAdmin=!!cached.isAdmin;}
+  catch(err){if(!cached?.active||isAccessDenied(err))throw err;applyCachedAccess(cached);needsReconnect=true;}
   try{await prepareWorkspace(user);}
   catch(err){const local=localStorage.getItem(userKey(user.id));if(!readCachedAccess(user.id)?.active||!local)throw err;localStorage.setItem(pendingKey(user.id),'1');}
  }else{
   if(!cached?.active)throw new Error('أول تسجيل دخول لهذا الحساب يحتاج إنترنت. بعده يشتغل على هذا الجهاز أوفلاين.');
   isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';
  }
- currentUser=user;window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;
+ if(logoutRequested)return;currentUser=user;window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;
  if(!setWorkspaceKey(user.id))return;
- showApp();
+ showApp();applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
  try{if(user?.id)watchWorkspace(user);}catch(syncError){console.warn('تعذر تشغيل المزامنة المباشرة',syncError);}
  const company=(()=>{try{return JSON.parse(localStorage.getItem(userKey(user.id))||'{}').company?.name;}catch{return'';}})();
  if(company)document.getElementById('companyShort').textContent=company;
@@ -206,19 +223,26 @@ form.addEventListener('submit',async e=>{
   const {data,error}=await client.auth.signInWithPassword({email:loginEmail(document.getElementById('loginId').value),password:document.getElementById('loginPassword').value});
   if(error)throw new Error('المعرّف أو كلمة المرور غير صحيحة.');
   await enter(data.user);if(!document.querySelector('.layout').classList.contains('authenticated'))showMessage('');
- }catch(err){showMessage(err?.message||'تعذر التحقق من الحساب. إذا كان الحساب مسجلاً سابقاً، أعد المحاولة عند توفر الاتصال.');}
+ }catch(err){if(isAccessDenied(err)&&currentUser)denyCachedAccess(currentUser,err);showMessage(err?.message||'تعذر التحقق من الحساب. إذا كان الحساب مسجلاً سابقاً، أعد المحاولة عند توفر الاتصال.');}
  finally{loginBtn.disabled=false;}
 });
-document.getElementById('logoutButton').addEventListener('click',async()=>{
- if(!navigator.onLine){try{const projectRef=new URL(cfg.url).hostname.split('.')[0];localStorage.removeItem(cfg.auth?.storageKey||`sb-${projectRef}-auth-token`);}catch{}}
- else await client.auth.signOut();
- localStorage.removeItem('ha-accounting-active-user');location.reload();
-});
-window.addEventListener('online',async()=>{
- if(!client||!currentUser)return;
- try{await checkAccess(currentUser);rememberAccess(currentUser);window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;window.HA_APPLY_MODULE_ACCESS?.(window.HA_ACCOUNTING_MODULE_TYPE);const local=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(local){await pushLocalWorkspace(currentUser,local);const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);}}
- catch(err){if(isAccessDenied(err)){hideApp();showMessage(err.message||'تم إيقاف الوصول لهذا الحساب.');return;}const cached=readCachedAccess(currentUser.id);if(cached?.active){isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';showApp();}showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب مفتوحاً وستتم إعادة المزامنة عند عودة الاتصال.');}
-});
+async function reconnectAccount(){
+ if(!client||!currentUser||logoutRequested||!navigator.onLine||reconnectRunning)return;
+ reconnectRunning=true;const user=currentUser;
+ try{
+  const {data,error}=await client.auth.getSession();if(error)throw error;
+  if(!data?.session||data.session.user.id!==user.id)throw new Error('تعذر تجديد جلسة الاتصال. تبقى بيانات الحساب المحلي متاحة.');
+  await checkAccess(data.session.user);if(logoutRequested||currentUser?.id!==user.id)return;rememberAccess(user);needsReconnect=false;showApp();watchWorkspace(data.session.user);
+  let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
+  if(local){const before=stableJson(local);await pushLocalWorkspace(user,local);applySyncedWorkspace(user,before);}
+ }catch(err){
+  if(logoutRequested)return;
+  if(isAccessDenied(err)){denyCachedAccess(user,err);return;}
+  needsReconnect=true;const cached=readCachedAccess(user.id);if(cached?.active){applyCachedAccess(cached);showApp();}showMessage('الاتصال بالخدمة غير مستقر؛ بقي الحساب والواجهة والبيانات محفوظة، وستُعاد المزامنة عند عودة الاتصال.');
+ }finally{reconnectRunning=false;}
+}
+window.addEventListener('online',()=>{needsReconnect=true;reconnectAccount();});
+setInterval(()=>{if(needsReconnect&&document.visibilityState!=='hidden')reconnectAccount();},45000);
 const adminDeleteStyles=document.createElement('style');adminDeleteStyles.textContent='#subscriberAdmin .admin-card{width:min(1000px,100%)}#subscriberAdmin .subscriber-row{grid-template-columns:minmax(90px,1fr) auto minmax(80px,.8fr) minmax(120px,1fr) auto auto auto}#subscriberAdmin .subscriber-row [data-sub-delete]:hover{background:#ffdede}@media(max-width:700px){#subscriberAdmin .subscriber-row{grid-template-columns:1fr 1fr}#subscriberAdmin .subscriber-row button{grid-column:1/-1}}';document.head.appendChild(adminDeleteStyles);
 document.getElementById('openAdmin').addEventListener('click',()=>{adminLayer.classList.add('open');adminLayer.setAttribute('aria-hidden','false');loadSubscribers();});
 document.getElementById('closeAdmin').addEventListener('click',()=>{adminLayer.classList.remove('open');adminLayer.setAttribute('aria-hidden','true');});
@@ -228,12 +252,12 @@ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 const createSubscriberForm=document.getElementById('createSubscriber');const generatorFields=()=>{const show=createSubscriberForm.elements.moduleType.value==='generator';document.getElementById('generatorNameField')?.classList.toggle('hidden',!show);document.getElementById('generatorOwnerField')?.classList.toggle('hidden',!show);};createSubscriberForm.elements.moduleType.addEventListener('change',generatorFields);createSubscriberForm.addEventListener('reset',()=>setTimeout(generatorFields,0));generatorFields();createSubscriberForm.addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,d=new FormData(f);adminMsg('جارٍ إنشاء الحساب…');try{const result=await adminCall({action:'create',loginId:d.get('loginId'),password:d.get('password'),expiresAt:d.get('expiresAt')||null,moduleType:d.get('moduleType')||'full',generatorName:d.get('generatorName')||null,generatorOwner:d.get('generatorOwner')||null});adminMsg(`تم إنشاء الحساب ${result.user.login_id}. أرسل له المعرّف وكلمة المرور الآن واحفظهما بمكان آمن.`,true);f.reset();await loadSubscribers();}catch(err){adminMsg(err.message);}});
 document.getElementById('subscriberList').addEventListener('click',async e=>{const del=e.target.closest('[data-sub-delete]');if(del){const name=del.dataset.subName||'هذا الحساب';if(!confirm(`حذف حساب «${name}» نهائياً؟ سيتم حذف تسجيل الدخول والاشتراك وبياناته السحابية، ولا يمكن التراجع.`))return;del.disabled=true;adminMsg(`جارٍ حذف حساب ${name}…`);try{const result=await adminCall({action:'delete',userId:del.dataset.subDelete});await loadSubscribers();adminMsg(result.warning||`تم حذف حساب ${name} نهائياً.`,true);}catch(err){adminMsg(err.message);del.disabled=false;}return;}const saveModule=e.target.closest('[data-sub-save-module]');if(saveModule){const userId=saveModule.dataset.subSaveModule,moduleType=document.querySelector(`[data-sub-module="${CSS.escape(userId)}"]`)?.value;saveModule.disabled=true;try{await adminCall({action:'update',userId,moduleType});await loadSubscribers();adminMsg('تم تحديث أقسام نشاط المشترك.',true);}catch(err){adminMsg(err.message);saveModule.disabled=false;}return;}const b=e.target.closest('[data-sub-user]');if(!b)return;try{await adminCall({action:'update',userId:b.dataset.subUser,active:b.dataset.subActive==='true'});await loadSubscribers();adminMsg('تم تحديث حالة الحساب.',true);}catch(err){adminMsg(err.message);}});
 (async()=>{
- if(!navigator.onLine&&startOfflineFromCache())return;
+ const restored=startOfflineFromCache();
+ if(!navigator.onLine){if(!restored){hideApp();showMessage('أول تسجيل دخول لهذا الحساب يحتاج إنترنت.');}return;}
  try{
-  const {data:{session},error}=await client.auth.getSession();
-  if(error)throw error;
-  if(!session){localStorage.removeItem('ha-accounting-active-user');hideApp();if(!navigator.onLine)showMessage('أول تسجيل دخول لهذا الحساب يحتاج إنترنت.');return;}
-  try{await enter(session.user);}catch(err){hideApp();showMessage(err.message||'تعذر التحقق من الاشتراك.');}
- }catch(err){hideApp();showMessage('تعذر استعادة جلسة الدخول. سجّل الدخول مرة ثانية عند توفر الاتصال.');}
+  const {data,error}=await client.auth.getSession();if(error)throw error;const session=data?.session;
+  if(!session){if(restored){needsReconnect=true;return;}hideApp();return;}
+  try{await enter(session.user);}catch(err){if(isAccessDenied(err)){denyCachedAccess(session.user,err);return;}if(!restored&&!startOfflineFromCache()){hideApp();showMessage(err.message||'تعذر التحقق من الاشتراك.');}else{needsReconnect=true;showMessage('تعذر الاتصال حالياً؛ بقيت الواجهة والبيانات المحلية متاحة.');}}
+ }catch(err){if(!restored&&!startOfflineFromCache()){hideApp();showMessage('تعذر استعادة جلسة الدخول. حاول عند توفر الاتصال.');}else{needsReconnect=true;showMessage('الاتصال غير مستقر؛ بقي الحساب مفتوحاً بالبيانات المحفوظة.');}}
 })();
 })();
