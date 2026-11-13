@@ -1,5 +1,5 @@
-const CACHE='ha-accounting-shell-v193-personal-debt-crud';
-const ASSETS=['./','./index.html','./yemen-section.js?v=2-customer-requests-maintenance','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=82-personal-debt-crud','./supabase-config.js','./ha-pos-operations.js'];
+const CACHE='ha-accounting-shell-v194-personal-category-crud';
+const ASSETS=['./','./index.html','./yemen-section.js?v=2-customer-requests-maintenance','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=83-personal-category-crud','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
