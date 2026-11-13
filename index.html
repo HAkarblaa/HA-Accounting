@@ -411,6 +411,28 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 .processor-delivery-columns .table-wrap td:last-child{white-space:normal}
 @media(max-width:700px){.processor-delivery-columns .table-wrap table{min-width:1260px}.processor-delivery-columns .table-wrap th,.processor-delivery-columns .table-wrap td{padding:8px 7px;font-size:11px}.processor-delivery-columns .table-wrap th:nth-child(11),.processor-delivery-columns .table-wrap td:nth-child(11){width:160px}}
 </style>
+
+<style id="processor-inventory-no-overflow-layout">
+.processor-inventory-list,.processor-inventory-list .table-wrap{box-sizing:border-box;max-width:100%;width:100%}
+.processor-inventory-list .table-wrap{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
+.processor-inventory-list .table-wrap table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0}
+.processor-inventory-list .table-wrap th,.processor-inventory-list .table-wrap td{box-sizing:border-box;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle}
+.processor-inventory-list .table-wrap th{line-height:1.45;text-align:center}
+.processor-inventory-list .table-wrap th:nth-child(1),.processor-inventory-list .table-wrap td:nth-child(1){width:14%}
+.processor-inventory-list .table-wrap th:nth-child(2),.processor-inventory-list .table-wrap td:nth-child(2){width:11%}
+.processor-inventory-list .table-wrap th:nth-child(3),.processor-inventory-list .table-wrap td:nth-child(3){width:7%}
+.processor-inventory-list .table-wrap th:nth-child(4),.processor-inventory-list .table-wrap td:nth-child(4){width:9%}
+.processor-inventory-list .table-wrap th:nth-child(5),.processor-inventory-list .table-wrap td:nth-child(5){width:23%}
+.processor-inventory-list .table-wrap th:nth-child(6),.processor-inventory-list .table-wrap td:nth-child(6){width:12%}
+.processor-inventory-list .table-wrap th:nth-child(7),.processor-inventory-list .table-wrap td:nth-child(7){width:24%}
+.processor-inventory-list td:first-child{min-width:0}
+.processor-inventory-list .processor-cost-lots{min-width:0;max-width:100%}
+.processor-inventory-list .processor-cost-lot{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.processor-inventory-list .processor-cost-lot b,.processor-inventory-list .processor-cost-lot small{white-space:normal;overflow-wrap:anywhere}
+.processor-inventory-list .processor-inventory-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;width:100%;gap:5px}
+.processor-inventory-list .processor-inventory-actions .btn{min-width:0;width:100%;margin:0;padding:6px 5px;white-space:normal;overflow-wrap:anywhere;font-size:11px;line-height:1.3}
+@media(max-width:700px){.processor-inventory-list .table-wrap table{min-width:950px}.processor-inventory-list .table-wrap th,.processor-inventory-list .table-wrap td{padding:8px 6px;font-size:10px}.processor-inventory-list .processor-inventory-actions .btn{font-size:10px}}
+</style>
 </head>
 <body>
 <div id="authBoot" role="status" aria-live="polite"><div class="boot-card"><div class="boot-logo">HA</div><span>جارٍ التحقق من جلسة الدخول…</span><i class="boot-spinner" aria-hidden="true"></i></div></div><div id="authGate" class="auth-pending" role="dialog" aria-modal="true" aria-labelledby="authTitle">
