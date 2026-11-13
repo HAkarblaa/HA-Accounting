@@ -121,7 +121,8 @@ manualSyncButton?.addEventListener('click',async()=>{
  if(!client||!currentUser){showSyncToast('تعذر تحديد الحساب. أعد تسجيل الدخول ثم حاول مرة ثانية.');return;}
  manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
  try{clearTimeout(syncTimer);let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{}if(!data)throw new Error('ما لكيت بيانات هذا الحساب بهذا الجهاز.');await pushLocalWorkspace(currentUser,data);const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);showSyncToast('تمت مزامنة البيانات وجلب آخر التغييرات.',true);}
- catch(error){console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر تحديث البيانات. حاول عند استقرار الإنترنت.');manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
+ catch(error){console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر تحديث البيانات. حاول عند استقرار الإنترنت.');}
+ finally{manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
 });
 async function checkAccess(user){
  const adminResult=await client.from('super_admins').select('user_id').eq('user_id',user.id).maybeSingle();
