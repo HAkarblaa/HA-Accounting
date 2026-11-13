@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v203-processor-vouchers-in-contact-ledger';
+const CACHE='ha-accounting-shell-v204-processor-delivery-columns';
 const ASSETS=['./','./index.html','./yemen-section.js?v=2-customer-requests-maintenance','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js','./auth-client.js?v=81-processor-six-fixes','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
