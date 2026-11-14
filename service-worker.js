@@ -1,4 +1,4 @@
-const CACHE='ha-accounting-shell-v223-personal-work-appointments';
+const CACHE='ha-accounting-shell-v224-personal-appointment-date-range';
 const ASSETS=['./','./index.html','./yemen-section.js?v=2-customer-requests-maintenance','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=2-personal-print-center','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=85-personal-work-appointments','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
