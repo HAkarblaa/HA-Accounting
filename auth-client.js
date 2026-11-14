@@ -159,13 +159,13 @@ async function checkAccess(user){
  isAdmin=false;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(sub.module_type)?sub.module_type:'full';
 }
 function rememberAccess(user){localStorage.setItem('ha-accounting-access:'+user.id,JSON.stringify({isAdmin,moduleType:isAdmin?'full':moduleType,active:true,checkedAt:Date.now()}));}
-function hasTransactions(data){return ['entries','documents','contacts','products','stockMovements','employees','payroll'].some(k=>Array.isArray(data?.[k])&&data[k].length>0)||['products','contacts','docs'].some(k=>Array.isArray(data?.processorData?.[k])&&data.processorData[k].length>0);}
+function hasTransactions(data){return ['entries','documents','contacts','products','stockMovements','employees','payroll','personalAppointments'].some(k=>Array.isArray(data?.[k])&&data[k].length>0)||['products','contacts','docs'].some(k=>Array.isArray(data?.processorData?.[k])&&data.processorData[k].length>0);}
 function stableJson(value){return JSON.stringify(value??null,(key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.keys(item).sort().reduce((sorted,name)=>{sorted[name]=item[name];return sorted;},{}):item); }
 function stockTouched(base,next){const before=new Map((base?.stockMovements||[]).map(x=>[x.id,stableJson(x)])),after=new Map((next?.stockMovements||[]).map(x=>[x.id,stableJson(x)])),products=new Set();for(const m of [...(base?.stockMovements||[]),...(next?.stockMovements||[])])if(before.get(m.id)!==after.get(m.id)&&m.productId)products.add(String(m.productId));const bp=new Map((base?.products||[]).map(x=>[x.id,stableJson(x)])),ap=new Map((next?.products||[]).map(x=>[x.id,stableJson(x)]));for(const p of [...(base?.products||[]),...(next?.products||[])])if(bp.get(p.id)!==ap.get(p.id))products.add(String(p.id));return products;}
 function mergeWorkspaces(base,local,remote){
  const merged={...remote,...local},conflicts=new Set();
  const lm=stockTouched(base,local),rm=stockTouched(base,remote);for(const id of lm)if(rm.has(id))conflicts.add(id);
- for(const key of ['accounts','entries','documents','contacts','products','productCategories','stockMovements','employees','payroll','recurringExpenses','warehouses','cashierShifts']){
+ for(const key of ['accounts','entries','documents','contacts','products','productCategories','stockMovements','employees','payroll','recurringExpenses','warehouses','cashierShifts','personalAppointments']){
   const b=new Map((base?.[key]||[]).filter(x=>x?.id).map(x=>[String(x.id),x])),l=new Map((local?.[key]||[]).filter(x=>x?.id).map(x=>[String(x.id),x])),r=new Map((remote?.[key]||[]).filter(x=>x?.id).map(x=>[String(x.id),x])),ids=new Set([...b.keys(),...l.keys(),...r.keys()]),out=[];
   for(const id of ids){const bv=b.get(id),lv=l.get(id),rv=r.get(id),lc=stableJson(lv)!==stableJson(bv),rc=stableJson(rv)!==stableJson(bv);if(lc&&rc&&stableJson(lv)!==stableJson(rv)){conflicts.add(id);continue;}const selected=lc?lv:rc?rv:bv;if(selected)out.push(selected);}
   merged[key]=out;
