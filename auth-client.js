@@ -126,15 +126,23 @@ client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSes
 window.HA_AUTH_CLIENT=client;
 const manualSyncButton=document.getElementById('manualSyncButton');
 let syncToastTimer=0;
-function showSyncToast(text,ok=false){let toast=document.getElementById('manualSyncToast');if(!toast){toast=document.createElement('div');toast.id='manualSyncToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.style.cssText='position:fixed;z-index:2000;right:50%;bottom:22px;transform:translateX(50%);max-width:calc(100vw - 24px);padding:12px 16px;border-radius:12px;background:#173f5f;color:#fff;box-shadow:0 8px 28px #102a4340;font:600 13px Tahoma,Arial,sans-serif;text-align:center;';document.body.appendChild(toast);}toast.style.background=ok?'#087c69':'#173f5f';toast.textContent=text;toast.hidden=false;clearTimeout(syncToastTimer);syncToastTimer=setTimeout(()=>{toast.hidden=true;},4500);}
+function showSyncToast(text,ok=false){let toast=document.getElementById('manualSyncToast');if(!toast){toast=document.createElement('div');toast.id='manualSyncToast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.style.cssText='position:fixed;z-index:2000;right:50%;bottom:22px;transform:translateX(50%);max-width:calc(100vw - 24px);padding:12px 16px;border-radius:12px;background:#173f5f;color:#fff;box-shadow:0 8px 28px #102a4340;font:600 13px Tahoma,Arial,sans-serif;text-align:center;';document.body.appendChild(toast);}const activeModal=document.getElementById('modal'),host=activeModal?.open?document.getElementById('modalBody'):document.body;if(toast.parentNode!==host)host.appendChild(toast);toast.style.position=activeModal?.open?'relative':'fixed';toast.style.transform=activeModal?.open?'none':'translateX(50%)';toast.style.right=activeModal?.open?'auto':'50%';toast.style.bottom=activeModal?.open?'auto':'22px';toast.style.background=ok?'#087c69':'#173f5f';toast.textContent=text;toast.hidden=false;clearTimeout(syncToastTimer);syncToastTimer=setTimeout(()=>{toast.hidden=true;},4500);}
+function syncQuery(query,signal){return signal?query.abortSignal(signal):query;}
+async function withSyncDeadline(task,ms=20000){const controller=new AbortController();let timer;try{return await Promise.race([task(controller.signal),new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('انتهت مهلة التحديث؛ بياناتك محفوظة. حاول مجدداً عند استقرار الاتصال.'));},ms);})]);}finally{clearTimeout(timer);}}
+async function performManualSync(user,signal){
+ const {data,error}=await client.auth.getSession();if(signal.aborted)throw new Error('تم إيقاف محاولة التحديث.');if(error)throw error;
+ if(!data?.session||data.session.user.id!==user.id)throw new Error('تعذر تجديد الاتصال بالحساب. بقيت بياناتك محفوظة؛ حاول مجدداً عند استقرار الاتصال.');
+ const before=localStorage.getItem(userKey(user.id));await prepareWorkspace(user,{signal});if(signal.aborted||logoutRequested||currentUser?.id!==user.id)return;
+ applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
+}
 manualSyncButton?.addEventListener('click',async()=>{
  if(manualSyncButton.disabled)return;
  if(document.getElementById('modal')?.open){showSyncToast('احفظ الفاتورة أو أغلقها قبل تحديث البيانات.');return;}
- if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. تبقى البيانات محفوظة بهذا الجهاز إلى أن يرجع الاتصال.');return;}
- if(!client||!currentUser){showSyncToast('تعذر تحديد الحساب. أعد تسجيل الدخول ثم حاول مرة ثانية.');return;}
- manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
- try{clearTimeout(syncTimer);let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{}if(!data)throw new Error('ما لكيت بيانات هذا الحساب بهذا الجهاز.');await pushLocalWorkspace(currentUser,data);const latest=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);showSyncToast('تمت مزامنة البيانات وجلب آخر التغييرات.',true);}
- catch(error){console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر تحديث البيانات. حاول عند استقرار الإنترنت.');}
+ if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. بياناتك محفوظة بهذا الجهاز وتنتظر المزامنة.');return;}
+ if(!client||!currentUser){showSyncToast('تعذر تحديد جلسة الحساب. حدّث الصفحة عند توفر الاتصال.');return;}
+ const user=currentUser;manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
+ try{clearTimeout(syncTimer);await withSyncDeadline(signal=>performManualSync(user,signal));showSyncToast('تم تحديث البيانات ومزامنة التعديلات.',true);}
+ catch(error){needsReconnect=true;console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر التحديث؛ بياناتك محفوظة. حاول مجدداً.');}
  finally{manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
 });
 async function checkAccess(user){
@@ -163,10 +171,11 @@ function mergeWorkspaces(base,local,remote){
  }
  return {data:merged,conflicts:[...conflicts]};
 }
-async function pushLocalWorkspace(user,data){
+async function pushLocalWorkspace(user,data,{signal}={}){
+ if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  const inputSignature=stableJson(data);
  const key=userKey(user.id),baseText=localStorage.getItem(baseKey(user.id)),base=(()=>{try{return JSON.parse(baseText||'null');}catch{return null;}})(),baseRevision=localStorage.getItem(revisionKey(user.id));
- const {data:remoteRow,error:readError}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+ const {data:remoteRow,error:readError}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
  if(readError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر فحص آخر نسخة قبل المزامنة. بقيت الفواتير محفوظة بهذا الجهاز وستتم إعادة المحاولة عند عودة الاتصال.');}
  let outgoing=data;
  if(remoteRow?.data){
@@ -179,24 +188,26 @@ async function pushLocalWorkspace(user,data){
   }
  }else if(baseRevision){localStorage.setItem(pendingKey(user.id),'1');throw new Error('نسخة السحابة غير موجودة بعد مزامنة سابقة. بقيت البيانات محلياً ولم نرفعها فوق نسخة غير معروفة.');}
  outgoing.documents=(outgoing.documents||[]).map(d=>({...d,syncStatus:'synced'}));const revision=new Date().toISOString();rememberSelfWrite(user.id,outgoing);let writeError=null;
- if(remoteRow){const {data:written,error}=await client.from('accounting_workspaces').update({data:outgoing,updated_at:revision}).eq('user_id',user.id).eq('updated_at',remoteRow.updated_at).select('updated_at').maybeSingle();writeError=error;if(!error&&!written){localStorage.setItem(pendingKey(user.id),'1');const warning='تغيّر دفتر جهاز آخر أثناء المزامنة. بقيت تعديلات هذا الجهاز محفوظة ولم نستبدل آخر نسخة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning);}}
- else{const {error}=await client.from('accounting_workspaces').insert({user_id:user.id,data:outgoing,updated_at:revision});writeError=error;}
+ if(remoteRow){const {data:written,error}=await syncQuery(client.from('accounting_workspaces').update({data:outgoing,updated_at:revision}).eq('user_id',user.id).eq('updated_at',remoteRow.updated_at).select('updated_at').maybeSingle(),signal);writeError=error;if(!error&&!written){localStorage.setItem(pendingKey(user.id),'1');const warning='تغيّر دفتر جهاز آخر أثناء المزامنة. بقيت تعديلات هذا الجهاز محفوظة ولم نستبدل آخر نسخة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning);}}
+ else{const {error}=await syncQuery(client.from('accounting_workspaces').insert({user_id:user.id,data:outgoing,updated_at:revision}),signal);writeError=error;}
  if(writeError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر مزامنة البيانات مع السحابة. بقيت الفواتير محفوظة بهذا الجهاز.');}
  let currentLocal=null;try{currentLocal=JSON.parse(localStorage.getItem(key)||'null');}catch{}const newerLocal=stableJson(currentLocal)!==inputSignature;
  if(newerLocal){if(!base){localStorage.setItem(baseKey(user.id),inputSignature);if(remoteRow?.updated_at)localStorage.setItem(revisionKey(user.id),remoteRow.updated_at);}localStorage.setItem(pendingKey(user.id),'1');needsReconnect=true;}else{localStorage.setItem(key,JSON.stringify(outgoing));localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));localStorage.setItem(revisionKey(user.id),revision);localStorage.removeItem(pendingKey(user.id));window.dispatchEvent(new Event('ha-accounting-synced'));}
 }
-async function prepareWorkspace(user){
+async function prepareWorkspace(user,{signal}={}){
+ if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  const key=userKey(user.id);
- const {data,error}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+ const {data,error}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
+ if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  if(error)throw new Error('تعذر تحميل بيانات الحساب من السحابة.');
  const pending=localStorage.getItem(pendingKey(user.id))==='1';
  if(data?.data&&!pending){localStorage.setItem(key,JSON.stringify(data.data));localStorage.setItem(baseKey(user.id),JSON.stringify(data.data));if(data.updated_at)localStorage.setItem(revisionKey(user.id),data.updated_at);return;}
  let initial=null;try{initial=JSON.parse(localStorage.getItem(key)||'null');}catch{}
  if(isAdmin&&initial&&!hasTransactions(initial))initial=null;
  if(!initial&&isAdmin){try{initial=JSON.parse(localStorage.getItem('ha-accounting-v1')||'null');}catch{}if(initial&&!hasTransactions(initial))initial=null;}
- if(pending&&initial){await pushLocalWorkspace(user,initial);return;}
+ if(pending&&initial){await pushLocalWorkspace(user,initial,{signal});return;}
  if(data?.data){localStorage.setItem(key,JSON.stringify(data.data));localStorage.setItem(baseKey(user.id),JSON.stringify(data.data));if(data.updated_at)localStorage.setItem(revisionKey(user.id),data.updated_at);return;}
- if(initial){localStorage.setItem(key,JSON.stringify(initial));await pushLocalWorkspace(user,initial);}
+ if(initial){localStorage.setItem(key,JSON.stringify(initial));await pushLocalWorkspace(user,initial,{signal});}
 }
 async function enter(user){
  if(logoutRequested)return;const before=localStorage.getItem(userKey(user.id));
