@@ -1613,7 +1613,8 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 (function(){function sync(){try{if(window.HAAndroid&&window.HAAndroid.saveLocalData){var key=window.HA_ACCOUNTING_KEY||'ha-accounting-v1';window.HAAndroid.saveLocalData(localStorage.getItem(key)||'{}');}}catch(e){}}window.addEventListener('ha-accounting-save',sync);setTimeout(sync,900);})();
 </script>
 <script src="./ha-language.js?v=1"></script>
-<script src="./ha-business-print.js"></script>
+<script src="./ha-business-print.js?v=2-personal-print-center"></script>
+<script src="./ha-personal-print-center.js?v=1"></script>
 <script src="./supabase-2.118.0.js"></script>
 <script src="./supabase-config.js"></script>
 <script src="./auth-client.js?v=84-personal-debt-refresh"></script>
