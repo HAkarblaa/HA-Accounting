@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261118-auto-update-v12';
+  const build = '20261118-barcode-stable-v13';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

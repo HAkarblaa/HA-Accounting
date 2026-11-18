@@ -39,12 +39,24 @@ async function start(targetId){
  if(!target||!host)return;
  active?.stop();
  const overlay=document.createElement('div');overlay.className='barcode-camera-overlay';overlay.setAttribute('role','region');overlay.setAttribute('aria-label','قارئ الباركود بالكاميرا');
- if(host.id==='view'){overlay.style.position='fixed';overlay.style.zIndex='9999';}
+ overlay.style.position='fixed';overlay.style.zIndex='9999';
  overlay.innerHTML='<div class="barcode-camera-box"><div class="barcode-camera-head"><b>مسح الباركود بالكاميرا</b><button type="button" class="btn secondary small" data-camera-close>إغلاق</button></div><div style="position:relative"><video class="barcode-camera-video" autoplay playsinline webkit-playsinline muted></video><div class="barcode-camera-guide" style="top:35%;height:30%;box-shadow:none"></div></div><p data-camera-status role="status" aria-live="polite">جارٍ فتح الكاميرا الخلفية…</p><button type="button" class="btn secondary small" data-camera-retry hidden style="margin-top:12px">إعادة المحاولة</button></div>';
+ // Camera must not resize or scroll the invoice behind it, including Safari's keyboard viewport.
+ const scrollX=window.scrollX||0,scrollY=window.scrollY||0;
+ const ancestors=[];for(let node=target.parentElement;node;node=node.parentElement)ancestors.push([node,node.scrollTop||0,node.scrollLeft||0]);
+ const savedStyles=[];
+ function lock(element,values){if(!element)return;const saved=Object.keys(values).map(key=>[key,element.style.getPropertyValue(key),element.style.getPropertyPriority(key)]);savedStyles.push([element,saved]);for(const [key,value]of Object.entries(values))element.style.setProperty(key,value,'important');}
+ window.HA_BARCODE_CAMERA_ACTIVE=true;
+ document.activeElement?.blur?.();
+ lock(document.documentElement,{'overflow':'hidden','overscroll-behavior':'none','scroll-behavior':'auto'});
+ lock(document.body,{'position':'fixed','top':-scrollY+'px','left':-scrollX+'px','width':'100%','overflow':'hidden','overscroll-behavior':'none'});
+ if(host===modal)lock(modal,{'overflow':'hidden','overscroll-behavior':'none','scroll-behavior':'auto'});
+ function restorePosition(){for(const [node,top,left]of ancestors){if(node.isConnected){node.scrollTop=top;node.scrollLeft=left;}}if(typeof window.scrollTo==='function')window.scrollTo(scrollX,scrollY);}
+ function unlock(){for(const [element,values]of savedStyles.reverse())for(const [key,value,priority]of values){if(value)element.style.setProperty(key,value,priority);else element.style.removeProperty(key);}restorePosition();window.HA_BARCODE_CAMERA_ACTIVE=false;}
  host.appendChild(overlay);const video=overlay.querySelector('video'),status=overlay.querySelector('[data-camera-status]'),retry=overlay.querySelector('[data-camera-retry]');
  video.muted=true;video.autoplay=true;video.playsInline=true;
  let timer=0,observer=null,closed=false,done=false,stream=null,native=null,decoder=null,started=Date.now();
- const session={overlay,stop(){if(closed)return;closed=true;clearTimeout(timer);observer?.disconnect();document.removeEventListener('visibilitychange',onVisibility);window.removeEventListener('pagehide',onPageHide);modal?.removeEventListener('close',onModalClose);if(stream){for(const track of stream.getTracks())track.stop();stream=null;}video.srcObject=null;overlay.remove();if(active===session)active=null;}};
+ const session={overlay,stop(){if(closed)return;closed=true;clearTimeout(timer);observer?.disconnect();document.removeEventListener('visibilitychange',onVisibility);window.removeEventListener('pagehide',onPageHide);modal?.removeEventListener('close',onModalClose);if(stream){for(const track of stream.getTracks())track.stop();stream=null;}video.srcObject=null;overlay.remove();unlock();if(active===session)active=null;}};
  function onVisibility(){if(document.visibilityState==='hidden')session.stop();}function onPageHide(){session.stop();}function onModalClose(){if(host===modal)session.stop();}
  active=session;overlay.__haBarcodeStop=session.stop;overlay.querySelector('[data-camera-close]').onclick=session.stop;retry.onclick=()=>start(targetId);
  document.addEventListener('visibilitychange',onVisibility);window.addEventListener('pagehide',onPageHide);modal?.addEventListener('close',onModalClose);
@@ -52,7 +64,7 @@ async function start(targetId){
  function live(){return !closed&&overlay.isConnected&&target.isConnected&&active===session;}
  function fail(error){if(!live())return;clearTimeout(timer);if(stream){for(const track of stream.getTracks())track.stop();stream=null;}video.srcObject=null;status.textContent=messageFor(error);retry.hidden=false;}
  async function useFallback(){if(!live()||decoder)return;status.textContent='جارٍ تجهيز القارئ…';const z=await loadEngine();if(!live())return;decoder=fallback(z);native=null;status.textContent='وجّه خطوط الباركود داخل الإطار وثبّت الكاميرا لحظة.';}
- function deliver(value){const text=String(value??'').trim();if(!text||!live()||done)return false;done=true;session.stop();target.value=text;target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));return true;}
+ function deliver(value){const text=String(value??'').trim();if(!text||!live()||done)return false;done=true;window.HA_BARCODE_CAMERA_RESULT_UNTIL=Date.now()+1200;session.stop();target.value=text;target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));return true;}
  async function scan(){
   if(!live())return;
   if(video.readyState>=2&&video.videoWidth>0&&video.videoHeight>0){
