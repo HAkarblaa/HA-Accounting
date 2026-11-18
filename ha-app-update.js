@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261118-dashboard-layout-v14';
+  const build = '20261118-product-label-v15';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
