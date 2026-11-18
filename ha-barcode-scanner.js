@@ -52,7 +52,7 @@ async function start(targetId){
  lock(document.body,{'position':'fixed','top':-scrollY+'px','left':-scrollX+'px','width':'100%','overflow':'hidden','overscroll-behavior':'none'});
  if(host===modal)lock(modal,{'overflow':'hidden','overscroll-behavior':'none','scroll-behavior':'auto'});
  function restorePosition(){for(const [node,top,left]of ancestors){if(node.isConnected){node.scrollTop=top;node.scrollLeft=left;}}if(typeof window.scrollTo==='function')window.scrollTo(scrollX,scrollY);}
- function unlock(){for(const [element,values]of savedStyles.reverse())for(const [key,value,priority]of values){if(value)element.style.setProperty(key,value,priority);else element.style.removeProperty(key);}restorePosition();window.HA_BARCODE_CAMERA_ACTIVE=false;}
+ function unlock(){for(const [element,values]of savedStyles.reverse())for(const [key,value,priority]of values){if(value)element.style.setProperty(key,value,priority);else element.style.removeProperty(key);}restorePosition();window.HA_BARCODE_CAMERA_ACTIVE=false;window.dispatchEvent(new Event('ha-barcode-camera-close'));}
  host.appendChild(overlay);const video=overlay.querySelector('video'),status=overlay.querySelector('[data-camera-status]'),retry=overlay.querySelector('[data-camera-retry]');
  video.muted=true;video.autoplay=true;video.playsInline=true;
  let timer=0,observer=null,closed=false,done=false,stream=null,native=null,decoder=null,started=Date.now();

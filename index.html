@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261118-product-label-v15">
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="ha-app-build" content="20261118-mobile-bounds-v16">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
 :root{--navy:#102a43;--navy2:#173f5f;--teal:#159a8c;--teal2:#e1f5f1;--gold:#dfaa43;--ink:#1d2d3c;--muted:#728092;--line:#e5ebf0;--bg:#f3f6f8;--white:#fff;--red:#c84b4b;--green:#14866d;--shadow:0 12px 35px #102a4310}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif;font-size:14px}button,input,select,textarea{font:inherit}button{cursor:pointer}.layout{min-height:100vh;display:grid;grid-template-columns:250px 1fr}.sidebar{background:linear-gradient(175deg,#102a43,#123652 70%,#0d293e);color:#fff;padding:22px 15px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:11px;padding:0 8px 22px;border-bottom:1px solid #ffffff20}.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(140deg,#34b6a5,#127c7b);display:grid;place-items:center;font-size:15px;font-weight:800;box-shadow:0 7px 18px #07968955}.brand strong{font-size:16px;display:block}.brand small{color:#b8cad8;font-size:11px}.nav{padding-top:20px;display:grid;gap:6px}.nav button{border:0;text-align:right;color:#d2e0e8;background:transparent;padding:12px;border-radius:11px;display:flex;align-items:center;gap:12px;transition:.18s}.nav button:hover,.nav button.active{background:#ffffff18;color:#fff}.nav button.active{box-shadow:inset -3px 0 var(--gold)}.nav .ico{width:23px;text-align:center;font-size:17px}.side-foot{margin-top:auto;color:#afc2d0;font-size:11px;line-height:1.8;padding:14px 9px 2px;border-top:1px solid #ffffff20}.main{min-width:0}.topbar{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:5}.top-title{font-size:18px;font-weight:700}.top-actions{display:flex;align-items:center;gap:10px}.date-chip,.user-chip{background:#f4f7f9;border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:#516273}.user-avatar{display:inline-grid;place-items:center;background:var(--teal2);color:#167c70;border-radius:50%;width:30px;height:30px;margin-left:7px;font-weight:bold}.content{padding:28px 30px;max-width:1500px;margin:auto}.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:22px}.page-head h1{font-size:22px;margin:0 0 6px;color:var(--navy)}.page-head p{margin:0;color:var(--muted)}.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--teal);color:#fff;font-weight:700;box-shadow:0 5px 12px #159a8c25}.btn:hover{filter:brightness(.95)}.btn.secondary{background:#edf2f5;color:#314658;box-shadow:none}.btn.dark{background:var(--navy)}.btn.danger{background:#fff0ef;color:#b44747;box-shadow:none}.btn.small{padding:7px 10px;font-size:12px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:0 0 20px}.processor-stat-cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.processor-module-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:18px 0 22px}.processor-module-card{appearance:none;border:1px solid #d8e6f4;border-top:4px solid var(--card-color,#32b9a8);border-radius:16px;background:#fff;min-height:132px;padding:15px 10px;box-shadow:var(--shadow);color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;transition:transform .16s,box-shadow .16s}.processor-module-card:hover{transform:translateY(-2px);box-shadow:0 14px 28px #102a4318}.processor-module-card .module-ico{font-size:28px;line-height:1}.processor-module-card strong{font-size:14px}.processor-module-card small{font-size:11px;color:var(--muted);line-height:1.45}@media(max-width:700px){.processor-module-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 18px}.processor-module-card{min-height:112px;padding:11px 6px;gap:6px;border-radius:13px}.processor-module-card .module-ico{font-size:24px}.processor-module-card strong{font-size:12px}.processor-module-card small{font-size:10px}}.processor-stat-cards .stat{min-height:184px;padding:20px 14px;display:flex;flex-direction:column;justify-content:center;text-align:center}.processor-stat-cards .stat .value{font-size:26px;text-align:center}.processor-stat-cards .stat .change{font-size:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:var(--shadow);min-height:126px;position:relative;overflow:hidden}.stat::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:var(--tint,#e1f5f1);left:-23px;top:-34px;opacity:.7}.stat .label{position:relative;color:var(--muted);font-size:12px;z-index:1}.stat .value{position:relative;z-index:1;font-weight:800;font-size:22px;margin:13px 0 6px;color:var(--navy);direction:ltr;text-align:right}.stat .change{position:relative;z-index:1;color:var(--green);font-size:11px}.two-col{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:16px}.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.panel-head h2{font-size:15px;margin:0;color:var(--navy)}.panel-head span{color:var(--muted);font-size:11px}.category-form{display:grid;grid-template-columns:1fr 120px;gap:12px;padding:14px;background:linear-gradient(135deg,#fff0f6,#f0f7ff);border:1px solid #ffd1e1;border-radius:14px}.category-form .form-actions{grid-column:1/-1;margin-top:0}.category-form input[type=color]{width:100%;height:42px;padding:4px}.category-manage-list{display:grid;gap:8px;margin-top:14px}.category-manage-row{display:grid;grid-template-columns:16px minmax(90px,1fr) auto auto auto;align-items:center;gap:10px;padding:10px;border:1px solid #e4eaf0;border-right:4px solid var(--category-color,#ff5c8a);border-radius:11px;background:linear-gradient(100deg,#fff,#fff8fb)}.category-color-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 3px #ffffff,0 0 0 4px #e8edf2}.category-manage-row small{color:var(--muted)}@media(max-width:600px){.category-manage-row{grid-template-columns:16px 1fr auto auto}.category-manage-row small{grid-column:2}.category-form{grid-template-columns:1fr 90px}}
@@ -1756,7 +1756,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 <script>
 (function(){function sync(){try{if(window.HAAndroid&&window.HAAndroid.saveLocalData){var key=window.HA_ACCOUNTING_KEY||'ha-accounting-v1';window.HAAndroid.saveLocalData(localStorage.getItem(key)||'{}');}}catch(e){}}window.addEventListener('ha-accounting-save',sync);setTimeout(sync,900);})();
 </script>
-<script defer src="./ha-barcode-scanner.js?v=2-stable"></script>
+<script defer src="./ha-barcode-scanner.js?v=3-bounds"></script>
 <script defer src="./ha-language.js?v=1"></script>
 <script defer src="./ha-invoice-layout.js?v=2-return-details"></script>
 <script defer src="./ha-business-print.js?v=5-return-details"></script>
@@ -1765,7 +1765,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=2"></script>
 <script defer src="./auth-client.js?v=89-dashboard-layout"></script>
-<script defer src="./ha-app-update.js?v=15"></script>
+<script defer src="./ha-app-update.js?v=16"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -1860,4 +1860,56 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
  document.addEventListener('ha-accounting-module-access',()=>{drawTabs();drawShortcuts();});drawTabs();drawShortcuts();
 })();
 </script>
+<style id="ha-mobile-screen-bounds">
+@media screen and (max-width:700px){
+ :root{--ha-mobile-gutter:10px;--ha-bottom-space:calc(88px + env(safe-area-inset-bottom,0px))}
+ html,body{box-sizing:border-box;min-width:0;width:100%;max-width:100%;overflow-x:hidden}
+ .layout.authenticated,.main{box-sizing:border-box;min-width:0;max-width:100%;width:100%}
+ .content#view{box-sizing:border-box;min-width:0;width:100%;max-width:100%;padding-top:16px;padding-left:max(var(--ha-mobile-gutter),env(safe-area-inset-left,0px))!important;padding-right:max(var(--ha-mobile-gutter),env(safe-area-inset-right,0px))!important;padding-bottom:calc(var(--ha-bottom-space) + 20px)!important}
+ .topbar{box-sizing:border-box;width:100%;max-width:100%;min-width:0;height:auto!important;padding-left:max(10px,env(safe-area-inset-left,0px))!important;padding-right:max(10px,env(safe-area-inset-right,0px))!important;padding-top:max(8px,env(safe-area-inset-top,0px));gap:8px;flex-wrap:wrap}
+ .topbar>div,.top-actions{min-width:0;max-width:100%;flex-wrap:wrap}.top-actions{gap:6px}.top-actions .btn,.top-actions .user-chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+ #appTabs{box-sizing:border-box;min-width:0;width:100%;max-width:100%;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+ #appBottomShortcuts{box-sizing:border-box;left:0;right:0;width:100%;max-width:100%;padding-left:max(5px,env(safe-area-inset-left,0px));padding-right:max(5px,env(safe-area-inset-right,0px));padding-bottom:calc(5px + env(safe-area-inset-bottom,0px));overscroll-behavior-x:contain}
+ html.ha-mobile-keyboard #appBottomShortcuts{display:none!important}
+ .sidebar{box-sizing:border-box;max-width:calc(100% - 24px);height:100vh;height:100dvh;padding-top:max(20px,env(safe-area-inset-top,0px));padding-right:max(15px,env(safe-area-inset-right,0px));padding-bottom:max(20px,env(safe-area-inset-bottom,0px));overflow-y:auto}
+ #view .panel,#view .engineering-page,#view .cards,#view .two-col,#view .processor-module-grid,#view .processor-stat-cards,#view .processor-chart-layout,#view .processor-invoice-lists,#view .toolbar,#view .page-head{box-sizing:border-box;min-width:0;max-width:100%}
+ #view .page-head,.panel-head{flex-wrap:wrap;gap:10px}#view .page-head>*,#view .panel-head>*,#view .toolbar>*{min-width:0;max-width:100%}
+ #view .cards>*,#view .processor-module-grid>*,#view .two-col>*,#modalBody .form-grid>*,#view .form-grid>*{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+ #view .stat .value{max-width:100%;overflow-wrap:anywhere}
+ #view .table-wrap,#modalBody .table-wrap{box-sizing:border-box;min-width:0;max-width:100%;overflow-x:auto!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ #view img,#modalBody img{max-width:100%}#view video,#modalBody video{max-width:100%}
+ html body #modal.modal[open]{box-sizing:border-box;inset:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) auto max(8px,env(safe-area-inset-left,0px))!important;margin:0!important;width:auto!important;min-width:0!important;max-width:calc(100% - max(8px,env(safe-area-inset-left,0px)) - max(8px,env(safe-area-inset-right,0px)))!important;max-height:calc(var(--ha-visual-height,100dvh) - max(8px,env(safe-area-inset-top,0px)) - max(8px,env(safe-area-inset-bottom,0px)))!important;overflow:auto!important;overscroll-behavior:contain;scroll-padding-block:16px}
+ #modalBody.modal-inner{box-sizing:border-box;min-width:0;max-width:100%;padding:12px!important;padding-bottom:max(16px,env(safe-area-inset-bottom,0px))!important;overflow-wrap:anywhere}
+ #modalBody .modal-title{gap:10px}#modalBody .modal-title h2{min-width:0;overflow-wrap:anywhere}#modalBody .modal-title button{flex-shrink:0}
+ #modalBody input:not([type=checkbox]):not([type=radio]),#modalBody select,#modalBody textarea,#view input:not([type=checkbox]):not([type=radio]),#view select,#view textarea{box-sizing:border-box;min-width:0;max-width:100%;font-size:16px}
+ #modalBody .form-actions,#view .form-actions{flex-wrap:wrap;gap:8px;padding-bottom:8px}#modalBody .form-actions>*{max-width:100%;white-space:normal}
+ #authGate{box-sizing:border-box;padding:max(16px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));overflow-y:auto}.auth-card{box-sizing:border-box;min-width:0;max-width:100%}.auth-card input{font-size:16px}
+}
+</style>
+<script>
+(function(){
+ const root=document.documentElement,bar=document.getElementById('appBottomShortcuts'),vv=window.visualViewport;
+ let queued=false,baseline=window.innerHeight,width=window.innerWidth;
+ function measure(){
+  queued=false;
+  if(window.HA_BARCODE_CAMERA_ACTIVE)return;
+  const mobile=window.matchMedia('(max-width:700px)').matches;
+  const editable=document.activeElement?.matches('input:not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable="true"]');
+  if(window.innerWidth!==width){width=window.innerWidth;baseline=window.innerHeight;}
+  if(!editable)baseline=window.innerHeight;
+  const height=vv?.height||window.innerHeight;
+  const keyboard=mobile&&!!editable&&Math.max(baseline,window.innerHeight)-height>140;
+  root.classList.toggle('ha-mobile-keyboard',keyboard);
+  const bottom=mobile?(keyboard?0:Math.ceil(bar?.getBoundingClientRect().height||0)):0;
+  root.style.setProperty('--ha-bottom-space',bottom+'px');
+ }
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(measure);}
+ if(typeof ResizeObserver==='function'&&bar)new ResizeObserver(schedule).observe(bar);
+ window.addEventListener('resize',schedule,{passive:true});
+ vv?.addEventListener('resize',schedule,{passive:true});
+ document.addEventListener('focusin',schedule);document.addEventListener('focusout',schedule);
+ window.addEventListener('pageshow',schedule);window.addEventListener('ha-barcode-camera-close',schedule);schedule();
+})();
+</script>
+
 </body></html>
