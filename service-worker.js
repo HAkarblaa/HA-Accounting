@@ -1,20 +1,30 @@
-const CACHE='ha-accounting-shell-v235-return-details';
-const SHELL_BUILD='20261118-return-details-v10';
-const ASSETS=['./ha-barcode-scanner.js?v=1','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=2-return-details','./ha-app-update.js?v=10','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=5-return-details','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=88-performance','./supabase-config.js','./ha-pos-operations.js'];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})))).then(()=>self.skipWaiting())));
+const CACHE='ha-accounting-shell-v237-auto-update';
+const SHELL_BUILD='20261118-auto-update-v12';
+const ASSETS=['./ha-barcode-scanner.js?v=1','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=2-return-details','./ha-app-update.js?v=12','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=5-return-details','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=88-performance','./supabase-config.js','./ha-pos-operations.js'];
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+  const cache=await caches.open(CACHE);
+  await cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})));
+  const html=await (await cache.match('./index.html')).text();
+  const updater=await (await cache.match('./ha-app-update.js?v=12')).text();
+  if(html.match(/name="ha-app-build" content="([^"]+)"/)?.[1]!==SHELL_BUILD || updater.match(/const build\s*=\s*'([^']+)'/)?.[1]!==SHELL_BUILD){
+    await caches.delete(CACHE);throw new Error('Incomplete HA deployment');
+  }
+  await self.skipWaiting();
+})()));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('ha-accounting-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-self.addEventListener('message',event=>{if(event.data?.type==='HA_SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('message',event=>{if(event.data?.type==='HA_SKIP_WAITING')self.skipWaiting();if(event.data?.type==='HA_GET_BUILD')event.ports?.[0]?.postMessage({type:'HA_BUILD',build:SHELL_BUILD});});
 self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET'||new URL(request.url).origin!==self.location.origin)return;
   if(new URL(request.url).searchParams.has('ha_check')){event.respondWith(fetch(request,{cache:'no-store'}));return;}
   const requestUrl=new URL(request.url),shellRoot=new URL('./',self.location.href),shellIndex=new URL('./index.html',self.location.href);
   if(request.mode==='navigate'&&(requestUrl.pathname===shellRoot.pathname||requestUrl.pathname===shellIndex.pathname)){
-    const networkNavigation=async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const response=await fetch(request,{signal:controller.signal});if(!response.ok)throw new Error('Navigation unavailable');const html=await response.clone().text(),build=html.match(/name="ha-app-build" content="([^"]+)"/)?.[1];if(build===SHELL_BUILD){try{const cache=await caches.open(CACHE);await cache.put('./index.html',response.clone());}catch(error){console.warn('HA shell cache update failed',error);}}return response;}finally{clearTimeout(timer);}};
+    const networkNavigation=async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const response=await fetch(request,{signal:controller.signal,cache:'no-store'});if(!response.ok)throw new Error('Navigation unavailable');const html=await response.clone().text(),build=html.match(/name="ha-app-build" content="([^"]+)"/)?.[1];if(requestUrl.searchParams.has('ha_update')&&build!==requestUrl.searchParams.get('ha_update'))throw new Error('Requested build unavailable');if(build===SHELL_BUILD){try{const cache=await caches.open(CACHE);await cache.put('./index.html',response.clone());}catch(error){console.warn('HA shell cache update failed',error);}}return response;}finally{clearTimeout(timer);}};
     const cachedNavigation=caches.open(CACHE).then(async cache=>(await cache.match(request))||(await cache.match('./index.html'))).catch(()=>undefined);
     // Register the lifetime promise synchronously while the FetchEvent is dispatching.
     let networkPromise;
     const network=()=>networkPromise||(networkPromise=networkNavigation());
+    if(requestUrl.searchParams.has('ha_update')){event.respondWith(network().catch(async error=>{const cached=await cachedNavigation;if(cached)return cached;throw error;}));return;}
     event.waitUntil(cachedNavigation.then(()=>network()).then(()=>{},()=>{}));
     event.respondWith(cachedNavigation.then(cached=>cached||network()));
     return;
