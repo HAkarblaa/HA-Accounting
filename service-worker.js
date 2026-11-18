@@ -1,5 +1,6 @@
-const CACHE='ha-accounting-shell-v232-staff-owner';
-const ASSETS=['./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=1','./ha-app-update.js?v=7','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=3-layout-pdf','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=87-staff','./supabase-config.js','./ha-pos-operations.js'];
+const CACHE='ha-accounting-shell-v233-performance';
+const SHELL_BUILD='20261118-performance-v8';
+const ASSETS=['./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=1','./ha-app-update.js?v=8','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=4-lazy-pdf','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=88-performance','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})))).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('ha-accounting-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data?.type==='HA_SKIP_WAITING')self.skipWaiting();});
@@ -7,10 +8,18 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET'||new URL(request.url).origin!==self.location.origin)return;
   if(new URL(request.url).searchParams.has('ha_check')){event.respondWith(fetch(request,{cache:'no-store'}));return;}
-  if(request.mode==='navigate'){
-    event.respondWith((async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const response=await fetch(request,{signal:controller.signal});if(!response.ok)throw new Error('Navigation unavailable');const copy=response.clone();event.waitUntil(caches.open(CACHE).then(async cache=>{await cache.put('./index.html',copy.clone());await cache.put(request,copy);}));return response;}catch(error){const cached=await caches.match(request)||await caches.match('./index.html');if(cached)return cached;throw error;}finally{clearTimeout(timer);}})());
+  const requestUrl=new URL(request.url),shellRoot=new URL('./',self.location.href),shellIndex=new URL('./index.html',self.location.href);
+  if(request.mode==='navigate'&&(requestUrl.pathname===shellRoot.pathname||requestUrl.pathname===shellIndex.pathname)){
+    const networkNavigation=async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const response=await fetch(request,{signal:controller.signal});if(!response.ok)throw new Error('Navigation unavailable');const html=await response.clone().text(),build=html.match(/name="ha-app-build" content="([^"]+)"/)?.[1];if(build===SHELL_BUILD){try{const cache=await caches.open(CACHE);await cache.put('./index.html',response.clone());}catch(error){console.warn('HA shell cache update failed',error);}}return response;}finally{clearTimeout(timer);}};
+    const cachedNavigation=caches.open(CACHE).then(async cache=>(await cache.match(request))||(await cache.match('./index.html'))).catch(()=>undefined);
+    // Register the lifetime promise synchronously while the FetchEvent is dispatching.
+    let networkPromise;
+    const network=()=>networkPromise||(networkPromise=networkNavigation());
+    event.waitUntil(cachedNavigation.then(()=>network()).then(()=>{},()=>{}));
+    event.respondWith(cachedNavigation.then(cached=>cached||network()));
     return;
   }
+  if(request.mode==='navigate'){event.respondWith(fetch(request).catch(async error=>{const cached=await caches.match(request);if(cached)return cached;throw error;}));return;}
   event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));}return response;})));
 });
 

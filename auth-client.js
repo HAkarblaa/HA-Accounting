@@ -16,7 +16,8 @@ function watchWorkspace(user){
  if(workspaceChannel)client.removeChannel(workspaceChannel);
  const receiveWorkspace=payload=>{
   const remote=payload?.new?.data,revision=payload?.new?.updated_at;
-  if(!remote||typeof remote!=='object')return;
+  if(!remote||typeof remote!=='object'||logoutRequested||currentUser?.id!==user.id)return;
+  const knownRevision=localStorage.getItem(revisionKey(user.id));if(revision&&knownRevision&&Date.parse(revision)<=Date.parse(knownRevision))return;
   const applyWhenSafe=()=>{
    if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,500);return;}
    const ownWrite=selfWriteSnapshots.get(user.id);
@@ -70,9 +71,20 @@ function watchWorkspace(user){
    if(!ready&&(status==='CHANNEL_ERROR'||status==='TIMED_OUT'))console.warn('HA workspace realtime unavailable; using periodic refresh.');
   });
  if(workspacePollTimer)clearInterval(workspacePollTimer);
+ let polling=false;
  workspacePollTimer=setInterval(async()=>{
-  if(!currentUser||currentUser.id!==user.id||!navigator.onLine||document.visibilityState==='hidden'||localStorage.getItem(pendingKey(user.id))==='1')return;
-  try{const {data,error}=await client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle();if(!error&&data?.data)receiveWorkspace({new:data});}catch(error){console.warn('HA workspace refresh failed',error);}
+  if(polling||!currentUser||currentUser.id!==user.id||!navigator.onLine||document.visibilityState==='hidden'||localStorage.getItem(pendingKey(user.id))==='1')return;
+  polling=true;
+  try{await withSyncDeadline(async signal=>{
+   const {data:metadata,error:metadataError}=await syncQuery(client.from('accounting_workspaces').select('updated_at').eq('user_id',user.id).maybeSingle(),signal);
+   if(metadataError)throw metadataError;
+   if(!metadata?.updated_at||logoutRequested||currentUser?.id!==user.id)return;
+   const known=localStorage.getItem(revisionKey(user.id));
+   if(known&&Date.parse(metadata.updated_at)<=Date.parse(known))return;
+   if(localStorage.getItem(pendingKey(user.id))==='1')return;
+   const {data,error}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
+   if(error)throw error;if(data?.data)receiveWorkspace({new:data});
+  });}catch(error){console.warn('HA workspace refresh failed',error);}finally{polling=false;}
  },45000);
 }
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
@@ -144,7 +156,7 @@ async function manualRefreshAccounting({allowReadOnlyModal=false}={}){
  if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. بياناتك محفوظة بهذا الجهاز وتنتظر المزامنة.');return;}
  if(!client||!currentUser){showSyncToast('تعذر تحديد جلسة الحساب. حدّث الصفحة عند توفر الاتصال.');return;}
  const user=currentUser;manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
- try{clearTimeout(syncTimer);await withSyncDeadline(signal=>performManualSync(user,signal,allowReadOnlyModal));showSyncToast('تم تحديث البيانات ومزامنة التعديلات.',true);return true;}
+ try{clearTimeout(syncTimer);await withSyncDeadline(signal=>performManualSync(user,signal,allowReadOnlyModal));needsReconnect=localStorage.getItem(pendingKey(user.id))==='1';showSyncToast('تم تحديث البيانات ومزامنة التعديلات.',true);return true;}
  catch(error){needsReconnect=true;console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر التحديث؛ بياناتك محفوظة. حاول مجدداً.');return false;}
  finally{manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
 }
@@ -221,7 +233,7 @@ async function enter(user){
  if(navigator.onLine){
   try{await checkAccess(user);rememberAccess(user);}
   catch(err){if(!cached?.active||isAccessDenied(err))throw err;applyCachedAccess(cached);needsReconnect=true;}
-  try{if(!staffContext)await prepareWorkspace(user);}
+  try{if(!staffContext)await withSyncDeadline(signal=>prepareWorkspace(user,{signal}));}
   catch(err){const local=localStorage.getItem(userKey(user.id));if(!readCachedAccess(user.id)?.active||!local)throw err;localStorage.setItem(pendingKey(user.id),'1');}
  }else{
   if(!cached?.active)throw new Error('أول تسجيل دخول لهذا الحساب يحتاج إنترنت. بعده يشتغل على هذا الجهاز أوفلاين.');
@@ -251,7 +263,7 @@ async function reconnectAccount(){
   if(!data?.session||data.session.user.id!==user.id)throw new Error('تعذر تجديد جلسة الاتصال. تبقى بيانات الحساب المحلي متاحة.');
   await checkAccess(data.session.user);if(logoutRequested||currentUser?.id!==user.id)return;rememberAccess(user);needsReconnect=false;showApp();if(staffContext){await window.HAStaff.refresh();return;}watchWorkspace(data.session.user);
   let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
-  if(local){const before=stableJson(local);await pushLocalWorkspace(user,local);applySyncedWorkspace(user,before);}
+  if(local){const before=stableJson(local);let base=null;try{base=JSON.parse(localStorage.getItem(baseKey(user.id))||'null');}catch{}const dirty=localStorage.getItem(pendingKey(user.id))==='1'||(base&&stableJson(base)!==before);if(dirty)await pushLocalWorkspace(user,local);else await withSyncDeadline(signal=>prepareWorkspace(user,{signal}));applySyncedWorkspace(user,before);}
  }catch(err){
   if(logoutRequested)return;
   if(isAccessDenied(err)){denyCachedAccess(user,err);return;}
