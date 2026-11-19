@@ -106,6 +106,7 @@
         body = `<section class="haym-panel"><h2>بيانات المحل والعملات</h2><form data-ym-settings class="haym-form-grid"><label class="haym-field">اسم المحل<input name="shopName" value="${esc(s().shopName)}"></label><label class="haym-field">العنوان<input name="address" value="${esc(s().address)}"></label><label class="haym-field">رقم الهاتف<input name="phone" value="${esc(s().phone)}"></label><label class="haym-field">الرقم الضريبي<input name="taxNo" value="${esc(s().taxNo)}"></label><label class="haym-field">سعر الصرف: 1 ${esc(s().foreignCode)} = كم ${esc(s().baseCode)}؟<input name="rate" type="number" min="0.000001" step="any" value="${number(s().rate)||''}" placeholder="أدخل سعر الصرف المعتمد" required></label><div class="haym-total" data-ym-rate-preview>تغيّر سعر الصرف يحدّث التحويل للفواتير والحركات الجديدة.</div><button class="haym-btn primary">حفظ الإعدادات</button></form></section><div class="haym-note">العملتان الافتراضيتان: الدينار العراقي IQD والدولار الأمريكي USD. أدخل سعر الصرف المعتمد عندك. الفواتير السابقة تبقى على سعر الصرف المسجل فيها.</div>`;
       }
       root.innerHTML = `<div class="haym">${header()}${body}</div>`;
+      global.HA_SHARED_RETURNS?.mount?.(root);
     }
     function getLines() { return [...root.querySelectorAll('[data-ym-line]')].map(row => ({ name: row.querySelector('[data-ym-item]').value.trim(), qty: number(row.querySelector('[data-ym-qty]').value), price: number(row.querySelector('[data-ym-price]').value) })); }
     function refreshInvoicePreview() {
