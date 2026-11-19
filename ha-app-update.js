@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-general-detailed-returns-v24';
+  const build = '20261119-return-dashboard-statements-v25';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
