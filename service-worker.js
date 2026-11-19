@@ -1,11 +1,11 @@
-const CACHE='ha-accounting-shell-v244-expiry-dmy';
-const SHELL_BUILD='20261119-expiry-dmy-v19';
-const ASSETS=['./ha-barcode-scanner.js?v=3-bounds','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=4-expiry-dmy','./ha-app-update.js?v=19','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=5-return-details','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=89-dashboard-layout','./supabase-config.js','./ha-pos-operations.js'];
+const CACHE='ha-accounting-shell-v245-voucher-product-expiry';
+const SHELL_BUILD='20261119-voucher-product-expiry-v20';
+const ASSETS=['./ha-barcode-scanner.js?v=3-bounds','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=2','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=5-voucher-summary','./ha-app-update.js?v=20','./','./index.html','./yemen-section.js?v=4-form-recovery','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=5-return-details','./ha-personal-print-center.js?v=1','./supabase-2.118.0.js','./auth-client.js?v=89-dashboard-layout','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   const cache=await caches.open(CACHE);
   await cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})));
   const html=await (await cache.match('./index.html')).text();
-  const updater=await (await cache.match('./ha-app-update.js?v=19')).text();
+  const updater=await (await cache.match('./ha-app-update.js?v=20')).text();
   if(html.match(/name="ha-app-build" content="([^"]+)"/)?.[1]!==SHELL_BUILD || updater.match(/const build\s*=\s*'([^']+)'/)?.[1]!==SHELL_BUILD){
     await caches.delete(CACHE);throw new Error('Incomplete HA deployment');
   }
