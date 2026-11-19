@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-voucher-accounts-v18';
+  const build = '20261119-expiry-dmy-v19';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
