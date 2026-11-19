@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-voucher-edit-history-v21';
+  const build = '20261119-stock-writeoff-v22';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
