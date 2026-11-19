@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261118-mobile-bounds-v16';
+  const build = '20261119-processor-expiry-v17';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
