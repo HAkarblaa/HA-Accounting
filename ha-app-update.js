@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-processor-header-layout-v29';
+  const build = '20261119-date-only-cash-preservation-v30';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
