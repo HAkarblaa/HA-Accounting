@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-all-sections-returns-v26';
+  const build = '20261119-processor-quotes-pos-consumption-v27';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
