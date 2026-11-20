@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261120-mobile-scroll-stability-v32';
+  const build = '20261120-four-return-edit-v33';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
