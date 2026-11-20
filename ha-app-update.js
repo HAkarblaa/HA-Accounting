@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261119-date-only-cash-preservation-v30';
+  const build = '20261120-independent-paper-templates-v31';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
