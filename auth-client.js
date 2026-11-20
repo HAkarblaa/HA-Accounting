@@ -11,7 +11,7 @@ const pendingKey=id=>'ha-accounting-pending-sync:'+id;
 const revisionKey=id=>'ha-accounting-sync-revision:'+id;
 const baseKey=id=>'ha-accounting-sync-base:'+id;
 function watchWorkspace(user){
- if(staffContext)return;
+ if(staffContext||window.HA_ADMIN_DEMO)return;
  if(!client||!user?.id)return;
  if(workspaceChannel)client.removeChannel(workspaceChannel);
  const receiveWorkspace=payload=>{
@@ -90,17 +90,23 @@ function watchWorkspace(user){
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
-const showApp=()=>{if(staffContext){boot?.remove();gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');window.HAStaff?.mount(staffContext);return;}window.HAStaff?.unmount();const layout=document.querySelector('.layout'),wasOpen=layout.classList.contains('authenticated');boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';layout.classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin);document.getElementById('adminInterfacePreview')?.classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;if(!wasOpen||displayedModuleType!==window.HA_ACCOUNTING_MODULE_TYPE){displayedModuleType=window.HA_ACCOUNTING_MODULE_TYPE;window.HA_APPLY_MODULE_ACCESS?.(displayedModuleType,{entry:!wasOpen});}window.dispatchEvent(new Event('ha-accounting-auth-ready'));};
+const showApp=()=>{if(staffContext){boot?.remove();gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');window.HAStaff?.mount(staffContext);return;}window.HAStaff?.unmount();const layout=document.querySelector('.layout'),wasOpen=layout.classList.contains('authenticated');boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';layout.classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin||window.HA_ADMIN_DEMO);document.getElementById('adminInterfacePreview')?.classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;if(!wasOpen||displayedModuleType!==window.HA_ACCOUNTING_MODULE_TYPE){displayedModuleType=window.HA_ACCOUNTING_MODULE_TYPE;window.HA_APPLY_MODULE_ACCESS?.(displayedModuleType,{entry:!wasOpen});}adminDemoControls();window.dispatchEvent(new Event('ha-accounting-auth-ready'));};
+function adminDemoControls(){
+ let button=document.getElementById('adminDemoButton'),reset=document.getElementById('adminDemoReset');const beside=document.getElementById('adminInterfacePreview');if(!beside)return;
+ if(!button){button=document.createElement('button');button.id='adminDemoButton';button.type='button';button.className='btn secondary small';beside.insertAdjacentElement('afterend',button);button.onclick=()=>{if(!isAdmin)return;const url=new URL(location.href);if(window.HA_ADMIN_DEMO)url.searchParams.delete('ha_admin_demo');else url.searchParams.set('ha_admin_demo','1');url.searchParams.set('page','dashboard');location.assign(url.href);};}
+ button.classList.toggle('hidden',!isAdmin);button.textContent=window.HA_ADMIN_DEMO?'الرجوع لبياناتي الفعلية':'بيانات تجريبية للأدمن';
+ if(!reset){reset=document.createElement('button');reset.id='adminDemoReset';reset.type='button';reset.className='btn secondary small';reset.textContent='إعادة البيانات التجريبية';button.insertAdjacentElement('afterend',reset);reset.onclick=()=>{if(isAdmin&&window.HA_ADMIN_DEMO)window.HA_RESET_ADMIN_DEMO?.();};}reset.classList.toggle('hidden',!isAdmin||!window.HA_ADMIN_DEMO);
+}
 function loginEmail(raw){const id=String(raw||'').trim();return id.includes('@')?id:`${id.toLowerCase()}@ha-accounting.invalid`;}
 function readCachedAccess(id){try{return JSON.parse(localStorage.getItem('ha-accounting-access:'+id)||'null');}catch{return null;}}
 function isAccessDenied(err){return ['هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.','الاشتراك موقوف حالياً. راجع الأدمن.','انتهت مدة الاشتراك. راجع الأدمن للتجديد.'].includes(String(err?.message||''));}
-function setWorkspaceKey(id){const desired=userKey(id);localStorage.setItem('ha-accounting-active-user',id);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;if(window.HA_ACCOUNTING_KEY!==desired){location.reload();return false;}return true;}
+function setWorkspaceKey(id){const demo=isAdmin&&new URL(location.href).searchParams.get('ha_admin_demo')==='1';window.HA_ADMIN_DEMO=demo;const desired=userKey(id)+(demo?':admin-demo-v1':'');localStorage.setItem('ha-accounting-active-user',id);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;if(window.HA_ACCOUNTING_KEY!==desired){location.reload();return false;}return true;}
 function applyCachedAccess(cached){staffContext=cached.staffContext||null;isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';}
 window.HA_DENY_STAFF_ACCESS=()=>denyCachedAccess(currentUser,new Error('هذا الحساب غير مفعّل للاستخدام. راجع الأدمن.'));
 function denyCachedAccess(user,err){if(user?.id){const cached=readCachedAccess(user.id)||{};localStorage.setItem('ha-accounting-access:'+user.id,JSON.stringify({...cached,active:false}));}currentUser=null;isAdmin=false;hideApp();window.HAStaff?.deny();showMessage(err?.message||'تم إيقاف الوصول لهذا الحساب.');}
 function startOfflineFromCache(){
  if(logoutRequested)return false;
- const id=localStorage.getItem('ha-accounting-active-user'),cached=id&&readCachedAccess(id);let local=null;try{local=id&&JSON.parse(localStorage.getItem(userKey(id))||'null');}catch{}
+ const id=localStorage.getItem('ha-accounting-active-user'),cached=id&&readCachedAccess(id);let local=null;try{local=id&&JSON.parse(localStorage.getItem(userKey(id)+(window.HA_ADMIN_DEMO?':admin-demo-v1':''))||'null');}catch{}
  if(!id||!cached?.active||!local||typeof local!=='object'||Array.isArray(local))return false;
  currentUser={id};applyCachedAccess(cached);needsReconnect=true;
  if(!setWorkspaceKey(id))return true;
@@ -108,6 +114,7 @@ function startOfflineFromCache(){
  return true;
 }
 function applySyncedWorkspace(user,before){
+ if(window.HA_ADMIN_DEMO)return;
  if(logoutRequested||currentUser?.id!==user.id)return;
  if(document.getElementById('modal')?.open){setTimeout(()=>applySyncedWorkspace(user,before),500);return;}
  if(localStorage.getItem(pendingKey(user.id))==='1')return;
@@ -122,7 +129,7 @@ document.getElementById('logoutButton').addEventListener('click',async()=>{
 });
 window.addEventListener('offline',()=>{needsReconnect=true;});
 window.addEventListener('ha-accounting-save',()=>{
- if(!currentUser||staffContext)return;
+ if(!currentUser||staffContext||window.HA_ADMIN_DEMO)return;
  localStorage.setItem(pendingKey(currentUser.id),'1');
  if(!navigator.onLine)return;
  if(!client)return;
@@ -151,6 +158,7 @@ async function performManualSync(user,signal,allowReadOnlyModal=false){
  if(allowReadOnlyModal&&document.getElementById('modal')?.open&&!document.getElementById('modalBody').querySelector('form')){const latest=JSON.parse(localStorage.getItem(userKey(user.id))||'null');if(latest)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);}else applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
 }
 async function manualRefreshAccounting({allowReadOnlyModal=false}={}){
+ if(window.HA_ADMIN_DEMO){showSyncToast('مساحة تجريبية محلية؛ لا تُزامن مع بيانات الحساب.',true);return true;}
  if(manualSyncButton.disabled)return;
  if(document.getElementById('modal')?.open&&(!allowReadOnlyModal||document.getElementById('modalBody').querySelector('form'))){showSyncToast('احفظ الفاتورة أو أغلقها قبل تحديث البيانات.');return;}
  if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. بياناتك محفوظة بهذا الجهاز وتنتظر المزامنة.');return;}
@@ -195,6 +203,7 @@ function mergeWorkspaces(base,local,remote){
  return {data:merged,conflicts:[...conflicts]};
 }
 async function pushLocalWorkspace(user,data,{signal}={}){
+ if(window.HA_ADMIN_DEMO||data?.adminDemoSandbox)throw new Error('بيانات التجربة منفصلة ولا تُرفع إلى دفتر الحساب الحقيقي.');
  if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  const inputSignature=stableJson(data);
  const key=userKey(user.id),baseText=localStorage.getItem(baseKey(user.id)),base=(()=>{try{return JSON.parse(baseText||'null');}catch{return null;}})(),baseRevision=localStorage.getItem(revisionKey(user.id));
@@ -218,6 +227,7 @@ async function pushLocalWorkspace(user,data,{signal}={}){
  if(newerLocal){if(!base){localStorage.setItem(baseKey(user.id),inputSignature);if(remoteRow?.updated_at)localStorage.setItem(revisionKey(user.id),remoteRow.updated_at);}localStorage.setItem(pendingKey(user.id),'1');needsReconnect=true;}else{localStorage.setItem(key,JSON.stringify(outgoing));localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));localStorage.setItem(revisionKey(user.id),revision);localStorage.removeItem(pendingKey(user.id));window.dispatchEvent(new Event('ha-accounting-synced'));}
 }
 async function prepareWorkspace(user,{signal}={}){
+ if(window.HA_ADMIN_DEMO)return;
  if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  const key=userKey(user.id);
  const {data,error}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
@@ -248,7 +258,7 @@ async function enter(user){
  if(!setWorkspaceKey(user.id))return;
  showApp();if(staffContext){await window.HAStaff.refresh().catch(error=>showMessage(error.message));return;}applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
  try{if(user?.id)watchWorkspace(user);}catch(syncError){console.warn('تعذر تشغيل المزامنة المباشرة',syncError);}
- const company=(()=>{try{return JSON.parse(localStorage.getItem(userKey(user.id))||'{}').company?.name;}catch{return'';}})();
+ const company=(()=>{try{return JSON.parse(localStorage.getItem(window.HA_ADMIN_DEMO?window.HA_ACCOUNTING_KEY:userKey(user.id))||'{}').company?.name;}catch{return'';}})();
  if(company)document.getElementById('companyShort').textContent=company;
 }
 form.addEventListener('submit',async e=>{
@@ -266,7 +276,7 @@ async function reconnectAccount(){
  try{
   const {data,error}=await client.auth.getSession();if(error)throw error;
   if(!data?.session||data.session.user.id!==user.id)throw new Error('تعذر تجديد جلسة الاتصال. تبقى بيانات الحساب المحلي متاحة.');
-  await checkAccess(data.session.user);if(logoutRequested||currentUser?.id!==user.id)return;rememberAccess(user);needsReconnect=false;showApp();if(staffContext){await window.HAStaff.refresh();return;}watchWorkspace(data.session.user);
+  await checkAccess(data.session.user);if(logoutRequested||currentUser?.id!==user.id)return;rememberAccess(user);needsReconnect=false;showApp();if(staffContext){await window.HAStaff.refresh();return;}watchWorkspace(data.session.user);if(window.HA_ADMIN_DEMO)return;
   let local=null;try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
   if(local){const before=stableJson(local);let base=null;try{base=JSON.parse(localStorage.getItem(baseKey(user.id))||'null');}catch{}const dirty=localStorage.getItem(pendingKey(user.id))==='1'||(base&&stableJson(base)!==before);if(dirty)await pushLocalWorkspace(user,local);else await withSyncDeadline(signal=>prepareWorkspace(user,{signal}));applySyncedWorkspace(user,before);}
  }catch(err){
@@ -280,7 +290,7 @@ setInterval(()=>{if(needsReconnect&&document.visibilityState!=='hidden')reconnec
 const adminDeleteStyles=document.createElement('style');adminDeleteStyles.textContent='#subscriberAdmin .admin-card{width:min(1000px,100%)}#subscriberAdmin .subscriber-row{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}#subscriberAdmin .subscriber-row [data-sub-delete]:hover{background:#ffdede}@media(max-width:700px){#subscriberAdmin .subscriber-row{grid-template-columns:1fr 1fr}#subscriberAdmin .subscriber-row button{grid-column:1/-1}}';document.head.appendChild(adminDeleteStyles);
 document.getElementById('openAdmin').addEventListener('click',()=>{adminLayer.classList.add('open');adminLayer.setAttribute('aria-hidden','false');loadSubscribers();});
 document.getElementById('closeAdmin').addEventListener('click',()=>{adminLayer.classList.remove('open');adminLayer.setAttribute('aria-hidden','true');});
-async function adminCall(body){const {data,error}=await client.functions.invoke('manage-subscribers',{body});if(error)throw new Error(error.message||'تعذر الاتصال بدالة إدارة المشتركين.');if(data?.error)throw new Error(data.error);return data;}
+async function adminCall(body){if(window.HA_ADMIN_DEMO)throw new Error('ارجع إلى حسابك الفعلي لإدارة المشتركين.');const {data,error}=await client.functions.invoke('manage-subscribers',{body});if(error)throw new Error(error.message||'تعذر الاتصال بدالة إدارة المشتركين.');if(data?.error)throw new Error(data.error);return data;}
 const moduleOptions=(selected='full')=>{const options=[['market','أسواق / تجزئة'],['engineering','الهندسة المعمارية'],['processor','المعالجات'],['yemen','الورشة الصناعية'],['simple','واجهة بسيطة'],['service','مركز صيانة واستبدال'],['personal','حسابات شخصية'],['full','نشاط آخر · كل الأقسام']];const retired={restaurant:'مطعم · تعيين سابق',wholesale:'جملة · تعيين سابق',generator:'مولدة كهرباء · تعيين سابق'};if(retired[selected])options.unshift([selected,retired[selected]]);return options.map(([value,label])=>`<option value="${value}" ${value===(selected||'full')?'selected':''}>${label}</option>`).join('')};async function loadSubscribers(){const box=document.getElementById('subscriberList');box.innerHTML='<p class="hint">جارٍ تحميل الحسابات…</p>';adminMsg('');try{const result=await adminCall({action:'list'});box.innerHTML=(result.users||[]).map(u=>`<div class="subscriber-row"><b>${escapeHtml(u.login_id)}</b><span class="subscriber-status ${u.active?'':'off'}">${u.active?'فعال':'موقوف'}</span><span>${u.expires_at?new Date(u.expires_at).toLocaleDateString('ar-IQ'):'بدون انتهاء'}</span><select data-sub-module="${escapeHtml(u.user_id)}" aria-label="نوع نشاط ${escapeHtml(u.login_id)}">${moduleOptions(u.module_type)}</select><label>حد الموظفين<input type="number" min="0" max="100" step="1" data-sub-limit="${escapeHtml(u.user_id)}" value="${Number(u.staff_limit)||0}" aria-label="عدد موظفي ${escapeHtml(u.login_id)}"></label><button type="button" data-sub-save-module="${escapeHtml(u.user_id)}">حفظ النشاط والعدد</button><button type="button" data-sub-user="${escapeHtml(u.user_id)}" data-sub-active="${!u.active}">${u.active?'إيقاف':'تفعيل'}</button><button type="button" data-sub-delete="${escapeHtml(u.user_id)}" data-sub-name="${escapeHtml(u.login_id)}" style="background:#ffeded;color:#a32626">حذف الحساب</button></div>`).join('')||'<p class="empty">ماكو حسابات مشتركين بعد.</p>';}catch(err){box.innerHTML='';adminMsg(`${err.message} تأكد من تشغيل تحديث قاعدة البيانات ونشر Edge Function باسم manage-subscribers.`);}}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const createSubscriberForm=document.getElementById('createSubscriber');const generatorFields=()=>{const show=createSubscriberForm.elements.moduleType.value==='generator';document.getElementById('generatorNameField')?.classList.toggle('hidden',!show);document.getElementById('generatorOwnerField')?.classList.toggle('hidden',!show);};createSubscriberForm.elements.moduleType.addEventListener('change',generatorFields);createSubscriberForm.addEventListener('reset',()=>setTimeout(generatorFields,0));generatorFields();createSubscriberForm.addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,d=new FormData(f);adminMsg('جارٍ إنشاء الحساب…');try{const result=await adminCall({action:'create',loginId:d.get('loginId'),password:d.get('password'),expiresAt:d.get('expiresAt')||null,moduleType:d.get('moduleType')||'full',staffLimit:Number(d.get('staffLimit')||0),generatorName:d.get('generatorName')||null,generatorOwner:d.get('generatorOwner')||null});adminMsg(`تم إنشاء الحساب ${result.user.login_id}. أرسل له المعرّف وكلمة المرور الآن واحفظهما بمكان آمن.`,true);f.reset();await loadSubscribers();}catch(err){adminMsg(err.message);}});
