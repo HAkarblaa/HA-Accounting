@@ -67,3 +67,81 @@ html body #modal.modal.ha-processor-workspace[open]{background:#f0f4f5;border:1p
 @media(min-width:901px){html body #modal.modal.ha-processor-workspace[open]{inset:2vh 24px auto!important;margin:0 auto!important;width:calc(100vw - 48px)!important;max-width:1320px!important;max-height:96vh!important}}
 @media(max-width:900px){#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:span 2!important}html body #modal.modal.ha-processor-workspace[open]{inset:max(6px,env(safe-area-inset-top)) 6px auto!important;margin:0!important;width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(var(--ha-visual-height,100dvh) - 12px)!important}#modal.ha-processor-workspace .hpw-metadata{grid-template-columns:repeat(2,minmax(0,1fr))}#modal.ha-processor-workspace .processor-invoice-summary strong{font-size:19px}}
 @media(max-width:540px){#modal.ha-processor-workspace .full,#modal.ha-processor-workspace .processor-conditional-payment,#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:span 1!important}#modal.ha-processor-workspace .processor-receive-methods,#modal.ha-processor-workspace .processor-receive-split{grid-template-columns:minmax(0,1fr)}#modal.ha-processor-workspace .modal-inner{padding:10px!important}#modal.ha-processor-workspace .modal-title{margin:-10px -10px 10px!important;padding:12px!important}#modal.ha-processor-workspace .hpw-metadata,#modal.ha-processor-workspace .processor-invoice-fields:not(.hpw-metadata),#modal.ha-processor-workspace .form-grid:not(.hpw-metadata){grid-template-columns:minmax(0,1fr)!important}#modal.ha-processor-workspace input:not([type=checkbox]):not([type=radio]),#modal.ha-processor-workspace select,#modal.ha-processor-workspace textarea{font-size:16px!important}#modal.ha-processor-workspace .processor-invoice-summary{grid-template-columns:minmax(0,1fr)}#modal.ha-processor-workspace .processor-invoice-summary strong{font-size:23px}#modal.ha-processor-workspace .hpw-actions{bottom:-10px}#modal.ha-processor-workspace .hpw-actions .btn{flex:1 1 130px}.hpw-invoice-dialog .processor-invoice-section-title{flex-wrap:wrap;gap:8px}}
+/* Invoice sheet: bounded rows on desktop; only product rows scroll. No control values are replaced. */
+#modal.hpw-invoice-dialog .hpw-top,#modal.hpw-invoice-dialog .hpw-products,#modal.hpw-invoice-dialog .hpw-bottom{min-width:0;position:relative}
+#modal.hpw-invoice-dialog .hpw-products{background:#fff;border:1px solid #c3d6df;border-radius:6px;padding:8px}
+#modal.hpw-invoice-dialog .hpw-bottom{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px}
+#modal.hpw-invoice-dialog .hpw-extra-tools{display:flex;justify-content:flex-end;margin:6px 0 0}
+#modal.hpw-invoice-dialog .hpw-drawer{position:absolute;z-index:45;top:50px;left:12px;right:12px;max-height:calc(100% - 72px);overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;background:#fff;border:2px solid #159a8c;border-radius:8px;padding:14px;box-shadow:0 10px 35px #173f5f40}
+#modal.hpw-invoice-dialog .hpw-drawer-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:bold;color:#12695f;border-bottom:1px solid #d6e6e7;padding-bottom:8px}
+#modal.hpw-invoice-dialog .hpw-drawer>.processor-invoice-breakdown,#modal.hpw-invoice-dialog .hpw-drawer>.panel,#modal.hpw-invoice-dialog .hpw-drawer>#processorNewCustomerPanel,#modal.hpw-invoice-dialog .hpw-drawer>#processorQuickProductPanel,#modal.hpw-invoice-dialog .hpw-drawer>.processor-receive-split,#modal.hpw-invoice-dialog .hpw-drawer>.processor-conditional-payment,#modal.hpw-invoice-dialog .hpw-drawer>p{grid-column:1/-1}
+#modal.hpw-invoice-dialog .hpw-drawer[hidden]{display:none!important}
+#modal.hpw-invoice-dialog .hpw-metadata-note textarea{resize:vertical;min-height:35px;max-height:90px}
+#modal.hpw-invoice-dialog .hpw-top .hpw-metadata-note{grid-column:auto!important}
+#modal.hpw-invoice-dialog .hpw-compact-payment .processor-receive-methods label{font-size:11px;gap:4px;padding:4px}
+#modal.hpw-invoice-dialog .hpw-compact-payment .processor-receive-methods{gap:5px}
+@media(min-width:1000px) and (min-height:580px){
+ html body #modal.modal.ha-processor-workspace.hpw-invoice-dialog[open]{inset:6px!important;margin:0!important;padding:0!important;width:calc(100vw - 12px)!important;max-width:none!important;height:calc(var(--ha-visual-height,100vh) - 12px)!important;max-height:calc(var(--ha-visual-height,100vh) - 12px)!important;overflow:hidden!important;background:#f2f7fa}
+ html body #modal.modal.hpw-invoice-dialog #modalBody.modal-inner{display:flex!important;flex-direction:column;gap:7px;height:100%;min-height:0;padding:8px!important;overflow:hidden!important}
+ #modal.hpw-invoice-dialog .modal-title{flex:0 0 auto;margin:0!important;padding:5px 8px!important;min-height:34px;background:#fff;color:#173f5f;border-radius:4px;border-bottom:2px solid #159a8c}
+ #modal.hpw-invoice-dialog .modal-title h2{font-size:18px}
+ #modal.hpw-invoice-dialog .modal-title button{background:#edf4f7;color:#254862;border:1px solid #cedde5;min-height:29px}
+ #modal.hpw-invoice-dialog .hpw-invoice{flex:1 1 auto;min-height:0;position:relative;display:grid!important;grid-template-rows:auto minmax(75px,1fr) auto auto;gap:7px;margin:0!important;overflow:hidden}
+ #modal.hpw-invoice-dialog .hpw-invoice>*{margin:0!important;min-height:0}
+ #modal.hpw-invoice-dialog .hpw-top{grid-row:1}
+ #modal.hpw-invoice-dialog .hpw-products{grid-row:2;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+ #modal.hpw-invoice-dialog .hpw-bottom{grid-row:3}
+ #modal.hpw-invoice-dialog .hpw-actions{grid-row:4;position:static;padding:6px 0 0;background:#fff;flex-wrap:nowrap;min-height:39px}
+ #modal.hpw-invoice-dialog .hpw-actions .btn{min-height:32px;padding:6px 18px}
+ #modal.hpw-invoice-dialog .hpw-metadata{gap:5px 10px!important;padding:7px 9px;grid-template-columns:repeat(4,minmax(0,1fr))}
+ #modal.hpw-invoice-dialog .hpw-top .hpw-metadata>.field{grid-column:auto!important;position:relative;gap:2px}
+ #modal.hpw-invoice-dialog .hpw-top .hint{display:none}
+ #modal.hpw-invoice-dialog .hpw-top label{font-size:11px;line-height:1.4}
+ #modal.hpw-invoice-dialog .hpw-top .hpw-metadata-note textarea{resize:none;height:32px;min-height:32px;max-height:32px}
+ #modal.hpw-invoice-dialog .hpw-top input:not([type=checkbox]),#modal.hpw-invoice-dialog .hpw-top select,#modal.hpw-invoice-dialog .hpw-top .date-dmy-wrap>.btn{min-height:31px!important;height:31px!important;padding:5px 8px;font-size:12px}
+ #modal.hpw-invoice-dialog #processorNewCustomerToggle{position:absolute;left:0;top:0;padding:0 4px;min-height:16px;height:16px;font-size:9px}
+ #modal.hpw-invoice-dialog .hpw-extra-tools{position:absolute;bottom:8px;left:9px;width:calc(25% - 18px);margin:0;display:flex}
+ #modal.hpw-invoice-dialog .hpw-extra-tools>.btn{width:100%;min-height:31px;font-size:11px;padding:5px}
+ #modal.hpw-invoice-dialog .hpw-products>.processor-invoice-section-title,#modal.hpw-invoice-dialog .hpw-products>.panel-head{flex:0 0 auto;margin:0!important;padding:0 0 5px;min-height:30px}
+ #modal.hpw-invoice-dialog .hpw-products .toolbar{margin:0;display:flex;gap:6px}
+ #modal.hpw-invoice-dialog .hpw-products>.table-wrap{flex:1 1 auto;min-height:0;overflow:auto!important;scrollbar-gutter:stable}
+ #modal.hpw-invoice-dialog .processor-lines-table{min-width:760px!important}
+ #modal.hpw-invoice-dialog .processor-lines-table th{position:sticky;top:0;z-index:3;padding:6px!important}
+ #modal.hpw-invoice-dialog .processor-lines-table td{padding:5px 6px!important}
+ #modal.hpw-invoice-dialog .processor-lines-table td .hint{font-size:9px;margin:1px 0}
+ #modal.hpw-invoice-dialog .processor-lines-table input,#modal.hpw-invoice-dialog .processor-lines-table select,#modal.hpw-invoice-dialog .processor-lines-table .btn{min-height:30px!important;height:30px;font-size:12px;padding:5px!important}
+ #modal.hpw-invoice-dialog .hpw-bottom>.processor-invoice-section{padding:7px}
+ #modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-section-title{font-size:12px;padding:0 0 4px;margin-bottom:5px}
+ #modal.hpw-invoice-dialog .hpw-bottom .hint,#modal.hpw-invoice-dialog .hpw-bottom #peBalanceHint{display:none}
+ #modal.hpw-invoice-dialog .hpw-compact-adjustments .processor-invoice-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #modal.hpw-invoice-dialog .hpw-compact-payment .processor-invoice-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ #modal.hpw-invoice-dialog .hpw-compact-payment .field.full{grid-column:span 2}
+ #modal.hpw-invoice-dialog .hpw-compact-payment .field.full>label{display:none}
+ #modal.hpw-invoice-dialog .hpw-bottom .field>label{font-size:10px;line-height:1.4}
+ #modal.hpw-invoice-dialog .hpw-bottom input:not([type=checkbox]),#modal.hpw-invoice-dialog .hpw-bottom select{min-height:30px;height:30px;font-size:12px;padding:4px 6px}
+ #modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ #modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-summary>div{padding:5px 7px;min-height:0}
+ #modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-summary>div:first-child{grid-column:span 2;background:#e0f4ee;color:#078575;border-color:#a9dacf}
+ #modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-summary>div:first-child small,#modal.hpw-invoice-dialog .hpw-bottom .processor-invoice-summary>div:first-child strong{color:#078575}
+ #modal.hpw-invoice-dialog .processor-invoice-summary small{font-size:10px;margin:0 0 2px}
+ #modal.hpw-invoice-dialog .processor-invoice-summary strong{font-size:17px}
+ #modal.hpw-invoice-dialog .processor-invoice-summary>div:first-child strong{font-size:24px}
+ #modal.hpw-invoice-dialog .hpw-drawer{grid-row:auto;top:4px;left:4px;right:4px;max-height:calc(100% - 12px);margin:0!important}
+}
+@media(max-width:999px),(max-height:579px){
+ #modal.hpw-invoice-dialog .hpw-invoice{display:flex!important;flex-direction:column;gap:10px;position:relative}
+ #modal.hpw-invoice-dialog .hpw-top,#modal.hpw-invoice-dialog .hpw-products,#modal.hpw-invoice-dialog .hpw-bottom,#modal.hpw-invoice-dialog .hpw-actions{order:0}
+ #modal.hpw-invoice-dialog .hpw-top .hpw-metadata>.hpw-metadata-note{grid-column:1/-1!important}
+ #modal.hpw-invoice-dialog .hpw-bottom{grid-template-columns:1fr}
+ #modal.hpw-invoice-dialog .hpw-drawer{position:relative;top:auto;left:auto;right:auto;max-height:none;grid-template-columns:1fr;order:1}
+ #modal.hpw-invoice-dialog .hpw-drawer>*{grid-column:1!important}
+ #modal.hpw-invoice-dialog .hpw-products>.table-wrap{max-height:45vh}
+ #modal.hpw-invoice-dialog .hpw-actions{position:sticky;bottom:-10px;order:2}
+}
+@media(min-width:1000px) and (min-height:580px){#modal.hpw-invoice-dialog .hpw-invoice>.processor-form-error{position:absolute;left:8px;right:8px;bottom:45px;z-index:55;max-height:35%;overflow:auto;margin:0!important;padding:10px!important}}
+@media(min-width:1000px) and (min-height:580px){
+ #modal.hpw-invoice-dialog .hpw-invoice{grid-template-columns:minmax(0,1fr)}
+ #modal.hpw-invoice-dialog .hpw-invoice>.hpw-top,#modal.hpw-invoice-dialog .hpw-invoice>.hpw-products,#modal.hpw-invoice-dialog .hpw-invoice>.hpw-bottom,#modal.hpw-invoice-dialog .hpw-invoice>.hpw-actions{grid-column:1!important}
+ #modal.hpw-invoice-dialog .hpw-products .toolbar{flex-wrap:nowrap;flex:0 0 auto;flex-direction:row;max-width:none;align-items:center}
+ #modal.hpw-invoice-dialog .hpw-products .toolbar>.btn{flex:0 0 auto;width:auto;min-width:0;white-space:nowrap}
+}
