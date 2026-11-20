@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261120-processor-icon-submenus-v36';
+  const build = '20261120-all-accounting-submenus-v37';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
