@@ -1,0 +1,69 @@
+/* Compact desktop accounting workspace; all rules stay inside processor screens. */
+html body #modal.modal.ha-processor-workspace[open]{background:#f0f4f5;border:1px solid #b5c6cd;border-radius:10px;box-shadow:0 18px 70px #15334b44;box-sizing:border-box;overscroll-behavior:contain;overflow:auto}
+#modal.ha-processor-workspace .modal-inner{padding:14px!important;min-width:0}
+#modal.ha-processor-workspace .modal-title{position:relative!important;top:auto!important;background:#183d56;color:#fff;margin:-14px -14px 14px!important;padding:13px 18px!important;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+#modal.ha-processor-workspace .modal-title h2{font-size:19px;margin:0;color:inherit}
+#modal.ha-processor-workspace .modal-title button{background:#ffffff20;color:white;border:1px solid #ffffff55;border-radius:5px;min-width:34px;min-height:32px}
+#modal.ha-processor-workspace .panel,#modal.ha-processor-workspace .processor-invoice-section{background:#fff;border:1px solid #c9d7dd;border-radius:5px;padding:12px;box-shadow:none;margin:0}
+#modal.ha-processor-workspace form{min-width:0}
+#modal.ha-processor-workspace .field{min-width:0;margin:0;gap:4px}
+#modal.ha-processor-workspace .field>label,#modal.ha-processor-workspace label.field{font-size:12px;color:#344f60;font-weight:600}
+#modal.ha-processor-workspace input:not([type=checkbox]):not([type=radio]),#modal.ha-processor-workspace select,#modal.ha-processor-workspace textarea{box-sizing:border-box;width:100%;min-width:0;min-height:35px;padding:7px 9px;border:1px solid #bdcbd2;border-radius:4px;background:#fff;color:#14364b;font-size:13px;box-shadow:none}
+#modal.ha-processor-workspace input:focus,#modal.ha-processor-workspace select:focus,#modal.ha-processor-workspace textarea:focus{outline:2px solid #20a79b;outline-offset:1px}
+#modal.ha-processor-workspace input[readonly]{background:#eef3f6}
+#modal.ha-processor-workspace [hidden]{display:none!important}
+#modal.ha-processor-workspace .hint,#modal.ha-processor-workspace small{font-size:11px;line-height:1.55;color:#5a7180}
+#modal.ha-processor-workspace .btn{border-radius:5px;min-height:34px;box-shadow:none;font-size:12px;padding:7px 12px}
+#modal.ha-processor-workspace .btn:not(.secondary):not(.danger){background:#078c83;color:#fff}
+#modal.ha-processor-workspace .btn.secondary{background:#edf3f6;border:1px solid #c3d1da;color:#234a64}
+#modal.ha-processor-workspace .processor-invoice-section-title{font-size:13px;color:#174a5c;border-bottom:1px solid #d7e2e6;padding-bottom:8px;margin-bottom:10px}
+#modal.ha-processor-workspace .hpw-invoice{display:block}
+#modal.ha-processor-workspace .hpw-metadata{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px!important;background:#e8eff2;border:1px solid #c5d3da;border-radius:5px;padding:12px}
+#modal.ha-processor-workspace .hpw-metadata>.field{grid-column:auto!important}
+#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:1/-1!important;order:10}
+#modal.ha-processor-workspace .processor-invoice-fields:not(.hpw-metadata),#modal.ha-processor-workspace .form-grid:not(.hpw-metadata){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#modal.ha-processor-workspace .full,#modal.ha-processor-workspace .processor-conditional-payment{grid-column:1/-1}
+#modal.ha-processor-workspace .hpw-invoice>.hpw-notes{order:4;background:#fff;padding:10px;border:1px solid #c9d7dd;border-radius:5px}
+#modal.ha-processor-workspace .hpw-invoice>.processor-invoice-breakdown{order:5;background:#e9eff2;border:1px solid #c5d3da;border-radius:5px;display:flex;flex-wrap:wrap;gap:10px 20px;padding:10px}
+#modal.ha-processor-workspace .hpw-invoice>.processor-invoice-summary{order:6}
+#modal.ha-processor-workspace .processor-invoice-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+#modal.ha-processor-workspace .processor-invoice-summary>div{background:#e1e9ed;border:1px solid #c0d0d9;padding:12px;border-radius:5px;min-width:0}
+#modal.ha-processor-workspace .processor-invoice-summary>div:first-child{background:#087fb1;border-color:#087fb1;color:#fff}
+#modal.ha-processor-workspace .processor-invoice-summary>div:first-child small,#modal.ha-processor-workspace .processor-invoice-summary>div:first-child strong{color:#fff}
+#modal.ha-processor-workspace .processor-invoice-summary small{display:block;font-size:12px;margin-bottom:6px}
+#modal.ha-processor-workspace .processor-invoice-summary strong{display:block;font-size:25px;font-weight:800;direction:ltr;text-align:right;overflow-wrap:anywhere;color:#193e54}
+#modal.ha-processor-workspace .hpw-actions{order:7;position:sticky;bottom:-14px;z-index:5;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px;padding:12px 0;background:#f0f4f5;border-top:1px solid #bdcfd7;margin:0}
+#modal.ha-processor-workspace .hpw-actions button[type=submit],#modal.ha-processor-workspace .hpw-actions button:not([type]){min-width:150px}
+#modal.ha-processor-workspace .table-wrap{max-width:100%;min-width:0;overflow:auto!important;overscroll-behavior-x:contain;border:1px solid #bbccd3;border-radius:4px}
+#modal.ha-processor-workspace .processor-lines-table{display:table!important;table-layout:fixed!important;width:100%;min-width:760px!important;border-collapse:collapse!important;white-space:normal}
+#modal.ha-processor-workspace .processor-lines-table thead{display:table-header-group!important}
+#modal.ha-processor-workspace .processor-lines-table tbody{display:table-row-group!important}
+#modal.ha-processor-workspace .processor-lines-table tr{display:table-row!important;background:transparent;box-shadow:none;border-radius:0}
+#modal.ha-processor-workspace .processor-lines-table th,#modal.ha-processor-workspace .processor-lines-table td{display:table-cell!important;vertical-align:top;text-align:right;border:1px solid #c2d4d7!important;padding:9px 7px!important;font-size:12px;min-width:0;overflow-wrap:anywhere}
+#modal.ha-processor-workspace .processor-lines-table th{background:#087f78;color:#fff;font-weight:700;position:static}
+#modal.ha-processor-workspace .processor-lines-table th:first-child{width:30%!important}
+#modal.ha-processor-workspace .processor-lines-table th:last-child{width:74px!important}
+#modal.ha-processor-workspace .processor-lines-table tbody tr:nth-child(even){background:#e4f2ee}
+#modal.ha-processor-workspace .processor-lines-table tbody tr:nth-child(odd){background:#fafffd}
+#modal.ha-processor-workspace .processor-lines-table td:before{display:none!important}
+#modal.ha-processor-workspace .processor-lines-table input,#modal.ha-processor-workspace .processor-lines-table select{font-size:13px;min-height:34px}
+#modal.ha-processor-workspace .processor-product-suggestions{position:relative!important;inset:auto!important;max-height:210px;overflow:auto;z-index:2}
+#modal.ha-processor-workspace [data-hpw-line-total],#modal.ha-processor-workspace .ptotal{font-weight:700;direction:ltr;white-space:normal;color:#12584f}
+#view.ha-processor-page>.panel,#view.ha-processor-page .processor-grid-list{border-radius:6px;border-color:#c4d3dc;box-shadow:none}
+#view.ha-processor-page .table-wrap th{background:#e3efef;color:#174b53;border-color:#bed0d3}
+#view.ha-processor-page .table-wrap tbody tr:nth-child(even){background:#f1f8f5}
+#view.ha-processor-page .head{padding-bottom:12px;border-bottom:1px solid #c5d6de}
+#modal.ha-processor-workspace .field{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch}
+#modal.ha-processor-workspace .full,#modal.ha-processor-workspace .processor-conditional-payment{grid-column:span 3}
+#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:span 4!important}
+#modal.ha-processor-workspace .processor-receive-methods,#modal.ha-processor-workspace .processor-receive-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;min-width:0}
+#modal.ha-processor-workspace .processor-receive-methods label{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #c5d4da;border-radius:4px}
+#modal.ha-processor-workspace .processor-receive-methods input{flex:0 0 auto;width:auto}
+#modal.ha-processor-workspace .hpw-invoice>*{min-width:0;margin-bottom:11px!important}
+#modal.ha-processor-workspace .processor-invoice-summary{align-items:start;grid-auto-rows:auto}
+#modal.ha-processor-workspace .processor-invoice-summary>div{display:block!important;height:auto!important;min-height:85px;align-self:start}
+#modal.ha-processor-workspace .modal-title button{width:34px!important;flex:0 0 34px}
+#modal.ha-processor-workspace .btn.danger{color:#a32c36;background:#fff0f0;border:1px solid #ebc8cb}
+@media(min-width:901px){html body #modal.modal.ha-processor-workspace[open]{inset:2vh 24px auto!important;margin:0 auto!important;width:calc(100vw - 48px)!important;max-width:1320px!important;max-height:96vh!important}}
+@media(max-width:900px){#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:span 2!important}html body #modal.modal.ha-processor-workspace[open]{inset:max(6px,env(safe-area-inset-top)) 6px auto!important;margin:0!important;width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(var(--ha-visual-height,100dvh) - 12px)!important}#modal.ha-processor-workspace .hpw-metadata{grid-template-columns:repeat(2,minmax(0,1fr))}#modal.ha-processor-workspace .processor-invoice-summary strong{font-size:19px}}
+@media(max-width:540px){#modal.ha-processor-workspace .full,#modal.ha-processor-workspace .processor-conditional-payment,#modal.ha-processor-workspace .hpw-metadata>.full{grid-column:span 1!important}#modal.ha-processor-workspace .processor-receive-methods,#modal.ha-processor-workspace .processor-receive-split{grid-template-columns:minmax(0,1fr)}#modal.ha-processor-workspace .modal-inner{padding:10px!important}#modal.ha-processor-workspace .modal-title{margin:-10px -10px 10px!important;padding:12px!important}#modal.ha-processor-workspace .hpw-metadata,#modal.ha-processor-workspace .processor-invoice-fields:not(.hpw-metadata),#modal.ha-processor-workspace .form-grid:not(.hpw-metadata){grid-template-columns:minmax(0,1fr)!important}#modal.ha-processor-workspace input:not([type=checkbox]):not([type=radio]),#modal.ha-processor-workspace select,#modal.ha-processor-workspace textarea{font-size:16px!important}#modal.ha-processor-workspace .processor-invoice-summary{grid-template-columns:minmax(0,1fr)}#modal.ha-processor-workspace .processor-invoice-summary strong{font-size:23px}#modal.ha-processor-workspace .hpw-actions{bottom:-10px}#modal.ha-processor-workspace .hpw-actions .btn{flex:1 1 130px}.hpw-invoice-dialog .processor-invoice-section-title{flex-wrap:wrap;gap:8px}}
