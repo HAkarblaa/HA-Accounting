@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261120-independent-paper-templates-v31">
+<meta name="ha-app-build" content="20261120-mobile-scroll-stability-v32">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -1926,7 +1926,7 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=2"></script>
 <script defer src="./auth-client.js?v=90-shared-returns"></script>
-<script defer src="./ha-app-update.js?v=31"></script>
+<script defer src="./ha-app-update.js?v=32"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -1977,7 +1977,38 @@ document.getElementById('today').textContent=new Date().toLocaleDateString('en-G
  window.addEventListener('ha-accounting-admin-state',()=>{const admin=window.HA_ACCOUNTING_IS_ADMIN===true;button.classList.toggle('hidden',!admin);if(!admin){previewing=false;original=null;button.textContent='تجربة الواجهات';}});
 })();
 </script>
-<script>(function(){const root=document.documentElement,modal=document.getElementById('modal'),vv=window.visualViewport;let activeField=null,timer=0;function viewport(){const top=vv?.offsetTop||0,height=vv?.height||window.innerHeight;return{top,bottom:top+height};}function syncHeight(){const h=vv?.height||window.innerHeight;if(h>0)root.style.setProperty('--ha-visual-height',Math.round(h)+'px');schedule();}function keepFieldVisible(){if(window.HA_BARCODE_CAMERA_ACTIVE||Date.now()<(window.HA_BARCODE_CAMERA_RESULT_UNTIL||0))return;const field=activeField;if(!field||!field.isConnected||document.activeElement!==field)return;const view=viewport(),rect=field.getBoundingClientRect(),pad=18,dialog=field.closest('#modal.modal[open]');if(rect.bottom>view.bottom-pad){const delta=rect.bottom-(view.bottom-pad);if(dialog)dialog.scrollTop+=delta;else window.scrollBy(0,delta);}else if(rect.top<view.top+pad){const delta=(view.top+pad)-rect.top;if(dialog)dialog.scrollTop-=delta;else window.scrollBy(0,-delta);}}function schedule(){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(keepFieldVisible),140);}syncHeight();vv?.addEventListener('resize',syncHeight,{passive:true});vv?.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',syncHeight,{passive:true});document.addEventListener('focusin',e=>{activeField=e.target.closest('input,textarea,select');if(activeField)schedule();});document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches('input,textarea,select'))activeField=null;},80));})();</script>
+<script id="ha-mobile-focus-stability">(function(){
+'use strict';
+const root=document.documentElement,vv=window.visualViewport;
+let field=null,timer=0,pending=false,until=0,baseline=window.innerHeight;
+function cameraBusy(){return window.HA_BARCODE_CAMERA_ACTIVE||Date.now()<(window.HA_BARCODE_CAMERA_RESULT_UNTIL||0);}
+function mobile(){return window.innerWidth<=900;}
+function cancel(){pending=false;clearTimeout(timer);}
+function syncHeight(){if(cameraBusy())return;const height=vv?.height||window.innerHeight;if(height>0)root.style.setProperty('--ha-visual-height',Math.round(height)+'px');if(!document.activeElement?.matches?.('input,textarea,select'))baseline=Math.max(window.innerHeight,height);schedule();}
+function keepFieldVisible(){
+ if(!pending||Date.now()>until||cameraBusy()||!mobile())return;
+ pending=false;
+ if(!field?.isConnected||document.activeElement!==field)return;
+ // The browser handles page focus. Only adjust the open dialog after the keyboard settles.
+ const dialog=field.closest('#modal.modal[open]');if(!dialog)return;
+ const top=vv?.offsetTop||0,height=vv?.height||window.innerHeight;
+ if(baseline-height<100&&window.innerHeight-height<100)return;
+ const box=dialog.getBoundingClientRect(),rect=field.getBoundingClientRect(),lower=Math.min(top+height,box.bottom)-18,upper=Math.max(top,box.top)+18;
+ let delta=rect.bottom>lower?rect.bottom-lower:rect.top<upper?rect.top-upper:0;
+ if(!delta)return;
+ let scroller=field.parentElement;
+ while(scroller&&scroller!==dialog){const overflow=window.getComputedStyle(scroller).overflowY;if(/auto|scroll/.test(overflow)&&scroller.scrollHeight>scroller.clientHeight)break;scroller=scroller.parentElement;}
+ (scroller||dialog).scrollTop+=delta;
+}
+function schedule(){clearTimeout(timer);if(pending&&Date.now()<=until&&!cameraBusy())timer=setTimeout(()=>requestAnimationFrame(keepFieldVisible),240);}
+// User scrolling wins. Viewport scroll events never trigger another programmatic scroll.
+for(const type of ['touchstart','pointerdown','wheel'])document.addEventListener(type,cancel,{passive:true,capture:true});
+document.addEventListener('focusin',event=>{cancel();field=event.target.closest?.('input,textarea,select');if(!field||cameraBusy()||!mobile())return;pending=true;until=Date.now()+2000;schedule();});
+document.addEventListener('focusout',()=>{cancel();field=null;});
+window.addEventListener('resize',syncHeight,{passive:true});vv?.addEventListener('resize',syncHeight,{passive:true});
+window.addEventListener('ha-barcode-camera-close',()=>{cancel();field=null;setTimeout(syncHeight,1300);});
+syncHeight();
+})();</script>
 <script>if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'}).then(reg=>{if(navigator.onLine)reg.update().catch(()=>{});return reg;}).catch(err=>console.warn('تعذر تفعيل وضع عدم الاتصال',err)));}</script>
 
 <script src="./ha-pos-operations.js"></script>
