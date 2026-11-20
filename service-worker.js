@@ -1,11 +1,11 @@
-const CACHE='ha-accounting-shell-v380-voucher-sheet';
-const SHELL_BUILD='20261120-voucher-sheet-layout-v38';
-const ASSETS=['./ha-voucher-design.css?v=1','./ha-voucher-design.js?v=1','./ha-section-sidebar.js?v=1','./ha-processor-sidebar.css?v=1','./ha-processor-sidebar.js?v=2-all-sections','./ha-processor-design.css?v=1','./ha-processor-design.js?v=1','./ha-paper-templates.js?v=1','./ha-barcode-scanner.js?v=3-bounds','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=3-admin-demo','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=6-voucher-edit-history','./ha-app-update.js?v=38','./','./index.html','./yemen-section.js?v=6-integrated-returns','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=6-independent-papers','./ha-personal-print-center.js?v=2-paper-templates','./supabase-2.118.0.js','./auth-client.js?v=91-isolated-admin-demo','./supabase-config.js','./ha-pos-operations.js'];
+const CACHE='ha-accounting-shell-v390-sticky-tabs';
+const SHELL_BUILD='20261120-sticky-open-tabs-v39';
+const ASSETS=['./ha-voucher-design.css?v=1','./ha-voucher-design.js?v=1','./ha-section-sidebar.js?v=1','./ha-processor-sidebar.css?v=1','./ha-processor-sidebar.js?v=2-all-sections','./ha-processor-design.css?v=1','./ha-processor-design.js?v=1','./ha-paper-templates.js?v=1','./ha-barcode-scanner.js?v=3-bounds','./ha-zxing-0.21.3.min.js','./ha-staff.js?v=3-admin-demo','./ha-form-recovery.js?v=1','./ha-html2canvas-1.4.1.min.js','./ha-invoice-layout.js?v=6-voucher-edit-history','./ha-app-update.js?v=39','./','./index.html','./yemen-section.js?v=6-integrated-returns','./yemen-section.css?v=2-customer-requests-maintenance','./ha-language.js?v=1','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./ha-accounting-product-photos.js','./ha-business-print.js?v=6-independent-papers','./ha-personal-print-center.js?v=2-paper-templates','./supabase-2.118.0.js','./auth-client.js?v=91-isolated-admin-demo','./supabase-config.js','./ha-pos-operations.js'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   const cache=await caches.open(CACHE);
   await cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})));
   const html=await (await cache.match('./index.html')).text();
-  const updater=await (await cache.match('./ha-app-update.js?v=38')).text();
+  const updater=await (await cache.match('./ha-app-update.js?v=39')).text();
   if(html.match(/name="ha-app-build" content="([^"]+)"/)?.[1]!==SHELL_BUILD || updater.match(/const build\s*=\s*'([^']+)'/)?.[1]!==SHELL_BUILD){
     await caches.delete(CACHE);throw new Error('Incomplete HA deployment');
   }

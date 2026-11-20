@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261120-voucher-sheet-layout-v38">
+<meta name="ha-app-build" content="20261120-sticky-open-tabs-v39">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -2094,7 +2094,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=91-isolated-admin-demo"></script>
-<script defer src="./ha-app-update.js?v=38"></script>
+<script defer src="./ha-app-update.js?v=39"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -2187,6 +2187,26 @@ syncHeight();
 .ha-bottom-shortcuts{position:fixed;z-index:30;left:0;right:250px;bottom:0;display:flex;align-items:stretch;justify-content:space-around;gap:5px;overflow-x:auto;scrollbar-width:thin;min-height:68px;padding:6px 14px calc(6px + env(safe-area-inset-bottom));background:#ffffffed;border-top:1px solid #d8e4ee;box-shadow:0 -8px 24px #102a4312;backdrop-filter:blur(12px)}.ha-bottom-shortcut{flex:1 1 0;min-width:0;max-width:210px;border:0;border-radius:13px;background:transparent;color:#58718a;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 10px;text-align:center;cursor:pointer;transition:background .15s,color .15s}.ha-bottom-shortcut:hover{background:#eef6fb;color:#164e9b}.ha-bottom-shortcut.active{background:#e7f0ff;color:#1767c2;font-weight:700}.ha-bottom-shortcut-icon{font-size:20px;line-height:1}.ha-bottom-shortcut-label{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.content{padding-bottom:112px!important}@media(min-width:701px) and (max-width:1020px){.ha-bottom-shortcuts{right:210px}}@media(max-width:700px){.ha-top-tabs{min-height:48px;padding-inline:8px}.ha-open-tab{max-width:165px;padding:6px 8px}.ha-bottom-shortcuts{right:0;justify-content:flex-start;min-height:62px;padding:5px 5px calc(5px + env(safe-area-inset-bottom));gap:2px}.ha-bottom-shortcut{flex:0 0 58px;max-width:58px;flex-direction:column;gap:3px;padding:4px 3px;border-radius:10px}.ha-bottom-shortcut-icon{font-size:18px}.ha-bottom-shortcut-label{font-size:9px;max-width:100%}.content{padding-bottom:106px!important}}@media print{.ha-top-tabs,.ha-bottom-shortcuts,.processor-stocktake-zero-toggle{display:none!important}}
 .processor-stocktake-zero-toggle{display:flex;align-items:center;gap:8px;margin:10px 0 14px;padding:10px 12px;border:1px solid #d8e7ef;border-radius:10px;background:#f6fbfd;color:#34566e}.processor-stocktake-zero-toggle input{width:18px;height:18px;accent-color:#159a8c}.processor-grand-total-line{flex-basis:100%;padding-top:7px;border-top:1px solid #dce6eb;color:#0b766d;font-size:14px;font-weight:700}.processor-grand-total-line b{color:#123f69}
 </style>
+<style id="ha-sticky-tabs-style">
+.main>.topbar{z-index:9}
+#appTabs.ha-top-tabs{position:sticky;top:var(--ha-topbar-height,74px);z-index:8;flex-wrap:nowrap;max-width:100%;min-width:0;overscroll-behavior-x:contain}
+@media(max-width:700px){#appTabs.ha-top-tabs{top:var(--ha-topbar-height,63px)}}
+</style>
+<script>
+(()=>{
+ const header=document.querySelector('.main>.topbar'),tabs=document.getElementById('appTabs');
+ if(!header||!tabs)return;
+ let queued=false;
+ function measure(){queued=false;const height=Math.ceil(header.getBoundingClientRect().height);if(height>0)tabs.style.setProperty('--ha-topbar-height',height+'px');}
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(measure);}}
+ measure();
+ if(typeof ResizeObserver==='function')new ResizeObserver(schedule).observe(header);
+ else if(typeof MutationObserver==='function')new MutationObserver(schedule).observe(header,{childList:true,subtree:true,attributes:true,characterData:true});
+ window.addEventListener('resize',schedule,{passive:true});
+ window.addEventListener('orientationchange',schedule,{passive:true});
+ document.fonts?.ready?.then(schedule);
+})();
+</script>
 <script>
 (()=>{
  const tabsBar=document.getElementById('appTabs'),bar=document.getElementById('appBottomShortcuts'),go=window.HA_APP_GO;

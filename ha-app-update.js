@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261120-voucher-sheet-layout-v38';
+  const build = '20261120-sticky-open-tabs-v39';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
