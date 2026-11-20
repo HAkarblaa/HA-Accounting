@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261120-processor-accounting-workspace-v35">
+<meta name="ha-app-build" content="20261120-processor-icon-submenus-v36">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -640,6 +640,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 @media print{.processor-page-nav,.processor-page-controls{display:none!important}}
 </style>
 <link rel="stylesheet" href="./ha-processor-design.css?v=1">
+<link rel="stylesheet" href="./ha-processor-sidebar.css?v=1">
 </head>
 <body>
 <div id="authBoot" role="status" aria-live="polite"><div class="boot-card"><div class="boot-logo">HA</div><span>جارٍ التحقق من جلسة الدخول…</span><i class="boot-spinner" aria-hidden="true"></i></div></div><div id="authGate" class="auth-pending" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1436,6 +1437,30 @@ function processorConsumptionReport(actions=false){if(!processorExpiryDate(proce
 function processorToolsAction(b){const x=b.dataset;if(b.hasAttribute('data-px-quote-new')){processorQuoteModal();return true;}if(x.pxQuoteEdit){processorQuoteModal(x.pxQuoteEdit);return true;}if(x.pxQuoteConvert){processorQuoteConvert(x.pxQuoteConvert);return true;}if(x.pxQuotePrint||x.pxQuotePdf){processorQuoteOutput(x.pxQuotePrint||x.pxQuotePdf,x.pxQuotePdf?'pdf':'print');return true;}if(x.pxQuoteDelete){if(confirm('حذف عرض السعر غير المحوّل؟')){try{processorQuoteDelete(x.pxQuoteDelete);render();}catch(e){processorFormError(document.getElementById('view'),e.message);}}return true;}if(b.hasAttribute('data-px-pos-checkout')){processorPosCheckout();return true;}if(b.hasAttribute('data-px-pos-clear')){if(!processorPosCart.length||confirm('تفريغ سلة البيع؟')){processorPosCart=[];processorPosCheckoutId='';processorToolsBind(document.getElementById('view'));}return true;}if(b.hasAttribute('data-px-consume-new')||x.pxConsumeEdit){processorWriteoffModal(x.pxConsumeEdit||'',true);return true;}if(b.hasAttribute('data-px-consume-report')||b.hasAttribute('data-px-consume-print')||b.hasAttribute('data-px-consume-pdf')){const root=document.getElementById('view'),from=root.querySelector('#processorConsumptionFrom')?.value,to=root.querySelector('#processorConsumptionTo')?.value,product=root.querySelector('#processorConsumptionProduct')?.value||'',old=[processorConsumptionFrom,processorConsumptionTo,processorConsumptionProduct];try{processorConsumptionFrom=from;processorConsumptionTo=to;processorConsumptionProduct=product;const html=processorConsumptionReport(false);if(b.hasAttribute('data-px-consume-report'))root.querySelector('[data-px-consume-report-body]').innerHTML=processorConsumptionReport(true);else window.HABusinessPrint?.open(html,'كشف المواد المستهلكة',b.hasAttribute('data-px-consume-pdf')?'pdf':'print');}catch(e){[processorConsumptionFrom,processorConsumptionTo,processorConsumptionProduct]=old;processorFormError(root,e.message);}return true;}return false;}
 function processorToolsBind(root){if(page!=='processor-pos')return;const products=root.querySelector('[data-px-pos-products]'),cart=root.querySelector('[data-px-pos-cart]'),search=root.querySelector('#processorPosSearch'),barcode=root.querySelector('#processorPosBarcode'),status=root.querySelector('[data-px-pos-status]');if(!products||!cart)return;const message=text=>status.textContent=text||'',drawCart=()=>{cart.innerHTML=table(['المنتج','الكمية','سعر الوحدة','الإجمالي',''],processorPosCart.map((i,index)=>`<tr><td>${esc(i.name)}</td><td><input class="input" type="number" min="0.01" step="0.01" data-px-pos-qty="${index}" value="${i.qty}"></td><td><input class="input" type="number" min="0" step="0.01" data-px-pos-price="${index}" value="${i.price}"></td><td>${engineeringMoney(i.qty*i.price)}</td><td><button type="button" class="btn danger small" data-px-pos-remove="${index}">حذف</button></td></tr>`).join(''),'السلة فارغة.')+'<p><b>مجموع المواد: '+engineeringMoney(processorPosCart.reduce((n,i)=>n+i.qty*i.price,0))+' د.ع</b></p>';cart.querySelectorAll('[data-px-pos-remove]').forEach(b=>b.onclick=e=>{e.stopPropagation();processorPosCart.splice(+b.dataset.pxPosRemove,1);processorPosCheckoutId='';drawCart();});cart.querySelectorAll('[data-px-pos-qty],[data-px-pos-price]').forEach(el=>el.onchange=()=>{const isQty=el.hasAttribute('data-px-pos-qty'),i=processorPosCart[+(isQty?el.dataset.pxPosQty:el.dataset.pxPosPrice)],value=Number(el.value),p=processorData.products.find(p=>p.id===i.productId);if(!Number.isFinite(value)||value<(isQty?.01:0)||Math.abs(value*100-Math.round(value*100))>1e-6||isQty&&value>(+p?.qty||0)+.000001){message('راجع الكمية أو السعر؛ لا تتجاوز المخزون.');drawCart();return;}i[isQty?'qty':'price']=value;processorPosCheckoutId='';message('');drawCart();});};const drawProducts=()=>{const query=String(search.value||'').trim().toLocaleLowerCase('ar-IQ'),list=processorData.products.filter(p=>!query||p.name.toLocaleLowerCase('ar-IQ').includes(query)).slice(0,80);products.innerHTML=list.map(p=>`<button type="button" class="processor-pos-product" data-px-pos-add="${esc(p.id)}"><strong>${esc(p.name)}</strong><span>${engineeringMoney(p.price)} د.ع</span><small>المتاح ${+p.qty||0} ${esc(p.unit||'قطعة')}</small>${productExpiryBadge(p)}</button>`).join('')||'<p>لا توجد منتجات مطابقة.</p>';products.querySelectorAll('[data-px-pos-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();try{processorPosAdd(b.dataset.pxPosAdd);message('');drawCart();}catch(e){message(e.message);}});};const scan=()=>{try{const p=processorPosBarcode(barcode.value);barcode.value='';message('أضيف '+p.name);drawCart();}catch(e){message(e.message);}};search.oninput=drawProducts;barcode.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();scan();}};barcode.onchange=()=>{if(barcode.value.trim())scan();};root.querySelector('[data-px-pos-code]').onclick=e=>{e.stopPropagation();if(barcode.value.trim())scan();};root.querySelector('[data-px-pos-scan]').onclick=e=>{e.stopPropagation();startCameraBarcodeScan('processorPosBarcode');};drawProducts();drawCart();}
 
+function processorSidebarAction(action,checkOnly=false){
+ if(activeModuleType!=='processor'&&!(activeModuleType==='full'&&String(page).startsWith('processor-')))return false;
+ const actions={
+ 'dashboard':['processor-dashboard'],'sales.new':['processor-sales','[data-processor-invoice="sale"]'],'sales.list':['processor-sales'],'sales.direct':['processor-sales',null,'direct'],'sales.pos':['processor-pos'],'quotes.list':['processor-quotes'],'quotes.new':['processor-quotes','[data-px-quote-new]'],
+ 'purchases.new':['processor-purchases','[data-processor-invoice="purchase"]'],'purchases.list':['processor-purchases'],
+ 'inventory.list':['processor-inventory'],'inventory.new':['processor-inventory','[data-processor-add-product]'],'inventory.categories':['processor-inventory','[data-processor-add-category]'],'inventory.count':['processor-stocktake'],'inventory.writeoff':['processor-inventory','[data-processor-writeoff="new"]'],'inventory.writeoffs':['processor-inventory','[data-processor-writeoff-register]'],'inventory.consumption':['processor-consumption'],
+ 'vouchers.receipt':['processor-vouchers','[data-add="receipt"]'],'vouchers.payment':['processor-vouchers','[data-add="payment"]'],'vouchers.list':['processor-vouchers'],
+ 'customers.list':['processor-customers'],'customers.new':['processor-customers','[data-processor-add-contact="customer"]'],'suppliers.list':['processor-suppliers'],'suppliers.new':['processor-suppliers','[data-processor-add-contact="supplier"]'],'representatives.list':['processor-representatives'],'representatives.new':['processor-representatives','[data-processor-rep-add]'],
+ 'debts':['processor-debts'],'dues':['processor-dues'],'payroll':['payroll'],'expenses':['expenses'],'settings':['settings'],
+ 'returns.all':['processor-returns',null,'return-list','all'],'returns.sale':['processor-returns',null,'return-list','sale'],'returns.purchase':['processor-returns',null,'return-list','purchase'],'returns.receipt':['processor-returns',null,'return-list','receipt'],'returns.payment':['processor-returns',null,'return-list','payment'],
+ 'return-new.sale':['processor-returns',null,'return-new','sale'],'return-new.purchase':['processor-returns',null,'return-new','purchase'],'return-new.receipt':['processor-returns',null,'return-new','receipt'],'return-new.payment':['processor-returns',null,'return-new','payment'],'returns.statement':['processor-returns',null,'return-statement'],
+ 'reports.all':['processor-reports',null,'report','all'],'reports.sales':['processor-reports',null,'report','sales'],'reports.purchases':['processor-reports',null,'report','purchases'],'reports.inventory':['processor-reports',null,'report','inventory'],'reports.customers':['processor-reports',null,'report','customers'],'reports.suppliers':['processor-reports',null,'report','suppliers'],'reports.debts':['processor-reports',null,'report','debts'],'reports.dues':['processor-reports',null,'report','dues'],'reports.writeoffs':['processor-reports',null,'report','writeoffs']
+ };
+ const item=actions[action];if(!Array.isArray(item)||!moduleAllowsPage(item[0]))return false;if(checkOnly)return true;
+ if(item[2]==='report')processorReportType=item[3];if(item[2]==='return-list')processorReturnCategoryFilter=item[3];
+ go(item[0]);
+ if(item[1]){const button=document.querySelector('#view '+item[1]);if(!button||button.disabled)return false;button.click();}
+ if(item[2]==='direct')processorInvoiceModal('sale',true);
+ if(item[2]==='return-new')processorReturnChooseModal(item[3]);
+ if(item[2]==='return-statement')processorReturnStatement('all');
+ return true;
+}
+window.HA_PROCESSOR_NAV_ACTION=processorSidebarAction;
+
 function processorNav(){const routes=[['processor-dashboard','لوحة التحكم'],['processor-quotes','عرض سعر'],['processor-pos','نقطة بيع'],['processor-consumption','المواد المستهلكة'],['processor-sales','المبيعات والفواتير'],['processor-purchases','المشتريات'],['processor-returns','↩ المرتجعات والإلغاءات'],['processor-inventory','المخزون'],['processor-customers','الزبائن'],['processor-suppliers','المجهزون'],['processor-debts','الديون'],['processor-dues','المستحقات'],['processor-reports','التقارير المالية']];return `<nav class="processor-page-nav" data-processor-nav aria-label="أقسام المعالجات">${routes.map(([route,title])=>`<button type="button" class="btn secondary" data-go="${route}">${title}</button>`).join('')}</nav>`;}
 
 function processorClickableStat(label,value,change,tint,page,reportType=''){const action=reportType?`data-processor-stat-report="${esc(reportType)}"`:`data-processor-stat-go="${esc(page)}"`;return `<button type="button" class="stat processor-stat-button" style="--tint:${tint||'#e1f5f1'}" ${action} aria-label="عرض تفاصيل ${esc(label)}"><span class="label">${label}</span><span class="value">${value}</span><span class="change">${change||''}</span></button>`}
@@ -2055,6 +2080,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 </script>
 <script defer src="./ha-barcode-scanner.js?v=3-bounds"></script>
 <script defer src="./ha-language.js?v=1"></script>
+<script defer src="./ha-processor-sidebar.js?v=1"></script>
 <script defer src="./ha-processor-design.js?v=1"></script>
 <script defer src="./ha-invoice-layout.js?v=6-voucher-edit-history"></script>
 <script defer src="./ha-paper-templates.js?v=1"></script>
@@ -2064,7 +2090,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=91-isolated-admin-demo"></script>
-<script defer src="./ha-app-update.js?v=35"></script>
+<script defer src="./ha-app-update.js?v=36"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');

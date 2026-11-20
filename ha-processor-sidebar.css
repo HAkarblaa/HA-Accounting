@@ -1,0 +1,22 @@
+/* The original navigation is hidden only while the processor tree is enabled. */
+#nav.ha-processor-tree-enabled>button{display:none!important}
+#nav .hps-tree{width:100%;display:flex;flex-direction:column;gap:5px;min-width:0}
+#nav .hps-tree[hidden]{display:none!important}
+#nav .hps-entry{min-width:0}
+#nav .hps-group{display:flex!important;align-items:center;gap:10px;width:100%;min-height:45px;padding:10px 13px;border:1px solid transparent;border-radius:8px;background:transparent;color:#e9f3ff;text-align:right;cursor:pointer;font:inherit;font-size:13px;box-sizing:border-box}
+#nav .hps-group>span:first-child{font-size:19px;flex:0 0 24px;text-align:center}
+#nav .hps-group>span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
+#nav .hps-arrow{font-size:23px;opacity:.8}
+#nav .hps-group:hover,#nav .hps-group:focus-visible,#nav .hps-group[aria-expanded=true]{background:#ffffff20;border-color:#ffffff35;outline:2px solid transparent}
+#nav .hps-group.hps-current{background:#ffffff24;border-right:4px solid #ffcf58;padding-right:10px}
+.ha-processor-subnav{z-index:1100;box-sizing:border-box;background:#16384c;color:#edf7ff;border:1px solid #6a9baf;border-radius:10px;box-shadow:0 14px 45px #0c203654;overflow-y:auto;overscroll-behavior:contain;padding:12px;font:13px Tahoma,Arial,sans-serif;max-width:calc(100vw - 16px)}
+.ha-processor-subnav .hps-subhead{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #ffffff26;padding:0 0 10px;margin:0 0 10px}
+.ha-processor-subnav .hps-subhead strong{font-size:15px;color:#fff}
+.ha-processor-subnav .hps-close{background:#ffffff19;color:#fff;border:1px solid #ffffff35;border-radius:5px;min-width:32px;min-height:30px;font:20px Arial;cursor:pointer}
+.ha-processor-subnav .hps-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ha-processor-subnav .hps-grid>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:94px;padding:12px 7px;background:#214a5e;border:1px solid #467385;border-radius:8px;color:#fff;font:inherit;line-height:1.65;cursor:pointer;text-align:center;overflow-wrap:anywhere}
+.ha-processor-subnav .hps-icon{display:grid;place-items:center;font-size:28px;line-height:1.2;color:#55e1c5;min-width:40px;height:36px}
+.ha-processor-subnav .hps-grid>button:hover,.ha-processor-subnav .hps-grid>button:focus-visible{background:#2e6577;border-color:#60e4ca;outline:2px solid #60e4ca;outline-offset:1px}
+.ha-processor-subnav [data-hps-status]{line-height:1.8;color:#ffdda0;border-top:1px solid #ffffff26;padding-top:10px;margin:10px 0 0}
+@media(max-width:900px){#nav .hps-entry>.ha-processor-subnav{position:static!important;width:100%!important;max-width:100%!important;max-height:none!important;box-shadow:none;border-color:#ffffff3b;margin:5px 0 8px;padding:8px;background:#11344d}#nav .hps-entry>.ha-processor-subnav .hps-grid>button{min-height:82px;font-size:12px;padding:10px 6px}#nav .hps-group[aria-expanded=true] .hps-arrow{transform:rotate(-90deg)}}
+#nav .hps-group[hidden]{display:none!important}
