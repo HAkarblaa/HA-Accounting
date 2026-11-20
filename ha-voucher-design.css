@@ -28,3 +28,24 @@ html body #modal.modal.ha-voucher-dialog #modalBody .modal-title button{width:34
 #modal.ha-voucher-dialog .hvd-form [hidden],#modal.ha-voucher-dialog .hvd-form .field.hidden{display:none!important}
 @media(min-width:701px){html body #modal.modal.ha-voucher-dialog[open]{inset:3vh 20px auto!important;margin:0 auto!important;width:calc(100vw - 40px)!important;max-width:900px!important;max-height:94vh!important}}
 @media(max-width:700px){html body #modal.modal.ha-voucher-dialog[open]{inset:6px 6px auto!important;margin:0!important;width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(var(--ha-visual-height,100dvh) - 12px)!important}html body #modal.modal.ha-voucher-dialog #modalBody.modal-inner{padding:13px!important}html body #modal.modal.ha-voucher-dialog #modalBody .modal-title h2{font-size:20px}#modal.ha-voucher-dialog .hvd-form>.form-grid>.field:not(.hidden):not([hidden]){grid-template-columns:minmax(0,1fr);gap:5px}#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>label,#modal.ha-voucher-dialog .hvd-label{grid-column:1;grid-row:auto;padding-top:0;font-size:13px}#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>input,#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>select,#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>textarea,#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>.date-dmy-wrap,#modal.ha-voucher-dialog .hvd-form>.form-grid>.field>output,#modal.ha-voucher-dialog .hvd-form .field>small,#modal.ha-voucher-dialog .hvd-form .field>.hint{grid-column:1;grid-row:auto}#modal.ha-voucher-dialog .hvd-form input:not([type=checkbox]):not([type=radio]),#modal.ha-voucher-dialog .hvd-form select,#modal.ha-voucher-dialog .hvd-form textarea{font-size:16px;min-height:42px}#modal.ha-voucher-dialog .hvd-form>.form-actions{bottom:-13px}#modal.ha-voucher-dialog .hvd-form>.form-actions .btn{flex:1 1 120px}#modal.ha-voucher-dialog .hvd-form .hvd-memo textarea{min-height:100px}}
+/* Both engineering and processor vouchers fit typical desktop viewports. History opens above the sheet. */
+@media(min-width:1000px) and (min-height:580px){
+ html body #modal.modal.ha-voucher-dialog[open]{inset:8px 8px auto!important;width:calc(100vw - 16px)!important;max-width:1100px!important;max-height:calc(100vh - 16px)!important;margin:0 auto!important;overflow:auto!important}
+ html body #modal.modal.ha-voucher-dialog #modalBody.modal-inner{padding:12px!important}
+ html body #modal.modal.ha-voucher-dialog #modalBody .modal-title{padding:0 0 5px!important;margin:0 0 9px!important;min-height:33px}
+ html body #modal.modal.ha-voucher-dialog #modalBody .modal-title h2{font-size:20px}
+ #modal.ha-voucher-dialog .hvd-form>.form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px!important}
+ #modal.ha-voucher-dialog .hvd-form>.form-grid>.field:not(.hidden):not([hidden]){grid-template-columns:115px minmax(0,1fr);gap:5px;grid-column:auto!important}
+ #modal.ha-voucher-dialog .hvd-form>.form-grid>.hvd-memo{grid-column:1/3!important}
+ #modal.ha-voucher-dialog .hvd-form>.form-grid>.field>label,#modal.ha-voucher-dialog .hvd-label{font-size:12px;padding-top:6px}
+ #modal.ha-voucher-dialog .hvd-form input:not([type=checkbox]):not([type=radio]),#modal.ha-voucher-dialog .hvd-form select{height:33px;min-height:33px;padding:5px 8px}
+ #modal.ha-voucher-dialog .hvd-form .hvd-money input{height:38px;min-height:38px;font-size:20px!important}
+ #modal.ha-voucher-dialog .hvd-form .hvd-memo textarea{min-height:68px;height:68px;resize:none}
+ #modal.ha-voucher-dialog .hvd-words output{min-height:38px;padding:6px;font-size:12px}
+ #modal.ha-voucher-dialog .hvd-history{margin:8px 0;position:relative}
+ #modal.ha-voucher-dialog .hvd-history summary{padding:8px 10px}
+ #modal.ha-voucher-dialog .hvd-history[open]>.hvd-history-body{position:absolute;z-index:50;bottom:100%;left:0;right:0;max-height:350px;overflow:auto;background:#fff;border:1px solid #c4d6df;border-radius:6px;padding:12px;box-shadow:0 -8px 25px #173f5f30}
+ #modal.ha-voucher-dialog .hvd-form>.form-actions{position:static;margin:6px 0 0;padding:8px 0 0}
+ #modal.ha-voucher-dialog .hvd-form>.form-actions .btn{min-height:35px;padding:7px 20px}
+}
+@media(min-width:1000px) and (min-height:580px){#modal.ha-voucher-dialog .hvd-form .field>small,#modal.ha-voucher-dialog .hvd-form .field>.hint{max-height:1.7em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
