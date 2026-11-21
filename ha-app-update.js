@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261120-engineering-upgrade-v42';
+  const build = '20261120-all-sections-admin-demo-v44';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

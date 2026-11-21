@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261120-engineering-upgrade-v42">
+<meta name="ha-app-build" content="20261120-all-sections-admin-demo-v44">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -889,7 +889,33 @@ function adminDemoSeedReturns(){
  state.adminDemoSeedVersion=1;save();
  }catch(error){state=before;processorData=state.processorData;localStorage.setItem(KEY,JSON.stringify(state));console.warn('تعذر تجهيز بعض بيانات التجربة',error);}
 }
-window.HA_RESET_ADMIN_DEMO=()=>{if(window.HA_ADMIN_DEMO!==true||window.HA_ACCOUNTING_IS_ADMIN!==true)return;state=adminDemoState();processorData=state.processorData;adminDemoSeedReturns();save();render();};
+function adminDemoSeedEngineering(){
+ if(window.HA_ADMIN_DEMO!==true||window.HA_ACCOUNTING_IS_ADMIN!==true||!KEY.endsWith(':admin-demo-v1')||state.adminDemoSandbox!==true||state.adminDemoEngineeringVersion===1||!window.HAEngineeringUpgrade)return false;
+ // Add the missing engineering example only to an untouched, empty engineering demo book.
+ const lists=['engineeringProjects','engineeringMaterials','engineeringTransactions','engineeringPayees','engineeringQuotes','engineeringWriteoffs','engineeringStocktakes'];
+ if(lists.some(k=>Array.isArray(state[k])&&state[k].length)||state.engineeringPartnerData){return false;}
+ let sequence=0;
+ const project={id:'demo-eng-project',name:'مشروع منزل تجريبي',owner:'زبون الهندسة التجريبي',contractValue:1500000,profitMode:'percentage',profitRate:10,fixedProfit:0,phone:'',address:'موقع افتراضي للتجربة',notes:'مشروع توضيحي',date:demoDate(-10),status:'active'};
+ let model={projects:[project],materials:[],transactions:[],quotes:[],writeoffs:[],stocktakes:[],contacts:[],payees:[{id:'demo-eng-payee',name:'مكتب النقل التجريبي'}],categories:[],due:{},locked:[]};
+ const env={today:demoDate(0),uid:()=> 'demo-eng-'+(++sequence),now:Date.now()};
+ const post=(type,input)=>{model=window.HAEngineeringUpgrade.apply(model,{type,input},env);};
+ try{
+  post('material',{name:'اسمنت تجريبي',unit:'كيس',qty:0,cost:0,salePrice:10000,barcode:'2900000001008',expiryDate:demoDate(25)});
+  const materialId=model.materials[0].id;
+  const base={projectId:project.id,currency:'IQD',exchangeRate:1,discount:0,taxRate:0,deliveryFee:0,paymentChannel:'cash',paidAmount:0};
+  post('invoice',{...base,kind:'purchase',number:'DEMO-ENG-PI-001',date:demoDate(-2),party:'مجهز الهندسة التجريبي',paymentMode:'credit',firstDue:demoDate(14),paidAmount:50000,items:[{materialId,qty:20,price:7000,expiryDate:demoDate(25)}]});
+  post('invoice',{...base,kind:'sale',number:'DEMO-ENG-SI-001',date:demoDate(0),party:'زبون الهندسة التجريبي',paymentMode:'cash',items:[{materialId,qty:4,price:10000,expiryDate:demoDate(25)}]});
+  post('cash',{kind:'receipt',number:'DEMO-ENG-RV-001',date:demoDate(0),projectId:project.id,party:'زبون الهندسة التجريبي',amount:10000,paymentChannel:'cash',memo:'سند قبض تجريبي مستقل'});
+  post('cash',{kind:'payment',number:'DEMO-ENG-PV-001',date:demoDate(0),projectId:project.id,party:'مكتب النقل التجريبي',amount:2000,paymentChannel:'cash',category:'نقل',memo:'مصروف نقل تجريبي'});
+  post('quote',{...base,kind:'sale',number:'DEMO-ENG-Q-001',date:demoDate(0),party:'زبون الهندسة التجريبي',paymentMode:'credit',items:[{materialId,qty:2,price:10000}]});
+  const contacts=[{id:'demo-eng-customer',name:'زبون الهندسة التجريبي',kind:'customer'},{id:'demo-eng-supplier',name:'مجهز الهندسة التجريبي',kind:'supplier'}];
+  state.engineeringProjects=model.projects;state.engineeringMaterials=model.materials;state.engineeringTransactions=model.transactions;state.engineeringPayees=model.payees;state.engineeringQuotes=model.quotes;state.engineeringBatchVersion=1;
+  state.contacts=state.contacts||[];for(const contact of contacts)if(!state.contacts.some(c=>c.id===contact.id))state.contacts.push(contact);
+  state.adminDemoEngineeringVersion=1;save();return true;
+ }catch(error){console.warn('تعذر تجهيز مثال الهندسة في مساحة التجربة',error);return false;}
+}
+
+window.HA_RESET_ADMIN_DEMO=()=>{if(window.HA_ADMIN_DEMO!==true||window.HA_ACCOUNTING_IS_ADMIN!==true)return;state=adminDemoState();processorData=state.processorData;adminDemoSeedReturns();adminDemoSeedEngineering();save();window.HAAdminDemo?.seed?.();render();};
 
 function stripDemoData(data){
  for(const key of ['entries','documents','contacts','products','stockMovements','employees','payroll'])if(Array.isArray(data[key]))data[key]=data[key].filter(item=>!String(item?.id||'').startsWith('demo-'));
@@ -1058,7 +1084,7 @@ function serviceReceiveReplacement(t,qty,index=0){const x=serviceLines(t)[index]
 function servicePrint(id,outputMode='combined'){const t=(state.serviceTickets||[]).find(t=>t.id===id);if(!t)return;const lines=serviceLines(t),items=lines.map(x=>({name:x.productName,unit:'قطعة',qty:+x.qty||0,price:serviceLinePrice(t,x),total:serviceLinePrice(t,x)*(+x.qty||0)})),total=items.reduce((n,i)=>n+i.total,0);return invoiceLayoutOutput({company:state.company,title:'وصل استلام وصيانة',signatures:['توقيع الزبون','توقيع موظف الاستلام','توقيع مسؤول التسليم'],number:t.number,date:serviceDateTime(t),partyLabel:'الزبون',party:t.customer,phone:t.phone,currency:state.company.currency||'د.ع',paymentMode:'—',items,subtotal:total,total,notes:t.problem||t.note||'',extra:[{label:'نوع الزبون',value:t.customerType==='agent'?'وكيل':'مواطن'},{label:'حالة الطلب',value:serviceTicketStatus(t)},{label:'المسلم فوراً',value:lines.reduce((n,x)=>n+(+x.immediateQty||0),0)},{label:'المتبقي للتسليم',value:lines.reduce((n,x)=>n+Math.max(0,(+x.qty||0)-(+x.deliveredQty||0)),0)}]},outputMode);}
 function serviceExport(){const rows=[['نوع السجل','رقم الوصل','التاريخ','الوقت','الزبون','الهاتف','الصنف','الكمية','السعر المعتمد'],...(state.serviceTickets||[]).flatMap(t=>serviceLines(t).map(x=>['استلام قطعة',t.number,t.date,t.receivedTime,t.customer,t.phone,x.productName,x.qty,serviceLinePrice(t,x)])),...(state.serviceExpenses||[]).map(x=>['مصروف','',x.date,x.time,x.description,x.category,x.memo,'',x.amount])],csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='service-center-daily-ledger.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 
-function generatorPage(){return `<section class="panel generator-page"><div class="panel-head"><div><h2>إدارة المولدة</h2><span>الجباية والمشتركين والمصاريف والوقود والصيانة والتقارير</span></div><a class="btn secondary small" href="https://hakarblaa.github.io/generator-manager/" target="_blank" rel="noopener">فتح بصفحة كاملة ↗</a></div><iframe class="generator-frame" src="https://hakarblaa.github.io/generator-manager/" title="نظام إدارة المولدة" loading="lazy" allow="clipboard-read; clipboard-write"></iframe></section>`}
+function generatorPage(){if(window.HA_ADMIN_DEMO===true&&window.HA_ACCOUNTING_IS_ADMIN===true)return `<section class="panel generator-page"><div class="panel-head"><h2>المولدات — تجربة الأدمن</h2><span>أمثلة منفصلة عن حساب المولدة الفعلي</span></div><iframe class="generator-frame" src="./ha-generator-demo.html?v=1" title="تجربة المولدة للأدمن"></iframe></section>`;return `<section class="panel generator-page"><div class="panel-head"><div><h2>إدارة المولدة</h2><span>الجباية والمشتركين والمصاريف والوقود والصيانة والتقارير</span></div><a class="btn secondary small" href="https://hakarblaa.github.io/generator-manager/" target="_blank" rel="noopener">فتح بصفحة كاملة ↗</a></div><iframe class="generator-frame" src="https://hakarblaa.github.io/generator-manager/" title="نظام إدارة المولدة" loading="lazy" allow="clipboard-read; clipboard-write"></iframe></section>`}
 
 function engineeringEnsure(){state.engineeringMaterialCategories=Array.isArray(state.engineeringMaterialCategories)?state.engineeringMaterialCategories:[];state.engineeringProjects=Array.isArray(state.engineeringProjects)?state.engineeringProjects:[];state.engineeringMaterials=Array.isArray(state.engineeringMaterials)?state.engineeringMaterials:[];state.engineeringTransactions=Array.isArray(state.engineeringTransactions)?state.engineeringTransactions:[];state.engineeringPayees=Array.isArray(state.engineeringPayees)?state.engineeringPayees:[];state.engineeringRepresentatives=Array.isArray(state.engineeringRepresentatives)?state.engineeringRepresentatives:[];state.engineeringStocktakes=Array.isArray(state.engineeringStocktakes)?state.engineeringStocktakes:[];if((+state.engineeringBatchVersion||0)<1)engineeringMigrateBatches();for(const m of state.engineeringMaterials){if(!Array.isArray(m.batches)){const qty=Math.max(0,+m.qty||0);m.batches=qty?[{id:'eng-opening-'+m.id,qty,purchasedQty:qty,unitCost:+m.cost||0,date:'0000-01-01',createdAt:0,reference:'رصيد سابق',opening:true}]:[];}engineeringSyncMaterial(m);}}
 function engineeringMigrateBatches(){for(const m of state.engineeringMaterials){const legacyQty=Math.max(0,+m.qty||0),legacyCost=Math.max(0,+m.cost||0);m.batches=[];const invoices=state.engineeringTransactions.filter(t=>['material_purchase','material_sale'].includes(t.type)&&(t.items||[]).some(i=>i.materialId===m.id));let purchased=0,sold=0;for(const t of invoices)for(const i of t.items||[])if(i.materialId===m.id){if(t.type==='material_purchase')purchased+=Math.max(0,+i.qty||0);else sold+=Math.max(0,+i.qty||0);}const openingQty=Math.max(0,legacyQty-purchased+sold);if(openingQty)engineeringCreateBatch(m,openingQty,legacyCost,'0000-01-01','رصيد سابق','eng-opening-'+m.id,true);const ordered=invoices.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||(+a.createdAt||0)-(+b.createdAt||0));for(const t of ordered){for(const i of t.items||[]){if(i.materialId!==m.id)continue;if(t.type==='material_purchase'){const b=engineeringCreateBatch(m,+i.qty||0,+i.price||0,t.date||iso(),t.number||'',i.batchId||uid());i.batchId=b.id;}else{let layers=engineeringConsumeMaterial(m,+i.qty||0);if(!layers){const missing=Math.max(0,(+i.qty||0)-(+m.qty||0));engineeringCreateBatch(m,missing,legacyCost,'0000-01-01','رصيد سابق للتسوية','eng-adjust-'+m.id+'-'+uid(),true);layers=engineeringConsumeMaterial(m,+i.qty||0)||[];}i.costLayers=layers;const total=layers.reduce((n,z)=>n+z.qty*z.unitCost,0);i.cost=(+i.qty||0)?total/(+i.qty||0):0;}}}engineeringSyncMaterial(m);const diff=legacyQty-(+m.qty||0);if(diff>0.000001)engineeringCreateBatch(m,diff,legacyCost,iso(),'تسوية الرصيد السابق','eng-adjust-final-'+m.id,true);else if(diff<-0.000001){let remove=-diff;for(const b of engineeringBatchOrder(m)){const take=Math.min(+b.qty||0,remove);b.qty=Math.max(0,(+b.qty||0)-take);remove-=take;if(remove<=0.000001)break;}engineeringSyncMaterial(m);}}state.engineeringBatchVersion=1;save();}
@@ -2105,6 +2131,7 @@ window.HA_DAILY_PROFIT_BRIDGE={
  modal:(title,html)=>openModal(title,html)
 };
 window.HA_ENGINEERING_BRIDGE={
+ seedDemo:adminDemoSeedEngineering,
  active:()=>activeModuleType==='engineering'||activeModuleType==='full'&&String(page).startsWith('engineering'),
  allowed:()=>window.HA_ENGINEERING_BRIDGE.active()&&!document.body.classList.contains('ha-staff-mode')&&!!document.querySelector('.layout.authenticated'),
  scope:()=>KEY+':engineering',today:iso,date:fmtDate,dates:applyDayMonthYear,
@@ -2125,6 +2152,13 @@ window.HA_ENGINEERING_PARTNER_BRIDGE={
  modal:(title,html)=>openModal(title,html),close:()=>document.getElementById('modal').close(),refresh:render,print:(html,title,mode)=>window.HABusinessPrint?.open(html,title,mode)
 };
 window.HA_ENG_VOUCHER_HISTORY=({kind,party='',exclude=''}={})=>(state.engineeringTransactions||[]).filter(t=>!t.sharedReturnId&&t.id!==exclude&&t.type===(kind==='receipt'?'receipt':'expense')&&(!party||(t.party||t.payee)===party)).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(t=>({number:t.number,dateLabel:fmtDate(t.date),party:t.party||t.payee,amount:t.amount}));
+window.HA_ADMIN_DEMO_BRIDGE={
+ allowed:()=>window.HA_ADMIN_DEMO===true&&window.HA_ACCOUNTING_IS_ADMIN===true&&KEY.endsWith(':admin-demo-v1')&&state.adminDemoSandbox===true&&!document.body.classList.contains('ha-staff-mode')&&!!document.querySelector('.layout.authenticated'),
+ seed:expand=>{if(!window.HA_ADMIN_DEMO_BRIDGE.allowed())return false;const before=JSON.stringify(state),next=expand(state,{date:demoDate,partners:window.HAProcessorPartners});if(JSON.stringify(next)===before)return false;sharedReturnAtomic(()=>{state=next;processorData=state.processorData;});render();return true;},
+ generatorRead:()=>{if(!window.HA_ADMIN_DEMO_BRIDGE.allowed())throw Error('انتهت مساحة تجربة الأدمن.');return{scope:KEY,data:JSON.parse(JSON.stringify(state.generatorDemoData))};},
+ generatorSave:(scope,data,revision)=>{if(!window.HA_ADMIN_DEMO_BRIDGE.allowed()||scope!==KEY)throw Error('تغير الحساب؛ أعد فتح تجربة المولدة.');if(revision!==JSON.stringify(state.generatorDemoData))throw Error('تغيرت بيانات التجربة؛ أعد فتح قسم المولدات.');if(!data?.settings||['subscribers','collections','expenses','fuel','maintenance'].some(k=>!Array.isArray(data[k])))throw Error('صيغة بيانات تجربة المولدة غير صالحة.');sharedReturnAtomic(()=>{state.generatorDemoData=JSON.parse(JSON.stringify(data));});return true;}
+};
+
 window.HA_PARTNER_BRIDGE={
  allowed:()=>moduleAllowsPage('processor-partners')&&(activeModuleType==='processor'||activeModuleType==='full'&&String(page).startsWith('processor-'))&&!document.body.classList.contains('ha-staff-mode')&&!!document.querySelector('.layout.authenticated'),
  scope:()=>KEY,today:iso,date:fmtDate,
@@ -2143,7 +2177,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./ha-barcode-scanner.js?v=3-bounds"></script>
 <script defer src="./ha-language.js?v=1"></script>
 <script defer src="./ha-processor-partners.js?v=2-engineering"></script>
-<script defer src="./ha-engineering-upgrade.js?v=1"></script>
+<script defer src="./ha-engineering-upgrade.js?v=2-demo"></script>
 <script defer src="./ha-section-sidebar.js?v=2-engineering"></script>
 <script defer src="./ha-processor-sidebar.js?v=3-partners"></script>
 <script defer src="./ha-bottom-submenus.js?v=1"></script>
@@ -2154,11 +2188,12 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./ha-business-print.js?v=6-independent-papers"></script>
 <script defer src="./ha-personal-print-center.js?v=2-paper-templates"></script>
 <script defer src="./ha-daily-profit.js?v=1"></script>
+<script defer src="./ha-admin-demo.js?v=1"></script>
 <script defer src="./supabase-2.118.0.js"></script>
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=93-engineering"></script>
-<script defer src="./ha-app-update.js?v=42"></script>
+<script defer src="./ha-app-update.js?v=44"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -2172,6 +2207,9 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
     ['service','مركز الصيانة والاستبدال','استلام ومتابعة طلبات الصيانة والاستبدال'],
   ['simple','الواجهة البسيطة','المبيعات والمشتريات والمخزون والجهات'],
   ['market','الأسواق والتجزئة','المبيعات والمشتريات والمخزون'],
+  ['restaurant','المطاعم','نقطة البيع والوجبات والمخزون'],
+  ['wholesale','تجارة الجملة','الفواتير والحسابات والمخزون'],
+  ['generator','المولدات','المشتركين والجباية والمصاريف والوقود والصيانة'],
   ['personal','الحسابات الشخصية','الميزانية والالتزامات والادخار']
  ];
  function openPicker(){
