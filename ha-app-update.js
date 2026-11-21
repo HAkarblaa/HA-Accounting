@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-cashier-sticky-search-v60';
+  const build = '20261121-thermal-print-clarity-v61';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

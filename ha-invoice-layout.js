@@ -274,23 +274,25 @@ body[data-ha-paper="80"],body[data-ha-paper="58"]{font-size:12px!important;color
 
 .thermal-invoice-list{display:none}
 :is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .thermal-invoice-list{display:block;margin:9px 0 6px;color:#000}
-.thermal-invoice-list>h3{font-size:1em;margin:0 0 5px}
+body[data-ha-paper="58"]{--thermal-label-size:11px;--thermal-value-size:12px;--thermal-product-size:13px}
+body[data-ha-paper="80"]{--thermal-label-size:12px;--thermal-value-size:14px;--thermal-product-size:15px}
+.thermal-invoice-list>h3{font-size:var(--thermal-product-size,13px);margin:0 0 5px;color:#000}
 .thermal-invoice-items{list-style:none;margin:0;padding:0}
 .thermal-invoice-items>.thermal-invoice-item{
-  border:1px solid #555;padding:5px;margin:0 0 6px;min-width:0;break-inside:avoid
+  border:1px solid #000;padding:0;margin:0 0 6px;min-width:0;break-inside:avoid
 }
-.thermal-item-name{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:5px;overflow-wrap:anywhere;line-height:1.35}
-.thermal-item-number{min-width:17px;text-align:center;border:1px solid #777;font-size:.78em;line-height:1.45}
-.thermal-item-expiry{display:block;margin:3px 0 0;color:#111}
-.thermal-item-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1.12fr);margin:5px 0 0;border:1px solid #888}
+.thermal-item-name{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:5px;padding:4px;overflow-wrap:anywhere;line-height:1.3;font-size:var(--thermal-product-size,13px);color:#000}
+.thermal-item-number{min-width:17px;text-align:center;border:1px solid #000;font-size:var(--thermal-label-size,11px);line-height:1.35}
+.thermal-item-expiry{display:block;margin:0;padding:0 4px 3px;color:#000;font-size:var(--thermal-label-size,11px)}
+.thermal-item-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1.12fr);margin:0;border-top:1px solid #000}
 .thermal-item-field{padding:3px;min-width:0}
-.thermal-item-field+.thermal-item-field{border-inline-start:1px solid #888}
-.thermal-item-field dt{font-size:.76em;line-height:1.35}
-.thermal-item-field dd{font-weight:700;font-size:.9em;line-height:1.45;margin:2px 0 0;overflow-wrap:anywhere}
-.thermal-item-field dd small{display:block;font-weight:400;line-height:1.3}
-.thermal-meta .thermal-meta-fields{margin:0;border:1px solid #888}
+.thermal-item-field+.thermal-item-field{border-inline-start:1px solid #000}
+.thermal-item-field dt{font-size:var(--thermal-label-size,11px);font-weight:700;line-height:1.25;color:#000}
+.thermal-item-field dd{font-weight:700;font-size:var(--thermal-value-size,12px);font-variant-numeric:tabular-nums;line-height:1.3;margin:2px 0 0;overflow-wrap:anywhere;color:#000}
+.thermal-item-field dd small{display:block;font-size:var(--thermal-label-size,11px);font-weight:400;line-height:1.3;color:#000}
+.thermal-meta .thermal-meta-fields{margin:0;border:1px solid #000;color:#000}
 .thermal-meta-fields>div{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.65fr);padding:2px 4px;gap:5px}
-.thermal-meta-fields>div+div{border-top:1px solid #aaa}
+.thermal-meta-fields>div+div{border-top:1px solid #000}
 .thermal-meta-fields dt{font-weight:700}
 .thermal-meta-fields dd{margin:0;overflow-wrap:anywhere}
 
