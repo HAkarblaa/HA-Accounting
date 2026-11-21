@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261121-thermal-invoice-list-v50">
+<meta name="ha-app-build" content="20261121-compact-cashier-cards-v51">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -26,6 +26,30 @@
 :root{--navy:#164e9b;--navy2:#2467c7;--teal:#00a896;--teal2:#e1fff7;--gold:#ffbd36;--ink:#18324f;--muted:#71849a;--line:#deebf5;--bg:#f2f8ff;--green:#0b9a74;--shadow:0 12px 30px #17477716}
 .sidebar{background:linear-gradient(165deg,#123c79,#1762b5 62%,#05a99a)}.brand-mark{background:linear-gradient(140deg,#ffcc4d,#ff8b42);color:#173d70;box-shadow:0 7px 18px #f7a73d55}.nav button.active{background:#ffffff24;box-shadow:inset -3px 0 #ffd45b}.topbar{background:linear-gradient(90deg,#fff,#f0fbff)}.btn{background:linear-gradient(135deg,#00a896,#078bd3);box-shadow:0 5px 12px #078bd325}.btn.dark{background:linear-gradient(135deg,#164e9b,#2677d7)}.stat{border-top:3px solid var(--tint,#12b9a6)}.stat::after{opacity:.48}.panel{border-top:2px solid #e8f4ff}.cashier-product-grid{gap:14px}.pos-card{background:linear-gradient(180deg,#fff,#f7fcff);border:1px solid #d8eaf7;box-shadow:0 8px 22px #1d5b8c12;overflow:hidden}.pos-card:hover{border-color:#24c2ae;transform:translateY(-2px);box-shadow:0 12px 24px #1d5b8c20}.ha-accounting-product-image{width:100%;height:122px;object-fit:cover;background:linear-gradient(135deg,#e8f7ff,#e2fff5);border-radius:12px;display:block;margin:0 0 9px}.ha-accounting-product-image.small{width:56px;height:46px;object-fit:cover;display:inline-block;vertical-align:middle;margin:0 8px 0 0;border-radius:9px}.pos-card-icon.small{width:56px;height:46px;display:inline-grid;place-items:center;background:#e9f7ff;border-radius:9px;vertical-align:middle;margin-left:8px}.pos-card-price{color:#008d80!important}.cashier-total strong{color:#087b74}.tag{background:#def9f2;color:#087b74}
 @media(max-width:700px){.cashier-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ha-accounting-product-image{height:105px}.content{padding:16px 12px}.panel{padding:14px}}
+/* Keep the product deck compact without changing the invoice and inventory cards. */
+.cashier-products .cashier-product-grid{
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,120px),1fr));
+  gap:8px;
+}
+.cashier-product-grid .pos-card{
+  padding:7px;gap:3px;min-width:0;text-align:start;line-height:1.35;
+}
+.cashier-product-grid .pos-card .ha-accounting-product-image{
+  height:72px;margin:0 0 3px;border-radius:7px;
+}
+.cashier-product-grid .pos-card .pos-card-icon{
+  display:grid;place-items:center;width:100%;height:72px;border-radius:7px;background:#e9f7ff;
+}
+.cashier-product-grid .pos-card strong,
+.cashier-product-grid .pos-card small,
+.cashier-product-grid .pos-card-stock{max-width:100%;overflow-wrap:anywhere}
+.cashier-product-grid .pos-card-price{font-size:12px}
+.cashier-product-grid .demand-badge{padding:2px 5px;font-size:9px;white-space:normal;max-width:100%}
+@media(max-width:700px){
+  .cashier-product-grid .pos-card .ha-accounting-product-image,
+  .cashier-product-grid .pos-card .pos-card-icon{height:62px}
+}
+
 .profit-preview{background:#e8fbf4;border-color:#bcebdd;color:#174e49;line-height:2}.profit-positive{color:#087f65!important;font-weight:800}
 .layout:not(.authenticated){display:none!important}.layout.authenticated{display:grid!important}@media(max-width:700px){.layout.authenticated{display:block!important}}
 
@@ -2383,7 +2407,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=94-work-tabs"></script>
-<script defer src="./ha-app-update.js?v=50"></script>
+<script defer src="./ha-app-update.js?v=51"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');

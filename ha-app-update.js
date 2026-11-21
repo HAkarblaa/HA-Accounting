@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-thermal-invoice-list-v50';
+  const build = '20261121-compact-cashier-cards-v51';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
