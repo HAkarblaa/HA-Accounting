@@ -38,8 +38,75 @@ function companyHeader(company={}){
     </div>
   </section>`;
 }
+const voucherCSS=`
+.ha-voucher {width:100%;max-width:100%;min-width:0;color:#18384b;overflow-wrap:anywhere}
+.ha-voucher-head,.ha-voucher-field,.ha-voucher-amount,.ha-voucher-signatures{break-inside:avoid}
+.ha-voucher-title {margin:0 0 8px;color:#18384b;font-size:1.55em}
+#modal .ha-voucher-title {display:none}
+.ha-voucher-meta,.ha-voucher-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 8px}
+.ha-voucher-field,.ha-voucher-amount {min-width:0;border:1px solid #b9cbd4;padding:8px 10px}
+.ha-voucher-label {display:block;color:#405e6d;font-size:.9em}
+.ha-voucher-amount {margin:0 0 8px;border-color:#437f70;background:#f1f8f5}
+.ha-voucher[data-kind="payment"] .ha-voucher-amount {border-color:#6d8296;background:#f0f5f9}
+.ha-voucher-amount-value {display:block;font-size:1.6em;line-height:1.35}
+.ha-voucher-words {display:block;margin-top:3px}
+.ha-voucher-memo {white-space:pre-wrap;margin:0}
+.ha-voucher-ledger {margin-top:12px}
+.ha-voucher-ledger h3 {margin:0 0 5px;font-size:1.1em}
+.ha-voucher-ledger table {width:100%;border-collapse:collapse;table-layout:fixed}
+.ha-voucher-ledger td,.ha-voucher-ledger th {border:1px solid #b9cbd4;padding:6px;text-align:start}
+.ha-voucher-signatures {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:32px}
+.ha-voucher-signatures span {padding-top:6px;border-top:1px solid #849eab;text-align:center}
+body[data-ha-paper="58"] .ha-voucher,body[data-ha-paper="80"] .ha-voucher {color:#000}
+:is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-voucher .ha-invoice-company{padding:5px;gap:6px;color:#000;border-color:#000}
+:is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-voucher .ha-invoice-company img{width:34px;height:33px}
+:is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-voucher :is(.ha-voucher-meta,.ha-voucher-fields){grid-template-columns:1fr;gap:4px}
+:is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-voucher :is(.ha-voucher-field,.ha-voucher-amount){padding:4px 5px;background:#fff;color:#000}
+:is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-voucher .ha-voucher-signatures{grid-template-columns:1fr;gap:16px;margin-top:20px}
+`;
+function voucherMoney(value,currency='د.ع'){
+  const unit=currency==='IQD'?'د.ع':currency;
+  return new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(num(value))+' '+unit;
+}
+function voucherWords(value,currency){
+  if(!['IQD','د.ع'].includes(currency)||num(value)<0)return '';
+  const cents=Math.round(num(value)*100);
+  return 'فقط '+words(Math.floor(cents/100))+' دينار عراقي'+(cents%100?' و'+words(cents%100)+' جزء من مائة دينار':'')+' لا غير';
+}
+function voucherBody(model){
+  const {company,title,kind,number,date,amount,currency='د.ع',fields=[],memo,
+    ledger=[],returnSummary,editHistory,signatures=[]}=model;
+  const field=(label,value)=>`<div class="ha-voucher-field"><span class="ha-voucher-label">${esc(label)}</span><bdi>${esc(value||'—')}</bdi></div>`;
+  const amountText=voucherWords(amount,currency);
+  return `<article class="ha-voucher" dir="rtl" data-kind="${esc(kind)}">
+    <header class="ha-voucher-head">
+      ${companyHeader(company)}
+      <h2 class="ha-voucher-title">${esc(title)}</h2>
+      <div class="ha-voucher-meta">${field('رقم السند',number)}${field('التاريخ',date)}</div>
+    </header>
+    <div class="ha-voucher-amount"><span class="ha-voucher-label">المبلغ</span>
+      <strong class="ha-voucher-amount-value"><bdi>${esc(voucherMoney(amount,currency))}</bdi></strong>
+      ${amountText?`<span class="ha-voucher-words">${esc(amountText)}</span>`:''}
+    </div>
+    ${fields.length?`<div class="ha-voucher-fields">${fields.map(([key,value])=>field(key,value)).join('')}</div>`:''}
+    <section class="ha-voucher-field"><span class="ha-voucher-label">البيان</span><p class="ha-voucher-memo">${esc(memo||'—')}</p></section>
+    ${renderReturns(returnSummary)}${renderEdits(editHistory)}
+    ${ledger.length?`<section class="ha-voucher-ledger"><h3>القيد المحاسبي</h3><table>
+      <thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead>
+      <tbody>${ledger.map(row=>`<tr><td>${esc(row.account)}</td><td><bdi>${esc(voucherMoney(row.debit,currency))}</bdi></td><td><bdi>${esc(voucherMoney(row.credit,currency))}</bdi></td></tr>`).join('')}</tbody>
+    </table></section>`:''}
+    ${signatures.length?`<div class="ha-voucher-signatures">${signatures.map(label=>`<span>${esc(label)}</span>`).join('')}</div>`:''}
+  </article>`;
+}
+function renderVoucher(model){
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+  <title>${esc(model.title)} ${esc(model.number)}</title><style>
+  *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{font:14px/1.55 Tahoma,Arial,sans-serif}
+  ${companyHeaderCSS}${voucherCSS}
+  </style></head><body data-ha-paper="A4">${voucherBody(model)}</body></html>`;
+}
 const screenHeaderStyle=document.createElement('style');
-screenHeaderStyle.textContent=companyHeaderCSS+`
+screenHeaderStyle.textContent=companyHeaderCSS+voucherCSS+`
 @media (min-width:1000px) and (min-height:580px) {
   #modal.hpw-invoice-dialog .ha-invoice-company ~ .hpw-invoice {overflow-y:auto!important}
 }
@@ -68,4 +135,4 @@ ${companyHeaderCSS}
 }
 :is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .invoice-header-branded .ha-invoice-company-name {font-size:14px}
 </style></head><body data-ha-paper="A4"><main class="invoice-shell"><header class="invoice-header${m.companyBanner?' invoice-header-branded':''}">${m.companyBanner?companyHeader(company):legacyCompanyBrand(company)}<div class="invoice-heading"><h2>${esc(title)}</h2><b dir="ltr">${esc(m.number)}</b></div></header><table class="invoice-meta a4-only"><tbody><tr><th>نوع الدفع</th><td>${esc(m.paymentMode||'—')}</td><th>التاريخ</th><td>${esc(m.date||'—')}</td></tr><tr><th>${m.partyLabel||'الجهة'}</th><td>${esc(m.party||'—')}</td><th>الهاتف</th><td>${esc(m.phone||'—')}</td></tr>${m.address?`<tr><th>العنوان</th><td colspan="3">${esc(m.address)}</td></tr>`:''}${m.representative?`<tr><th>المندوب</th><td colspan="3">${esc(m.representative)}</td></tr>`:''}</tbody></table><section class="thermal-meta"><div><b>التاريخ:</b> <span dir="ltr">${esc(m.date||'—')}</span></div><div><b>الدفع:</b> ${esc(m.paymentMode||'—')}</div><div><b>${esc(m.partyLabel||'الجهة')}:</b> ${esc(m.party||'—')}</div>${m.phone?`<div><b>الهاتف:</b> <span dir="ltr">${esc(m.phone)}</span></div>`:''}${m.address?`<div><b>العنوان:</b> ${esc(m.address)}</div>`:''}${m.representative?`<div><b>المندوب:</b> ${esc(m.representative)}</div>`:''}</section><table class="invoice-lines a4-only"><colgroup><col style="width:5%"><col style="width:39%"><col style="width:10%"><col style="width:10%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>#</th><th>اسم المادة / الخدمة</th><th>الوحدة</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>${rows||'<tr><td colspan="6">لا توجد مواد</td></tr>'}</tbody></table><table class="thermal-only"><thead><tr><th>الكمية / الوحدة</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>${thermalRows}</tbody></table><p class="invoice-unit-note">الأسعار بعملة ${esc(currencyText)}</p><table class="invoice-summary"><tbody>${sum('مجموع المواد',m.subtotal??items.reduce((n,i)=>n+num(i.total??num(i.qty)*num(i.price)),0))}${sum('الخصم',m.discount,'optional-total'+(num(m.discount)?'':' zero-total'))}${sum('الضريبة',m.tax,'optional-total'+(num(m.tax)?'':' zero-total'))}${sum(m.deliverySeparate?'التوصيل — خارج إجمالي الأصل':'التوصيل',m.delivery,'optional-total'+(num(m.delivery)?'':' zero-total'))}${m.returnSummary?sum('إجمالي الوصل قبل الترجيع',originalTotal)+sum('إجمالي قيمة المرتجع',m.returnSummary.returned)+sum('الإجمالي بعد الترجيع',total,'grand'):sum('الصافي',total,'grand')}${m.paid!==null&&m.paid!==undefined?sum(m.returnSummary?'المسدد الصافي':'المسدد المسجل',m.paid):''}${m.remaining!==null&&m.remaining!==undefined?sum('المتبقي على الفاتورة',m.remaining):''}${!m.returnSummary&&m.returned?sum('مرتجعات مرتبطة',m.returned):''}${num(m.creditBalance)>0?sum(m.sale===false?'مبلغ مستحق من المجهز بعد الترجيع':'مبلغ مستحق للزبون بعد الترجيع',m.creditBalance):''}</tbody></table>${renderReturns(m.returnSummary,{showTotals:false})}<div class="invoice-words">فقط ${esc(amountWords)} لا غير</div>${m.partyBalance!==null&&m.partyBalance!==undefined?`<div class="invoice-account"><span>${esc(m.balanceLabel||'رصيد حساب الجهة')}</span><span dir="ltr">${money(m.partyBalance)}</span></div><p class="invoice-unit-note">الرصيد الموجب مبلغ إليك، والسالب مبلغ عليك.</p>`:''}${m.notes?`<section class="invoice-notes"><b>الملاحظات:</b>\n${esc(m.notes)}</section>`:''}<div class="invoice-extras">${extra}</div>${m.installments?.length?`<h3>جدول الأقساط المسجل</h3><table class="invoice-plan"><thead><tr><th>القسط</th><th>التاريخ</th><th>المبلغ</th><th>المسدد</th></tr></thead><tbody>${m.installments.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.date||p.dueDate||'')}</td><td>${money(p.amount)}</td><td>${money(p.paid)}</td></tr>`).join('')}</tbody></table>`:''}${company.invoiceTerms?`<p class="invoice-terms">${esc(company.invoiceTerms)}</p>`:''}<div class="invoice-signatures">${(m.signatures||['توقيع '+(m.partyLabel||'المستلم'),'توقيع '+(m.sale===false?'المشتري':'البائع'),'توقيع أمين المخزن']).map(text=>`<span>${esc(text)}</span>`).join('')}</div><footer class="invoice-footer">${esc([company.name,company.address,company.phone,company.email].filter(Boolean).join(' · '))}</footer></main></body></html>`;}
-window.HAInvoiceLayout={render,words,renderReturns,renderEdits,companyHeader};})();
+window.HAInvoiceLayout={render,words,renderReturns,renderEdits,companyHeader,voucherBody,renderVoucher,voucherMoney};})();
