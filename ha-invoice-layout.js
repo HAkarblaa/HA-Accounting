@@ -105,10 +105,138 @@ function renderVoucher(model){
   ${companyHeaderCSS}${voucherCSS}
   </style></head><body data-ha-paper="A4">${voucherBody(model)}</body></html>`;
 }
+const headerFields=[
+  ['name','اسم الشركة',120],['receiptTitle','عنوان الشركة أو النشاط',120],['address','العنوان',220],
+  ['phone','الهاتف',80],['email','البريد الإلكتروني',120],['taxNumber','رقم التسجيل',80]
+];
+const headerEditorCSS=`
+.ha-document-header{margin:0 0 9px;min-width:0}
+.ha-document-header details{padding:6px 9px;border:1px solid #b9cbd4;background:#fff;color:#18384b}
+.ha-document-header summary{cursor:pointer;font-weight:700;font-size:.88rem}
+.ha-document-header-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0}
+.ha-document-header-fields label{display:grid;gap:4px;min-width:0;font-size:.85rem}
+.ha-document-header-fields input{width:100%;min-width:0}
+.ha-document-header-controls{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.ha-document-header-status{color:#405e6d;font-size:.82rem;margin:5px 0 0}
+.ha-document-header-preview>.ha-invoice-company{margin-bottom:5px}
+@media(max-width:620px){.ha-document-header-fields{grid-template-columns:1fr}}
+#modal.hpw-invoice-dialog .ha-document-header details[open]{max-height:32vh;overflow:auto}
+`;
+function cleanHeaderOverride(candidate){
+  if(!candidate||typeof candidate!=='object')return {};
+  const valid={};
+  for(const [key,,limit] of headerFields){
+    if(typeof candidate[key]==='string')valid[key]=candidate[key].trim().slice(0,limit);
+  }
+  const logo=candidate.logoData;
+  if(typeof logo==='string'&&(logo===''||logo.length<=380000&&/^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/]+=*$/i.test(logo)))valid.logoData=logo;
+  return valid;
+}
+function companyForDocument(company,record){
+  return {...company,...cleanHeaderOverride(record?.companyHeaderOverride)};
+}
+function documentHeaderEditor(company,formId,record,expanded=false){
+  const base=Object.fromEntries(headerFields.map(([key])=>[key,String(company?.[key]||'').trim()]));
+  base.logoData=String(company?.logoData||'');
+  const override=cleanHeaderOverride(record?.companyHeaderOverride),current={...base,...override};
+  return `<div class="ha-document-header" data-ha-header-base="${esc(JSON.stringify(base))}">
+    <div class="ha-document-header-preview">${companyHeader(current)}</div>
+    <details${expanded?' open':''}><summary>تعديل ترويسة هذا المستند</summary>
+      <div class="ha-document-header-fields">${headerFields.map(([key,label,limit])=>
+        `<label>${label}<input type="text" data-ha-header-field="${key}" maxlength="${limit}" value="${esc(current[key])}"${['phone','email','taxNumber'].includes(key)?' dir="auto"':''}></label>`).join('')}
+        <label>شعار هذا المستند<input type="file" data-ha-header-file accept="image/*"></label>
+      </div>
+      <div class="ha-document-header-controls">
+        <button type="button" class="btn secondary small" data-ha-header-remove-logo>إزالة الشعار من هذا المستند</button>
+        <button type="button" class="btn secondary small" data-ha-header-reset>استخدام بيانات الشركة الافتراضية</button>
+      </div>
+      <p class="ha-document-header-status" role="status">التغييرات تخص هذا المستند وتُحفظ عند الحفظ.</p>
+    </details>
+    <input type="hidden" name="haDocumentHeaderOverride" form="${esc(formId)}" value="${esc(JSON.stringify(override))}">
+  </div>`;
+}
+function readDocumentHeader(form){
+  const input=form?.elements?.namedItem('haDocumentHeaderOverride');
+  if(!input)return {};
+  try{return cleanHeaderOverride(JSON.parse(input.value));}catch{return {};}
+}
+function setDocumentHeader(record,override){
+  const valid=cleanHeaderOverride(override);
+  if(Object.keys(valid).length)record.companyHeaderOverride=valid;
+  else delete record.companyHeaderOverride;
+  return record;
+}
+function updateHeader(editor,logo,reset=false){
+  const base=JSON.parse(editor.dataset.haHeaderBase);
+  const output=editor.querySelector('[name=haDocumentHeaderOverride]');
+  const previous=JSON.parse(output.value);
+  const changed={};
+  for(const field of editor.querySelectorAll('[data-ha-header-field]')){
+    const key=field.dataset.haHeaderField;
+    if(reset)field.value=base[key];
+    const value=field.value.trim();
+    if(value!==base[key])changed[key]=value;
+  }
+  if(!reset&&logo!==undefined&&logo!==base.logoData)changed.logoData=logo;
+  if(!reset&&logo===undefined&&Object.prototype.hasOwnProperty.call(previous,'logoData'))changed.logoData=previous.logoData;
+  output.value=JSON.stringify(cleanHeaderOverride(changed));
+  editor.querySelector('.ha-document-header-preview').innerHTML=companyHeader({...base,...changed});
+}
+const logoConversions=new WeakMap();
+document.addEventListener('input',event=>{
+  if(!event.target.matches?.('[data-ha-header-field]'))return;
+  updateHeader(event.target.closest('.ha-document-header'));
+});
+document.addEventListener('click',event=>{
+  const button=event.target.closest?.('[data-ha-header-reset],[data-ha-header-remove-logo]');
+  if(!button)return;
+  const editor=button.closest('.ha-document-header'),reset=button.hasAttribute('data-ha-header-reset');
+  logoConversions.delete(editor);
+  editor.querySelector('[data-ha-header-file]').value='';
+  updateHeader(editor,'',reset);
+  editor.querySelector('.ha-document-header-status').textContent=reset?'تم اختيار البيانات الافتراضية. احفظ المستند لتثبيت التغيير.':'تمت إزالة الشعار من هذا المستند. احفظ المستند لتثبيت التغيير.';
+});
+document.addEventListener('change',async event=>{
+  const input=event.target;
+  if(!input.matches?.('[data-ha-header-file]')||!input.files?.[0])return;
+  const editor=input.closest('.ha-document-header'),status=editor.querySelector('.ha-document-header-status'),selection={};
+  logoConversions.set(editor,selection);
+  status.textContent='جارٍ تجهيز الشعار…';
+  const url=URL.createObjectURL(input.files[0]);
+  try{
+    const image=new Image();
+    image.src=url;
+    await image.decode();
+    if(!editor.isConnected||logoConversions.get(editor)!==selection)return;
+    const scale=Math.min(1,420/Math.max(image.naturalWidth,image.naturalHeight));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    updateHeader(editor,canvas.toDataURL('image/jpeg',.9));
+    status.textContent='تم تجهيز الشعار. احفظ المستند لتثبيت التغيير.';
+  }catch{
+    if(logoConversions.get(editor)===selection)status.textContent='تعذر فتح الصورة. اختر ملف صورة صالحاً.';
+  }finally{
+    URL.revokeObjectURL(url);
+    if(logoConversions.get(editor)===selection)logoConversions.delete(editor);
+  }
+});
+document.addEventListener('submit',event=>{
+  const output=event.target.elements?.namedItem('haDocumentHeaderOverride'),editor=output?.closest('.ha-document-header');
+  if(editor&&logoConversions.has(editor)){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    editor.querySelector('.ha-document-header-status').textContent='انتظر تجهيز الشعار قبل الحفظ.';
+  }
+},true);
 const screenHeaderStyle=document.createElement('style');
-screenHeaderStyle.textContent=companyHeaderCSS+voucherCSS+`
+screenHeaderStyle.textContent=companyHeaderCSS+voucherCSS+headerEditorCSS+`
 @media (min-width:1000px) and (min-height:580px) {
-  #modal.hpw-invoice-dialog .ha-invoice-company ~ .hpw-invoice {overflow-y:auto!important}
+  #modal.hpw-invoice-dialog :is(.ha-invoice-company,.ha-document-header) ~ .hpw-invoice {overflow-y:auto!important}
 }
 `;
 document.head.append(screenHeaderStyle);
@@ -135,4 +263,4 @@ ${companyHeaderCSS}
 }
 :is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .invoice-header-branded .ha-invoice-company-name {font-size:14px}
 </style></head><body data-ha-paper="A4"><main class="invoice-shell"><header class="invoice-header${m.companyBanner?' invoice-header-branded':''}">${m.companyBanner?companyHeader(company):legacyCompanyBrand(company)}<div class="invoice-heading"><h2>${esc(title)}</h2><b dir="ltr">${esc(m.number)}</b></div></header><table class="invoice-meta a4-only"><tbody><tr><th>نوع الدفع</th><td>${esc(m.paymentMode||'—')}</td><th>التاريخ</th><td>${esc(m.date||'—')}</td></tr><tr><th>${m.partyLabel||'الجهة'}</th><td>${esc(m.party||'—')}</td><th>الهاتف</th><td>${esc(m.phone||'—')}</td></tr>${m.address?`<tr><th>العنوان</th><td colspan="3">${esc(m.address)}</td></tr>`:''}${m.representative?`<tr><th>المندوب</th><td colspan="3">${esc(m.representative)}</td></tr>`:''}</tbody></table><section class="thermal-meta"><div><b>التاريخ:</b> <span dir="ltr">${esc(m.date||'—')}</span></div><div><b>الدفع:</b> ${esc(m.paymentMode||'—')}</div><div><b>${esc(m.partyLabel||'الجهة')}:</b> ${esc(m.party||'—')}</div>${m.phone?`<div><b>الهاتف:</b> <span dir="ltr">${esc(m.phone)}</span></div>`:''}${m.address?`<div><b>العنوان:</b> ${esc(m.address)}</div>`:''}${m.representative?`<div><b>المندوب:</b> ${esc(m.representative)}</div>`:''}</section><table class="invoice-lines a4-only"><colgroup><col style="width:5%"><col style="width:39%"><col style="width:10%"><col style="width:10%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>#</th><th>اسم المادة / الخدمة</th><th>الوحدة</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>${rows||'<tr><td colspan="6">لا توجد مواد</td></tr>'}</tbody></table><table class="thermal-only"><thead><tr><th>الكمية / الوحدة</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>${thermalRows}</tbody></table><p class="invoice-unit-note">الأسعار بعملة ${esc(currencyText)}</p><table class="invoice-summary"><tbody>${sum('مجموع المواد',m.subtotal??items.reduce((n,i)=>n+num(i.total??num(i.qty)*num(i.price)),0))}${sum('الخصم',m.discount,'optional-total'+(num(m.discount)?'':' zero-total'))}${sum('الضريبة',m.tax,'optional-total'+(num(m.tax)?'':' zero-total'))}${sum(m.deliverySeparate?'التوصيل — خارج إجمالي الأصل':'التوصيل',m.delivery,'optional-total'+(num(m.delivery)?'':' zero-total'))}${m.returnSummary?sum('إجمالي الوصل قبل الترجيع',originalTotal)+sum('إجمالي قيمة المرتجع',m.returnSummary.returned)+sum('الإجمالي بعد الترجيع',total,'grand'):sum('الصافي',total,'grand')}${m.paid!==null&&m.paid!==undefined?sum(m.returnSummary?'المسدد الصافي':'المسدد المسجل',m.paid):''}${m.remaining!==null&&m.remaining!==undefined?sum('المتبقي على الفاتورة',m.remaining):''}${!m.returnSummary&&m.returned?sum('مرتجعات مرتبطة',m.returned):''}${num(m.creditBalance)>0?sum(m.sale===false?'مبلغ مستحق من المجهز بعد الترجيع':'مبلغ مستحق للزبون بعد الترجيع',m.creditBalance):''}</tbody></table>${renderReturns(m.returnSummary,{showTotals:false})}<div class="invoice-words">فقط ${esc(amountWords)} لا غير</div>${m.partyBalance!==null&&m.partyBalance!==undefined?`<div class="invoice-account"><span>${esc(m.balanceLabel||'رصيد حساب الجهة')}</span><span dir="ltr">${money(m.partyBalance)}</span></div><p class="invoice-unit-note">الرصيد الموجب مبلغ إليك، والسالب مبلغ عليك.</p>`:''}${m.notes?`<section class="invoice-notes"><b>الملاحظات:</b>\n${esc(m.notes)}</section>`:''}<div class="invoice-extras">${extra}</div>${m.installments?.length?`<h3>جدول الأقساط المسجل</h3><table class="invoice-plan"><thead><tr><th>القسط</th><th>التاريخ</th><th>المبلغ</th><th>المسدد</th></tr></thead><tbody>${m.installments.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.date||p.dueDate||'')}</td><td>${money(p.amount)}</td><td>${money(p.paid)}</td></tr>`).join('')}</tbody></table>`:''}${company.invoiceTerms?`<p class="invoice-terms">${esc(company.invoiceTerms)}</p>`:''}<div class="invoice-signatures">${(m.signatures||['توقيع '+(m.partyLabel||'المستلم'),'توقيع '+(m.sale===false?'المشتري':'البائع'),'توقيع أمين المخزن']).map(text=>`<span>${esc(text)}</span>`).join('')}</div><footer class="invoice-footer">${esc([company.name,company.address,company.phone,company.email].filter(Boolean).join(' · '))}</footer></main></body></html>`;}
-window.HAInvoiceLayout={render,words,renderReturns,renderEdits,companyHeader,voucherBody,renderVoucher,voucherMoney};})();
+window.HAInvoiceLayout={render,words,renderReturns,renderEdits,companyHeader,voucherBody,renderVoucher,voucherMoney,companyForDocument,documentHeaderEditor,readDocumentHeader,setDocumentHeader};})();

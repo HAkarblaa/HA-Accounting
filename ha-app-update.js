@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-voucher-company-header-v46';
+  const build = '20261121-document-header-overrides-v47';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
