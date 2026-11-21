@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-cashier-sticky-category-rows-v55';
+  const build = '20261121-returns-visible-actions-v56';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
