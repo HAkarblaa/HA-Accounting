@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261120-all-sections-admin-demo-v44';
+  const build = '20261121-invoice-company-header-v45';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
