@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-workspace-visible-actions-v58';
+  const build = '20261121-cashier-sticky-cart-v59';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
