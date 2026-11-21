@@ -31,7 +31,7 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   const entry=current;
   if(!entry)return false;
   if(!initialized(entry))entry.baseline=values(body);
-  entry.scroll=[window.scrollX,window.scrollY];
+  entry.scroll=[panel.scrollLeft,panel.scrollTop];
   entry.internalScroll=[body,...body.querySelectorAll('*')].filter(el=>el.scrollTop||el.scrollLeft)
    .map(el=>[el,el.scrollLeft,el.scrollTop]);
   entry.properties=[...modal.attributes].filter(attribute=>!['id','open','data-ha-work-tab'].includes(attribute.name))
@@ -73,7 +73,7 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
    const number=entry.form.querySelector?.('[name="number"]')?.value?.trim();
    if(number&&!entry.title.includes(number))entry.title+=' · '+number;
    onChange();
-   if(entry===current)window.scrollTo(0,0);
+   if(entry===current){panel.scrollLeft=0;panel.scrollTop=0;window.scrollTo(0,0);}
   });
   return true;
  }
@@ -97,7 +97,8 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   requestAnimationFrame(()=>{
    if(current!==entry)return;
    for(const [el,x,y]of entry.internalScroll||[]){el.scrollLeft=x;el.scrollTop=y;}
-   window.scrollTo(...entry.scroll||[0,0]);
+   [panel.scrollLeft,panel.scrollTop]=entry.scroll||[0,0];
+   window.scrollTo(0,0);
   });
   return true;
  }

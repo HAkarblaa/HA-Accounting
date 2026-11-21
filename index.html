@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261121-cashier-sticky-category-dock-v57">
+<meta name="ha-app-build" content="20261121-workspace-visible-actions-v58">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -2503,7 +2503,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=94-work-tabs"></script>
-<script defer src="./ha-app-update.js?v=57"></script>
+<script defer src="./ha-app-update.js?v=58"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -2610,15 +2610,13 @@ syncHeight();
 (()=>{
  const header=document.querySelector('.main>.topbar'),tabs=document.getElementById('appTabs');
  if(!header||!tabs)return;
- const main=header.parentElement,bottomShortcuts=document.getElementById('appBottomShortcuts');
+ const main=header.parentElement;
  let queued=false;
  function measure(){
   queued=false;
   const headerHeight=Math.ceil(header.getBoundingClientRect().height),tabsHeight=Math.ceil(tabs.getBoundingClientRect().height);
   if(headerHeight>0)main.style.setProperty('--ha-topbar-height',headerHeight+'px');
   if(tabsHeight>0)main.style.setProperty('--ha-tabs-height',tabsHeight+'px');
-  const bottomHeight=Math.ceil(bottomShortcuts?.getBoundingClientRect().height||0);
-  main.style.setProperty('--ha-bottom-shortcuts-height',bottomHeight+'px');
  }
  function schedule(){if(!queued){queued=true;requestAnimationFrame(measure);}}
  measure();
@@ -2626,12 +2624,10 @@ syncHeight();
   const observer=new ResizeObserver(schedule);
   observer.observe(header);
   observer.observe(tabs);
-  if(bottomShortcuts)observer.observe(bottomShortcuts);
  }else if(typeof MutationObserver==='function'){
   const observer=new MutationObserver(schedule),options={childList:true,subtree:true,attributes:true,characterData:true};
   observer.observe(header,options);
   observer.observe(tabs,options);
-  if(bottomShortcuts)observer.observe(bottomShortcuts,options);
  }
  window.addEventListener('resize',schedule,{passive:true});
  window.addEventListener('orientationchange',schedule,{passive:true});
@@ -2640,14 +2636,29 @@ syncHeight();
 </script>
 <style id="ha-workspace-tab-style">
 #view[hidden],#appWorkPanel[hidden]{display:none!important}
+/* While a work tab is open, navigation and the form occupy separate viewport rows. */
+.main:has(>#appWorkPanel:not([hidden])){
+ display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;
+ height:100vh;height:100dvh;min-height:0;align-self:start
+}
+.main:has(>#appWorkPanel:not([hidden])) > .topbar{grid-row:1}
+.main:has(>#appWorkPanel:not([hidden])) > #appStickyNavigation{grid-row:2;position:relative;top:auto}
+.main:has(>#appWorkPanel:not([hidden])) > #appBottomShortcuts{
+ grid-row:4;position:relative;inset:auto;width:100%;min-width:0
+}
 #appWorkPanel{
- padding:10px 12px calc(var(--ha-bottom-shortcuts-height,70px) + 24px);min-width:0;max-width:100%
+ grid-row:3;min-width:0;min-height:0;max-width:100%;overflow:auto;overscroll-behavior:contain;
+ box-sizing:border-box;padding:10px 12px 14px;scroll-padding-block-end:66px
 }
-#appWorkPanel #modalBody :is(#sharedReturnForm,#returnEditForm,#processorReturnForm,#processorGeneralReturnForm,#processorEditVoucherReturnForm,#processorReverseForm,#processorReturnRefundForm,#sharedReturnStatementForm) > .form-actions{
- position:sticky;bottom:var(--ha-bottom-shortcuts-height,70px);z-index:3;
- display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:10px 0;background:#fff;border-top:1px solid #deebf5;
+html body #appWorkPanel #modalBody :is(
+ #sharedReturnForm,#returnEditForm,#processorReturnForm,#processorGeneralReturnForm,
+ #processorEditVoucherReturnForm,#processorReverseForm,#processorReturnRefundForm,#sharedReturnStatementForm,
+ #trForm,#editTreasuryForm,#engCashForm,#editEngCashForm,#engAdvancedCash,#personalDebtVoucherForm,#contactPaymentForm
+) > .form-actions{
+ position:sticky;bottom:0;z-index:5;
+ display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:9px 0;background:#fff;
+ border-top:1px solid #deebf5;box-shadow:0 -4px 12px #17384b0a
 }
-@media(min-width:701px) and (max-width:1020px){.layout:has(#appWorkPanel:not([hidden])){overflow-x:clip}}
 #appWorkPanel #modalBody .return-amount-field{max-width:28rem}
 #appWorkPanel #modalBody .return-amount-field input{width:100%}
 html body #appWorkPanel #modal.modal[data-ha-work-tab][open]{
@@ -2668,15 +2679,14 @@ html body #appWorkPanel #modal.hpw-invoice-dialog[data-ha-work-tab] .hpw-invoice
 #appWorkPanel #modal.hpw-invoice-dialog[data-ha-work-tab] .hpw-products>.table-wrap{
  max-height:50vh;min-height:94px
 }
-#appWorkPanel #modal.modal[data-ha-work-tab] .hvd-form>.form-actions{position:static}
 #appTabs .ha-open-work-tab{display:inline-flex;max-width:min(70vw,380px);padding:0;gap:0}
 #appTabs .ha-open-work-label{border:0;background:none;color:inherit;padding:8px 9px;cursor:pointer;font:inherit;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #appTabs .ha-open-work-tab button.ha-open-tab-close{padding:0;display:grid;place-items:center;min-width:28px;min-height:32px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer}
 #appTabs .ha-open-work-tab:not(.active){border-style:dashed}
-@media(max-width:700px){#appWorkPanel{padding:8px 7px calc(var(--ha-bottom-shortcuts-height,74px) + 16px)}}
+@media(max-width:700px){#appWorkPanel{padding:8px 7px 12px}}
 </style>
 
-<script src="./ha-workspace-tabs.js?v=1"></script>
+<script src="./ha-workspace-tabs.js?v=2"></script>
 <script>
 (()=>{
  const tabsBar=document.getElementById('appTabs'),bar=document.getElementById('appBottomShortcuts'),go=window.HA_APP_GO;
