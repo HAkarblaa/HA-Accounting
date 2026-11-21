@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-document-header-overrides-v47';
+  const build = '20261121-workspace-tabs-v48';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
@@ -17,7 +17,7 @@
   }, true);
   document.addEventListener('reset', event => dirtyForms.delete(event.target), true);
   function automaticSafe() {
-    if (document.visibilityState === 'hidden' || !navigator.onLine || window.HAStaff?.hasOpenForm?.()) return false;
+    if (document.visibilityState === 'hidden' || !navigator.onLine || window.HAStaff?.hasOpenForm?.() || window.HA_WORKSPACE_FORMS?.hasOpen()) return false;
     if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return false;
     if (document.getElementById('modal')?.open) return false;
     if (document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]')) return false;
@@ -77,8 +77,8 @@
     const automatic = options.automatic === true;
     if (automatic && !automaticSafe()) return false;
     if (busy) return false;
-    if (window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form')) {
-      message('احفظ الفاتورة أو أغلقها قبل تحديث البرنامج.'); return false;
+    if (window.HA_WORKSPACE_FORMS?.hasOpen() || window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form')) {
+      message('احفظ النماذج المفتوحة أو أغلق تبويباتها قبل تحديث البرنامج.'); return false;
     }
     if (!navigator.onLine) { message('ماكو إنترنت. حدّث عند رجوع الاتصال؛ حسابك وبياناتك محفوظة.'); return false; }
     busy = true; button.disabled = true; button.textContent = 'جارٍ فحص النسخة…';

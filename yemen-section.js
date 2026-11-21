@@ -32,7 +32,7 @@
     let categoryFormOpen = false, selectedCategory = 'all';
     const onSave = typeof options.onSave === 'function' ? options.onSave : function (value) { localStorage.setItem(STORE_KEY, JSON.stringify(value)); };
     const save = () => { onSave(data); };
-    const formAlert = text => { const form=root.querySelector('form');if(!form||!global.HAFormRecovery?.notify(text,form))global.alert(text); };
+    const formAlert = (text,activeForm) => { const form=activeForm||root.querySelector('form');if(!form||!global.HAFormRecovery?.notify(text,form))global.alert(text); };
     const s = () => data.settings;
     const baseAmount = row => row.currency === s().foreignCode ? number(row.baseAmount ?? number(row.amount) * number(row.rate)) : number(row.amount);
     const invoiceTotal = inv => (inv.items || []).reduce((n, item) => n + number(item.qty) * number(item.price), 0);
@@ -81,6 +81,7 @@
     const orderScreen = () => `<section class="haym-panel"><div class="haym-actions"><h2 style="margin-inline-end:auto">طلبيات الزبائن</h2><button class="haym-btn primary" data-ym-toggle-form>＋ طلبية جديدة</button></div>${quickFormOpen?`<form data-ym-order-form class="haym-form-grid"><label class="haym-field">العميل<select name="customer" required><option value="">اختر العميل</option>${data.contacts.filter(c=>c.kind==='customer').map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><label class="haym-field">المنتج المطلوب<input name="product" required></label><label class="haym-field">العدد<input name="qty" type="number" min="0.01" step="any" value="1" required></label><label class="haym-field">السعر المتفق عليه<input name="price" type="number" min="0" step="any" value="0"></label><label class="haym-field">الحالة<select name="status"><option>جديد</option><option>قيد التجهيز</option><option>جاهز</option><option>تم التسليم</option></select></label><button class="haym-btn primary">حفظ الطلبية</button></form>`:''}${data.orders.length?`<div class="haym-tablewrap"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>العدد</th><th>السعر</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${data.orders.map(o=>`<tr><td>${esc(o.date)}</td><td>${esc(o.customer)}</td><td>${esc(o.product)}</td><td>${fmt(o.qty)}</td><td>${fmt(o.price)}</td><td>${esc(o.status)}</td><td><button class="haym-btn" data-ym-delete-order="${esc(o.id)}">حذف</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="haym-empty">ماكو طلبيات مسجلة بعد.</div>'}</section>`;
     const workshopScreen = () => `<section class="haym-panel"><div class="haym-actions"><h2 style="margin-inline-end:auto">ورشة الصناعة</h2><button class="haym-btn primary" data-ym-toggle-form>＋ تسجيل إنتاج</button></div><div class="haym-note">يسجل الإنتاج ويخصم المادة الخام من المخزون ويضيف المنتج المصنّع إلى المخزون.</div>${quickFormOpen?`<form data-ym-workshop-form class="haym-form-grid"><label class="haym-field">المادة الخام<input name="material" required></label><label class="haym-field">كمية المادة الخام<input name="materialQty" type="number" min="0.01" step="any" required></label><label class="haym-field">المنتج المصنّع<input name="product" required></label><label class="haym-field">كمية الإنتاج<input name="qty" type="number" min="0.01" step="any" required></label><label class="haym-field">كلفة الصناعة<input name="cost" type="number" min="0" step="any" value="0"></label><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><button class="haym-btn primary">حفظ الإنتاج</button></form>`:''}${data.workshop.length?`<div class="haym-tablewrap"><table><thead><tr><th>التاريخ</th><th>المادة الخام</th><th>الكمية المستخدمة</th><th>المنتج المصنّع</th><th>الكمية</th><th>كلفة الصناعة</th></tr></thead><tbody>${data.workshop.map(w=>`<tr><td>${esc(w.date)}</td><td>${esc(w.material)}</td><td>${fmt(w.materialQty)}</td><td>${esc(w.product)}</td><td>${fmt(w.qty)}</td><td>${fmt(w.cost)} ${esc(s().baseCode)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="haym-empty">ماكو عمليات إنتاج مسجلة بعد.</div>'}</section>`;
     const maintenanceScreen = () => { const rows=data.maintenance.slice().sort((a,b)=>b.date.localeCompare(a.date)); return `<section class="haym-panel"><div class="haym-actions"><h2 style="margin-inline-end:auto">الصيانة</h2><button class="haym-btn primary" data-ym-toggle-form>＋ طلب صيانة جديد</button></div><div class="haym-note">سجّل طلبات الصيانة وتابع حالتها وأجورها، مع بقاء سجل الإنتاج منفصلاً.</div>${quickFormOpen?`<form data-ym-maintenance-form class="haym-form-grid"><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><label class="haym-field">اسم الزبون<input name="customer" required></label><label class="haym-field">رقم الهاتف<input name="phone" inputmode="tel"></label><label class="haym-field">الجهاز أو المادة<input name="item" required></label><label class="haym-field">العطل أو المطلوب<input name="problem" required></label><label class="haym-field">أجور الصيانة<input name="amount" type="number" min="0" step="any" value="0"></label><label class="haym-field">الحالة<select name="status"><option>مستلمة</option><option>قيد الصيانة</option><option>جاهزة</option><option>تم التسليم</option></select></label><label class="haym-field">ملاحظات<input name="notes"></label><button class="haym-btn primary">حفظ طلب الصيانة</button></form>`:''}${rows.length?`<div class="haym-tablewrap"><table><thead><tr><th>التاريخ</th><th>الزبون</th><th>الهاتف</th><th>الجهاز</th><th>العطل / المطلوب</th><th>أجور الصيانة</th><th>الحالة</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}</td><td>${esc(x.phone||'—')}</td><td>${esc(x.item)}</td><td>${esc(x.problem)}</td><td>${fmt(x.amount)} ${esc(s().baseCode)}</td><td>${esc(x.status)}</td><td>${esc(x.notes||'—')}</td><td><button class="haym-btn" data-ym-delete-maintenance="${esc(x.id)}">حذف</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="haym-empty">ماكو طلبات صيانة مسجلة بعد.</div>'}</section>`; };
+    const movementForm=()=>`<div data-ym-voucher-header hidden>${global.HAInvoiceLayout?.documentHeaderEditor?.(invoiceCompany(),'ymVoucherMoveForm')||''}</div><form id="ymVoucherMoveForm" data-ym-move-form class="haym-form-grid"><label class="haym-field">نوع الحركة<select name="kind"><option value="income">إيراد / قبض</option><option value="expense">مصروف</option><option value="workshop">أجور صيانة</option><option value="receipt">سند قبض</option><option value="payment">سند صرف</option></select></label><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><label class="haym-field">الجهة<input name="party" placeholder="الاسم"></label><label class="haym-field">المبلغ<input name="amount" type="number" min="0.01" step="any" required></label><label class="haym-field">العملة<select name="currency">${currencyOptions(s().baseCode)}</select></label><label class="haym-field">طريقة الدفع<select name="paymentMode"><option value="cash">نقدي</option><option value="credit">آجل</option><option value="card">بطاقة</option></select></label><label class="haym-field">التفاصيل<input name="detail" placeholder="تفاصيل الحركة"></label><div class="haym-total" data-ym-move-conversion>التحويل يظهر عند إدخال المبلغ.</div><button class="haym-btn primary">حفظ الحركة</button></form>`;
     function reportHtml(from, to) {
       const t = totals(from, to), profit = t.sales - t.purchases;
       return `<div class="haym-grid">${card('عدد الحركات', String(t.rows.length))}${card('إجمالي المبيعات', `${fmt(t.sales)} ${esc(s().baseCode)}`)}${card('فرق المبيعات والمشتريات', `${fmt(profit)} ${esc(s().baseCode)}`, 'تقديري حسب الحركات ضمن الفترة')}${card('إجمالي المشتريات', `${fmt(t.purchases)} ${esc(s().baseCode)}`)}${card('الإيرادات والقبض', `${fmt(t.income)} ${esc(s().baseCode)}`)}${card('المصروفات والصرف', `${fmt(t.expenses)} ${esc(s().baseCode)}`)}${card('صافي الحركة النقدية', `${fmt(t.cash)} ${esc(s().baseCode)}`)}</div><section class="haym-panel"><h2>تفاصيل الفترة</h2>${table(t.rows)}</section>`;
@@ -105,7 +106,7 @@
         const kind=tab==='income'?'income':'expense', rows=t.rows.filter(r=>r.kind===kind||r.kind===(kind==='income'?'receipt':'payment'));
         body = `<section class="haym-panel"><h2>${tab==='income'?'تسجيل إيراد أو قبض':'تسجيل مصروف'}</h2><form data-ym-move-form class="haym-form-grid"><input type="hidden" name="kind" value="${kind}"><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><label class="haym-field">الجهة<input name="party" placeholder="العميل أو الجهة"></label><label class="haym-field">المبلغ<input name="amount" type="number" min="0.01" step="any" required></label><label class="haym-field">العملة<select name="currency">${currencyOptions(s().baseCode)}</select></label><label class="haym-field">طريقة الدفع<select name="paymentMode"><option value="cash">نقدي</option><option value="credit">آجل</option><option value="card">بطاقة</option></select></label><label class="haym-field">التفاصيل<input name="detail" placeholder="تفاصيل الحركة"></label><div class="haym-total" data-ym-move-conversion>التحويل يظهر عند إدخال المبلغ.</div><button class="haym-btn primary">حفظ ${tab==='income'?'الإيراد':'المصروف'}</button></form></section><section class="haym-panel"><h2>السجل</h2>${table(rows)}</section>`;
       } else if (tab === 'movements') {
-        body = `<section class="haym-panel"><h2>تسجيل قبض أو صرف أو مصروف</h2><div data-ym-voucher-header hidden>${global.HAInvoiceLayout?.documentHeaderEditor?.(invoiceCompany(),'ymVoucherMoveForm')||''}</div><form id="ymVoucherMoveForm" data-ym-move-form class="haym-form-grid"><label class="haym-field">نوع الحركة<select name="kind"><option value="income">إيراد / قبض</option><option value="expense">مصروف</option><option value="workshop">أجور صيانة</option><option value="receipt">سند قبض</option><option value="payment">سند صرف</option></select></label><label class="haym-field">التاريخ<input name="date" type="date" value="${today()}" required></label><label class="haym-field">الجهة<input name="party" placeholder="الاسم"></label><label class="haym-field">المبلغ<input name="amount" type="number" min="0.01" step="any" required></label><label class="haym-field">العملة<select name="currency">${currencyOptions(s().baseCode)}</select></label><label class="haym-field">طريقة الدفع<select name="paymentMode"><option value="cash">نقدي</option><option value="credit">آجل</option><option value="card">بطاقة</option></select></label><label class="haym-field">التفاصيل<input name="detail" placeholder="تفاصيل الحركة"></label><div class="haym-total" data-ym-move-conversion>التحويل يظهر عند إدخال المبلغ.</div><button class="haym-btn primary">حفظ الحركة</button></form></section><section class="haym-panel"><h2>سجل الحركات</h2>${table(t.rows.slice().sort((a,b) => b.date.localeCompare(a.date)))}</section>`;
+        body = `<section class="haym-panel"><h2>تسجيل قبض أو صرف أو مصروف</h2>${options.openWorkForm?'<button type="button" class="haym-btn primary" data-ym-work-movement>＋ حركة جديدة</button>':movementForm()}</section><section class="haym-panel"><h2>سجل الحركات</h2>${table(t.rows.slice().sort((a,b) => b.date.localeCompare(a.date)))}</section>`;
       } else if (tab === 'reports') {
         const first = `${today().slice(0,8)}01`;
         body = `<section class="haym-panel"><h2>تقارير حسب الفترة</h2><div class="haym-report-tools"><label>من<input type="date" data-ym-from value="${first}"></label><label>إلى<input type="date" data-ym-to value="${today()}"></label><button class="haym-btn" data-ym-period="day">يومي</button><button class="haym-btn" data-ym-period="month">شهري</button><button class="haym-btn" data-ym-period="year">سنوي</button><button class="haym-btn primary" data-ym-run-report>عرض التقرير</button><button class="haym-btn" data-ym-print-report>طباعة</button><button class="haym-btn" data-ym-export>تنزيل CSV</button></div></section><div data-ym-report>${reportHtml(first,today())}</div>`;
@@ -115,11 +116,11 @@
       root.innerHTML = `<div class="haym">${header()}${body}</div>`;
       global.HA_SHARED_RETURNS?.mount?.(root);
     }
-    function getLines() { return [...root.querySelectorAll('[data-ym-line]')].map(row => ({ name: row.querySelector('[data-ym-item]').value.trim(), qty: number(row.querySelector('[data-ym-qty]').value), price: number(row.querySelector('[data-ym-price]').value) })); }
-    function refreshInvoicePreview() {
-      const form = root.querySelector('[data-ym-invoice-form]'); if (!form) return;
-      const fd = new FormData(form), sum = getLines().reduce((n,x) => n+x.qty*x.price, 0), currency = fd.get('currency'), rate = number(s().rate);
-      const out = root.querySelector('[data-ym-invoice-total]');
+    function getLines(form) { return [...form.querySelectorAll('[data-ym-line]')].map(row => ({ name: row.querySelector('[data-ym-item]').value.trim(), qty: number(row.querySelector('[data-ym-qty]').value), price: number(row.querySelector('[data-ym-price]').value) })); }
+    function refreshInvoicePreview(form=root.querySelector('[data-ym-invoice-form]')) {
+      if (!form) return;
+      const fd = new FormData(form), sum = getLines(form).reduce((n,x) => n+x.qty*x.price, 0), currency = fd.get('currency'), rate = number(s().rate);
+      const out = form.querySelector('[data-ym-invoice-total]');
       if (currency === s().foreignCode && rate <= 0) out.textContent = `الإجمالي: ${fmt(sum)} ${s().foreignCode} · أدخل سعر الصرف من الإعدادات`;
       else { const base = currency === s().foreignCode ? sum*rate : sum; out.textContent = `الإجمالي: ${fmt(sum)} ${currency} · يعادل ${fmt(base)} ${s().baseCode}`; }
     }
@@ -153,9 +154,29 @@
       const b = event.target.closest('button'); if (!b) return;
       if (b.dataset.ymTab) { tab = b.dataset.ymTab; invoiceFormOpen = false; quickFormOpen = false; categoryFormOpen=false; render(); }
       else if (b.hasAttribute('data-ym-scroll-chart')) { root.querySelector('#ym-chart-panel')?.scrollIntoView({behavior:'smooth',block:'start'}); }
-      else if (b.hasAttribute('data-ym-new-invoice')) { invoiceFormOpen = true; render(); }
-      else if (b.hasAttribute('data-ym-toggle-form')) { quickFormOpen = !quickFormOpen; render(); }
-      else if (b.hasAttribute('data-ym-toggle-category-form')) { categoryFormOpen = !categoryFormOpen; render(); }
+      else if (b.hasAttribute('data-ym-new-invoice')) {
+        if(options.openWorkForm){const type=tab==='purchases'?'شراء':'بيع';openWorkshopForm('فاتورة '+type+' — الورشة',invoiceForm());}
+        else{invoiceFormOpen=true;render();}
+      }
+      else if (b.hasAttribute('data-ym-work-movement')) openWorkshopForm('حركة صندوق — الورشة',movementForm());
+      else if (b.hasAttribute('data-ym-toggle-form')||b.hasAttribute('data-ym-toggle-category-form')) {
+        const category=b.hasAttribute('data-ym-toggle-category-form');
+        if(!options.openWorkForm){
+          if(category)categoryFormOpen=!categoryFormOpen;
+          else quickFormOpen=!quickFormOpen;
+          render();
+          return;
+        }
+        const screen={inventory:inventoryScreen,customers:()=>contactScreen('customer'),suppliers:()=>contactScreen('supplier'),
+          orders:orderScreen,maintenance:maintenanceScreen,workshop:workshopScreen}[tab];
+        if(!screen)return;
+        categoryFormOpen=category;quickFormOpen=!category;
+        const template=document.createElement('template');
+        template.innerHTML=screen();
+        categoryFormOpen=false;quickFormOpen=false;
+        const form=template.content.querySelector(category?'[data-ym-category-form]':'form');
+        if(form)openWorkshopForm(b.textContent.trim().replace(/^＋\s*/,''),form.outerHTML);
+      }
       else if (b.dataset.ymCategory) { selectedCategory=b.dataset.ymCategory; render(); }
       else if (b.hasAttribute('data-ym-cancel-invoice')) { invoiceFormOpen = false; render(); }
       else if (b.hasAttribute('data-ym-add-line')) { root.querySelector('[data-ym-lines]').insertAdjacentHTML('beforeend', lineMarkup({qty:1,price:0})); refreshInvoicePreview(); }
@@ -189,39 +210,73 @@
     root.addEventListener('change', event => { const voucherHeader=root.querySelector('[data-ym-voucher-header]');if(voucherHeader&&event.target.name==='kind'&&event.target.closest('[data-ym-move-form]'))voucherHeader.hidden=!isVoucher(event.target.value);if (event.target.closest('[data-ym-invoice-form]')) { if(event.target.name==='party'){const field=root.querySelector('.haym-new-party');field?.classList.toggle('hidden',event.target.value!=='__new');} refreshInvoicePreview(); } if (event.target.closest('[data-ym-move-form]')) { const f=event.target.closest('form'),d=new FormData(f),amount=number(d.get('amount')),rate=number(s().rate),foreign=d.get('currency')===s().foreignCode,out=root.querySelector('[data-ym-move-conversion]');out.textContent=foreign&&rate<=0?'أدخل سعر الصرف من الإعدادات.':`يعادل ${fmt(foreign?amount*rate:amount)} ${s().baseCode}`; } }, { signal: controller.signal });
     const protectedSubmitHandler = event => {
       const form=event.target;
+      const rerender=()=>form.dataset.ymWorkTab?options.finishWorkForm?.(form.dataset.ymWorkTab):render();
       if (form.matches('[data-ym-invoice-form]')) {
-        event.preventDefault(); const d=new FormData(form), currency=String(d.get('currency')), rate=number(s().rate), items=getLines(), total=items.reduce((n,x)=>n+x.qty*x.price,0);
-        if (items.some(x=>!x.name||x.qty<=0||x.price<0)||total<=0) { formAlert('أدخل مواد الفاتورة والعدد والسعر بشكل صحيح.'); return; }
-        if (currency===s().foreignCode && rate<=0) { formAlert('أدخل سعر الصرف من إعدادات القسم قبل حفظ فاتورة بالدولار.'); return; }
-        const invoiceNumber=String(d.get('number')).trim(); if(data.invoices.some(x=>x.number===invoiceNumber)){formAlert('رقم الفاتورة مستخدم مسبقاً.');return;}
+        event.preventDefault(); const d=new FormData(form), currency=String(d.get('currency')), rate=number(s().rate), items=getLines(form), total=items.reduce((n,x)=>n+x.qty*x.price,0);
+        if (items.some(x=>!x.name||x.qty<=0||x.price<0)||total<=0) { formAlert('أدخل مواد الفاتورة والعدد والسعر بشكل صحيح.',form); return; }
+        if (currency===s().foreignCode && rate<=0) { formAlert('أدخل سعر الصرف من إعدادات القسم قبل حفظ فاتورة بالدولار.',form); return; }
+        const invoiceNumber=String(d.get('number')).trim(); if(data.invoices.some(x=>x.number===invoiceNumber)){formAlert('رقم الفاتورة مستخدم مسبقاً.',form);return;}
         const selectedParty=String(d.get('party')||''); const party=selectedParty==='__new'?String(d.get('newParty')||'').trim():selectedParty;
-        if(!party){formAlert('اختر الجهة أو أدخل اسمها.');return;}
+        if(!party){formAlert('اختر الجهة أو أدخل اسمها.',form);return;}
         const inv={id:id(),type:String(d.get('type')),number:invoiceNumber,date:String(d.get('date')),party,currency,rate:currency===s().foreignCode?rate:1,baseAmount:currency===s().foreignCode?total*rate:total,paymentMode:String(d.get('paymentMode')),notes:String(d.get('notes')||'').trim(),items};
         for(const item of items){let product=data.products.find(p=>p.name.trim().toLowerCase()===item.name.trim().toLowerCase());if(!product){product={id:id(),name:item.name,qty:0,unit:'قطعة',cost:0,price:item.price};data.products.push(product);}product.qty=number(product.qty)+(inv.type==='purchase'?item.qty:-item.qty);if(inv.type==='purchase')product.cost=item.price;else product.price=item.price;}
-        global.HAInvoiceLayout?.setDocumentHeader?.(inv,global.HAInvoiceLayout.readDocumentHeader(form));data.invoices.push(inv); save(); invoiceFormOpen=false; render();
+        global.HAInvoiceLayout?.setDocumentHeader?.(inv,global.HAInvoiceLayout.readDocumentHeader(form));data.invoices.push(inv); save(); invoiceFormOpen=false; rerender();
       } else if(form.matches('[data-ym-move-form]')) {
         event.preventDefault();const d=new FormData(form),amount=number(d.get('amount')),currency=String(d.get('currency')),rate=number(s().rate);
         if(amount<=0){formAlert('أدخل مبلغاً أكبر من صفر.');return;}if(currency===s().foreignCode&&rate<=0){formAlert('أدخل سعر الصرف من الإعدادات أولاً.');return;}
         const row={id:id(),kind:String(d.get('kind')),date:String(d.get('date')),party:String(d.get('party')||'').trim(),detail:String(d.get('detail')||'').trim(),paymentMode:String(d.get('paymentMode')||'cash'),amount,currency,rate:currency===s().foreignCode?rate:1,baseAmount:currency===s().foreignCode?amount*rate:amount};
         if(isVoucher(row.kind))global.HAInvoiceLayout?.setDocumentHeader?.(row,global.HAInvoiceLayout.readDocumentHeader(form));
-        data.movements.push(row);save();render();
+        data.movements.push(row);save();rerender();
       } else if(form.matches('[data-ym-contact-form]')) {
-        event.preventDefault();const d=new FormData(form),name=String(d.get('name')||'').trim();if(!name)return;const kind=tab==='customers'?'customer':'supplier';if(data.contacts.some(c=>c.kind===kind&&c.name.toLowerCase()===name.toLowerCase())){formAlert('هذا الاسم مسجل مسبقاً.');return;}data.contacts.push({id:id(),kind,name,phone:String(d.get('phone')||'').trim(),address:String(d.get('address')||'').trim()});save();quickFormOpen=false;render();
+        event.preventDefault();const d=new FormData(form),name=String(d.get('name')||'').trim();if(!name)return;const kind=(form.dataset.ymWorkTab||tab)==='customers'?'customer':'supplier';if(data.contacts.some(c=>c.kind===kind&&c.name.toLowerCase()===name.toLowerCase())){formAlert('هذا الاسم مسجل مسبقاً.');return;}data.contacts.push({id:id(),kind,name,phone:String(d.get('phone')||'').trim(),address:String(d.get('address')||'').trim()});save();quickFormOpen=false;rerender();
       } else if(form.matches('[data-ym-product-form]')) {
-        event.preventDefault();const d=new FormData(form),name=String(d.get('name')||'').trim();if(data.products.some(p=>p.name.toLowerCase()===name.toLowerCase())){formAlert('المنتج موجود بالمخزون مسبقاً.');return;}data.products.push({id:id(),name,category:String(d.get('category')||''),qty:number(d.get('qty')),unit:String(d.get('unit')||'قطعة'),cost:number(d.get('cost')),price:number(d.get('price'))});save();quickFormOpen=false;render();
+        event.preventDefault();const d=new FormData(form),name=String(d.get('name')||'').trim();if(data.products.some(p=>p.name.toLowerCase()===name.toLowerCase())){formAlert('المنتج موجود بالمخزون مسبقاً.');return;}data.products.push({id:id(),name,category:String(d.get('category')||''),qty:number(d.get('qty')),unit:String(d.get('unit')||'قطعة'),cost:number(d.get('cost')),price:number(d.get('price'))});save();quickFormOpen=false;rerender();
       } else if(form.matches('[data-ym-category-form]')) {
-        event.preventDefault();const name=String(new FormData(form).get('name')||'').trim();if(!name)return;if(data.categories.some(c=>c.name.toLowerCase()===name.toLowerCase())){formAlert('هذا القسم موجود مسبقاً.');return;}data.categories.push({id:id(),name});save();categoryFormOpen=false;selectedCategory=name;render();
+        event.preventDefault();const name=String(new FormData(form).get('name')||'').trim();if(!name)return;if(data.categories.some(c=>c.name.toLowerCase()===name.toLowerCase())){formAlert('هذا القسم موجود مسبقاً.');return;}data.categories.push({id:id(),name});save();categoryFormOpen=false;selectedCategory=name;rerender();
       } else if(form.matches('[data-ym-order-form]')) {
-        event.preventDefault();const d=new FormData(form);data.orders.push({id:id(),date:String(d.get('date')),customer:String(d.get('customer')),product:String(d.get('product')).trim(),qty:number(d.get('qty')),price:number(d.get('price')),status:String(d.get('status'))});save();quickFormOpen=false;render();
+        event.preventDefault();const d=new FormData(form);data.orders.push({id:id(),date:String(d.get('date')),customer:String(d.get('customer')),product:String(d.get('product')).trim(),qty:number(d.get('qty')),price:number(d.get('price')),status:String(d.get('status'))});save();quickFormOpen=false;rerender();
       } else if(form.matches('[data-ym-maintenance-form]')) {
-        event.preventDefault();const d=new FormData(form);data.maintenance.push({id:id(),date:String(d.get('date')),customer:String(d.get('customer')).trim(),phone:String(d.get('phone')||'').trim(),item:String(d.get('item')).trim(),problem:String(d.get('problem')).trim(),amount:number(d.get('amount')),status:String(d.get('status')),notes:String(d.get('notes')||'').trim()});save();quickFormOpen=false;render();
+        event.preventDefault();const d=new FormData(form);data.maintenance.push({id:id(),date:String(d.get('date')),customer:String(d.get('customer')).trim(),phone:String(d.get('phone')||'').trim(),item:String(d.get('item')).trim(),problem:String(d.get('problem')).trim(),amount:number(d.get('amount')),status:String(d.get('status')),notes:String(d.get('notes')||'').trim()});save();quickFormOpen=false;rerender();
       } else if(form.matches('[data-ym-workshop-form]')) {
-        event.preventDefault();const d=new FormData(form),material=String(d.get('material')).trim(),product=String(d.get('product')).trim(),materialQty=number(d.get('materialQty')),qty=number(d.get('qty'));if(materialQty<=0||qty<=0){formAlert('أدخل كميات أكبر من صفر.');return;}let raw=data.products.find(p=>p.name.toLowerCase()===material.toLowerCase());if(!raw){formAlert('أضف المادة الخام إلى المخزون أولاً حتى تُخصم منها الكمية.');return;}if(number(raw.qty)<materialQty){formAlert('الكمية المتوفرة من المادة الخام أقل من الكمية المطلوبة.');return;}raw.qty-=materialQty;let made=data.products.find(p=>p.name.toLowerCase()===product.toLowerCase());if(!made){made={id:id(),name:product,qty:0,unit:'قطعة',cost:0,price:0};data.products.push(made);}made.qty+=qty;made.cost=number(d.get('cost'));data.workshop.push({id:id(),date:String(d.get('date')),material,materialQty,product,qty,cost:number(d.get('cost'))});save();quickFormOpen=false;render();
+        event.preventDefault();const d=new FormData(form),material=String(d.get('material')).trim(),product=String(d.get('product')).trim(),materialQty=number(d.get('materialQty')),qty=number(d.get('qty'));if(materialQty<=0||qty<=0){formAlert('أدخل كميات أكبر من صفر.');return;}let raw=data.products.find(p=>p.name.toLowerCase()===material.toLowerCase());if(!raw){formAlert('أضف المادة الخام إلى المخزون أولاً حتى تُخصم منها الكمية.');return;}if(number(raw.qty)<materialQty){formAlert('الكمية المتوفرة من المادة الخام أقل من الكمية المطلوبة.');return;}raw.qty-=materialQty;let made=data.products.find(p=>p.name.toLowerCase()===product.toLowerCase());if(!made){made={id:id(),name:product,qty:0,unit:'قطعة',cost:0,price:0};data.products.push(made);}made.qty+=qty;made.cost=number(d.get('cost'));data.workshop.push({id:id(),date:String(d.get('date')),material,materialQty,product,qty,cost:number(d.get('cost'))});save();quickFormOpen=false;rerender();
       } else if(form.matches('[data-ym-settings]')) {
         event.preventDefault();const d=new FormData(form),rate=number(d.get('rate'));if(rate<=0){formAlert('سعر الصرف لازم يكون أكبر من صفر.');return;}Object.assign(s(),{shopName:String(d.get('shopName')||'').trim()||'قسم ورشة صناعية',address:String(d.get('address')||'').trim(),phone:String(d.get('phone')||'').trim(),taxNo:String(d.get('taxNo')||'').trim(),rate});save();render();formAlert('تم حفظ الإعدادات وسعر الصرف.');
       }
     };
-    root.addEventListener('submit', event => {if(global.HAFormRecovery)return global.HAFormRecovery.execute(event.target,protectedSubmitHandler,event);return protectedSubmitHandler(event);}, { signal: controller.signal });
+    const submit=event=>{if(global.HAFormRecovery)return global.HAFormRecovery.execute(event.target,protectedSubmitHandler,event);return protectedSubmitHandler(event);};
+    root.addEventListener('submit',submit,{signal:controller.signal});
+    function openWorkshopForm(title,markup){
+      const shell=options.openWorkForm(title,markup),form=shell?.querySelector('form');
+      if(!form)return;
+      const origin=tab;
+      form.dataset.ymWorkTab=origin;
+      shell.addEventListener('submit',submit);
+      if(form.matches('[data-ym-invoice-form]')){
+        shell.addEventListener('click',event=>{
+          const button=event.target.closest('button');
+          if(button?.hasAttribute('data-ym-add-line'))form.querySelector('[data-ym-lines]').insertAdjacentHTML('beforeend',lineMarkup({qty:1,price:0}));
+          else if(button?.hasAttribute('data-ym-remove-line')&&form.querySelectorAll('[data-ym-line]').length>1)button.closest('[data-ym-line]')?.remove();
+          else if(button?.hasAttribute('data-ym-cancel-invoice')){options.finishWorkForm?.(origin);return;}
+          else return;
+          refreshInvoicePreview(form);
+        });
+        shell.addEventListener('input',()=>refreshInvoicePreview(form));
+        shell.addEventListener('change',event=>{
+          if(event.target.name==='party')form.querySelector('.haym-new-party')?.classList.toggle('hidden',event.target.value!=='__new');
+          refreshInvoicePreview(form);
+        });
+      }
+      if(form.matches('[data-ym-move-form]')){
+        const update=()=>{
+          const values=new FormData(form),amount=number(values.get('amount')),rate=number(s().rate),foreign=values.get('currency')===s().foreignCode;
+          const header=shell.querySelector('[data-ym-voucher-header]');
+          if(header)header.hidden=!isVoucher(values.get('kind'));
+          form.querySelector('[data-ym-move-conversion]').textContent=foreign&&rate<=0?'أدخل سعر الصرف من الإعدادات.':`يعادل ${fmt(foreign?amount*rate:amount)} ${s().baseCode}`;
+        };
+        shell.addEventListener('input',update);
+        shell.addEventListener('change',update);
+      }
+    }
     render();
     return { render, getData: () => data, getTab: () => tab, setTab: value => { tab=value; render(); }, destroy: () => { controller.abort(); root.innerHTML=''; } };
   }

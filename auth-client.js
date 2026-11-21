@@ -116,7 +116,7 @@ function startOfflineFromCache(){
 function applySyncedWorkspace(user,before){
  if(window.HA_ADMIN_DEMO)return;
  if(logoutRequested||currentUser?.id!==user.id)return;
- if(document.getElementById('modal')?.open){setTimeout(()=>applySyncedWorkspace(user,before),500);return;}
+ if(window.HA_WORKSPACE_FORMS?.hasOpen()||document.getElementById('modal')?.open){setTimeout(()=>applySyncedWorkspace(user,before),500);return;}
  if(localStorage.getItem(pendingKey(user.id))==='1')return;
  let latest=null;try{latest=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
  if(latest&&stableJson(latest)!==before)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);
@@ -160,7 +160,7 @@ async function performManualSync(user,signal,allowReadOnlyModal=false){
 async function manualRefreshAccounting({allowReadOnlyModal=false}={}){
  if(window.HA_ADMIN_DEMO){showSyncToast('مساحة تجريبية محلية؛ لا تُزامن مع بيانات الحساب.',true);return true;}
  if(manualSyncButton.disabled)return;
- if(document.getElementById('modal')?.open&&(!allowReadOnlyModal||document.getElementById('modalBody').querySelector('form'))){showSyncToast('احفظ الفاتورة أو أغلقها قبل تحديث البيانات.');return;}
+ if(window.HA_WORKSPACE_FORMS?.hasOpen()||document.getElementById('modal')?.open&&(!allowReadOnlyModal||document.getElementById('modalBody').querySelector('form'))){showSyncToast('احفظ الفاتورة أو أغلقها قبل تحديث البيانات.');return;}
  if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. بياناتك محفوظة بهذا الجهاز وتنتظر المزامنة.');return;}
  if(!client||!currentUser){showSyncToast('تعذر تحديد جلسة الحساب. حدّث الصفحة عند توفر الاتصال.');return;}
  const user=currentUser;manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';

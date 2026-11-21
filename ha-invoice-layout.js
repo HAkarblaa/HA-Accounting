@@ -207,7 +207,7 @@ document.addEventListener('change',async event=>{
     const image=new Image();
     image.src=url;
     await image.decode();
-    if(!editor.isConnected||logoConversions.get(editor)!==selection)return;
+    if(logoConversions.get(editor)!==selection)return;
     const scale=Math.min(1,420/Math.max(image.naturalWidth,image.naturalHeight));
     const canvas=document.createElement('canvas');
     canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
