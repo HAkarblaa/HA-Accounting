@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261122-subscriber-admin-session-v63';
+  const build = '20261122-processor-arabic-numeric-entry-v64';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

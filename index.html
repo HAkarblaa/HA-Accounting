@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261122-subscriber-admin-session-v63">
+<meta name="ha-app-build" content="20261122-processor-arabic-numeric-entry-v64">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -1575,6 +1575,23 @@ function processorRebuildProductLots(productIds){processorEnsure();const ids=new
  for(const event of events){const p=processorData.products.find(z=>String(z.id)===String(event.item?.productId||event.adjustment?.productId));if(!p)continue;if(event.type==='purchase'){const i=event.item;i.batchId=i.batchId||`lot-${event.doc.id}-${String(event.index).padStart(4,'0')}`;processorReceiveLot(p,i.qty,i.price,event.date,event.doc.number,'purchase',event.doc.id,i.batchId,event.createdAt);i.cost=+i.price||0;}else if(event.type==='sale'){const i=event.item,result=processorConsumeLots(p,i.qty,event.date,event.doc.number,event.createdAt);i.batchAllocations=result.allocations;i.cost=(+i.qty||0)?+(result.cost/(+i.qty||1)).toFixed(4):0;}else{const a=event.adjustment,delta=+a.delta||0;if(delta>0)processorReceiveLot(p,delta,a.unitCost,event.date,a.number||'تسوية جرد',a.source||'adjustment',a.id,a.lotId||`adjust-${a.id}`,event.createdAt);else if(delta<0){if(a.returnPurchaseLotId){const lot=p.lots.find(l=>l.id===a.returnPurchaseLotId);if(!lot||lot.remainingQty<-delta-0.000001)throw Error('دفعة الشراء لا تكفي لترجيع '+p.name);lot.remainingQty=+(lot.remainingQty+delta).toFixed(3);processorSyncProduct(p);}else{const used=processorConsumeLots(p,-delta,event.date,a.number||'تسوية جرد',event.createdAt);if(a.source==='writeoff'){a.totalCost=processorReturnRound(used.cost);a.unitCost=used.cost/(-delta);a.batchAllocations=used.allocations;}}}}}
  for(const p of processorData.products.filter(z=>ids.has(String(z.id)))){const latestPurchases=processorData.docs.filter(d=>d.batchTracked&&d.kind==='purchase').flatMap(d=>(d.items||[]).filter(i=>String(i.productId)===String(p.id)).map(i=>({date:String(d.date||''),createdAt:+d.createdAt||0,price:+i.price||0}))).sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt),latest=latestPurchases[latestPurchases.length-1];p.lastPurchaseCost=latest?latest.price:(+p.batchBaseCost||+p.lastPurchaseCost||0);processorSyncProduct(p);}}
 function processorDefaultPurchaseCost(p){return Number.isFinite(+p?.lastPurchaseCost)?+p.lastPurchaseCost:(+p?.cost||0);}
+// Keep native number validation and the existing input handlers for Arabic keyboards.
+const processorNumericForms='#processorInvoiceForm,#editProcessorInvoice,#trForm[data-ha-voucher-scope="processor"],#editTreasuryForm[data-ha-voucher-scope="processor"]';
+function insertProcessorNumber(event,raw){
+ const input=event.target;
+ if(!event.cancelable||event.defaultPrevented||!raw||!input.matches?.('input[type="number"]:enabled')||input.readOnly||!input.closest(processorNumericForms))return;
+ const normalized=processorEnglishDigits(raw).replace(/٫/g,'.').replace(/٬/g,'');
+ if(normalized===raw||!/^[0-9.+-]+$/.test(normalized))return;
+ // Number inputs do not expose selectionStart or setRangeText.
+ // Inserting through the editor retains the caret, replacement selection and undo.
+ if(document.execCommand('insertText',false,normalized))event.preventDefault();
+}
+document.getElementById('modal').addEventListener('beforeinput',event=>{
+ if(event.inputType==='insertText'||event.inputType==='insertReplacementText'||event.inputType==='insertFromPaste')insertProcessorNumber(event,event.data);
+});
+document.getElementById('modal').addEventListener('paste',event=>{
+ insertProcessorNumber(event,event.clipboardData?.getData('text/plain')?.trim());
+});
 function processorEnglishDigits(value){return String(value??'').replace(/[٠-٩۰-۹]/g,ch=>{const n=ch.charCodeAt(0);return String(n>=0x06f0?n-0x06f0:n-0x0660)})}function processorNormalizeEnglishDigits(root){if(!root)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while(node=walker.nextNode()){const next=processorEnglishDigits(node.nodeValue);if(next!==node.nodeValue)node.nodeValue=next;}root.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>{for(const attr of ['aria-label','title','placeholder'])if(el.hasAttribute(attr))el.setAttribute(attr,processorEnglishDigits(el.getAttribute(attr)))});root.querySelectorAll('input:not([type=date]),textarea').forEach(el=>{if(el.value)el.value=processorEnglishDigits(el.value)});root.classList?.toggle('processor-number-format',activeModuleType==='processor')}function processorCurrencyFormat(amount,currency='IQD'){const formatter=processorCurrencyFormat.formatter||(processorCurrencyFormat.formatter=new Intl.NumberFormat('en-US',{maximumFractionDigits:2})),formatted=formatter.format(Number(amount||0));return currency==='USD'?'$ '+formatted:formatted+' د.ع'}function processorInvoiceFormat(doc,amount){const rate=doc?.currency==='USD'?Math.max(0.000001,+doc.exchangeRate||+processorData.exchangeRate||1):1;return processorCurrencyFormat((+amount||0)/rate,doc?.currency||'IQD')}function processorDebtFormat(doc,amount){const sign=doc?.kind==='purchase'?-1:1;return processorInvoiceFormat(doc,sign*Math.abs(+amount||0))}
 function processorGoodsAmount(d){return d.deliveryInTotal?Math.max(0,(+d.amount||0)-(+d.deliveryFee||0)):(+d.amount||0);}
 function processorDisplayTotal(d){return d.deliveryInTotal?(+d.amount||0):(+d.amount||0)+(+d.deliveryFee||0);}
@@ -2549,7 +2566,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=3-admin-demo"></script>
 <script defer src="./auth-client.js?v=95-subscriber-admin"></script>
-<script defer src="./ha-app-update.js?v=63"></script>
+<script defer src="./ha-app-update.js?v=64"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
