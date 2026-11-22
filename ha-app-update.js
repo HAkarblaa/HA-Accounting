@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261121-thermal-report-readability-v62';
+  const build = '20261122-subscriber-admin-session-v63';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
