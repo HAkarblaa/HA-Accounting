@@ -5,6 +5,7 @@ const boot=document.getElementById('authBoot'),gate=document.getElementById('aut
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
 let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0,refreshWorkspaceOnResume=null,logoutRequested=false,reconnectRunning=false,needsReconnect=false,displayedModuleType=null,staffContext=null;
 const selfWriteSnapshots=new Map();
+const workspaceWrites=new Map();
 function rememberSelfWrite(userId,data){const token={signature:stableJson(data)};selfWriteSnapshots.set(userId,token);setTimeout(()=>{if(selfWriteSnapshots.get(userId)===token)selfWriteSnapshots.delete(userId);},30000);}
 const userKey=id=>'ha-accounting-v1:'+id;
 const pendingKey=id=>'ha-accounting-pending-sync:'+id;
@@ -29,7 +30,7 @@ function watchWorkspace(user){
     }
     return;
    }
-   if(localStorage.getItem(pendingKey(user.id))==='1'){showMessage('توجد تغييرات محفوظة بهذا الجهاز بانتظار المزامنة؛ لن نستبدلها بنسخة الجهاز الآخر.');return;}
+   if(localStorage.getItem(pendingKey(user.id))==='1')return;
    let local=null,base=null;
    try{local=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
    try{base=JSON.parse(localStorage.getItem(baseKey(user.id))||'null');}catch{}
@@ -47,7 +48,7 @@ function watchWorkspace(user){
      localStorage.setItem(pendingKey(user.id),'1');
      const warning='وجدنا تعديلات متزامنة على نفس البيانات. احتفظنا بتغييرات هذا الجهاز ولم نستبدلها.';
      window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));
-     showMessage(warning);
+     showWorkspaceMessage(warning);
      return;
     }
     localStorage.setItem(userKey(user.id),JSON.stringify(result.data));
@@ -92,6 +93,13 @@ function watchWorkspace(user){
 }
 
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
+function showWorkspaceMessage(text='',ok=false){
+ const status=document.getElementById('workspaceSyncStatus');
+ if(!status)return;
+ status.textContent=text;
+ status.hidden=!text;
+ status.classList.toggle('sync-confirmed',ok);
+}
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
 const showApp=()=>{if(staffContext){boot?.remove();gate.style.display='none';document.querySelector('.layout').classList.add('authenticated');window.HAStaff?.mount(staffContext);return;}window.HAStaff?.unmount();const layout=document.querySelector('.layout'),wasOpen=layout.classList.contains('authenticated');boot?.remove();gate.classList.remove('auth-pending');gate.style.display='none';layout.classList.add('authenticated');document.getElementById('openAdmin').classList.toggle('hidden',!isAdmin||window.HA_ADMIN_DEMO);document.getElementById('adminInterfacePreview')?.classList.toggle('hidden',!isAdmin);window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;if(!wasOpen||displayedModuleType!==window.HA_ACCOUNTING_MODULE_TYPE){displayedModuleType=window.HA_ACCOUNTING_MODULE_TYPE;window.HA_APPLY_MODULE_ACCESS?.(displayedModuleType,{entry:!wasOpen});}adminDemoControls();window.dispatchEvent(new Event('ha-accounting-auth-ready'));};
@@ -132,16 +140,30 @@ document.getElementById('logoutButton').addEventListener('click',async()=>{
  try{if(client)await Promise.race([client.auth.signOut({scope:'local'}),new Promise(resolve=>setTimeout(resolve,1200))]);}catch{}finally{location.reload();}
 });
 window.addEventListener('offline',()=>{needsReconnect=true;});
+function queueWorkspaceUpload(user,delay=900){
+ clearTimeout(syncTimer);
+ syncTimer=setTimeout(async()=>{
+  if(logoutRequested||currentUser?.id!==user.id||!navigator.onLine||!client)return;
+  if(localStorage.getItem(pendingKey(user.id))!=='1')return;
+  try{
+   const data=JSON.parse(localStorage.getItem(userKey(user.id))||'null');
+   if(!data)return;
+   const before=stableJson(data);
+   await pushLocalWorkspace(user,data);
+   applySyncedWorkspace(user,before);
+  }catch(error){
+   needsReconnect=true;
+   console.error('HA cloud sync requires review',error);
+   showWorkspaceMessage(error?.message||'المزامنة تنتظر مراجعة تعارض البيانات.');
+  }
+ },delay);
+}
 window.addEventListener('ha-accounting-save',()=>{
  if(!currentUser||staffContext||window.HA_ADMIN_DEMO)return;
- localStorage.setItem(pendingKey(currentUser.id),'1');
- if(!navigator.onLine)return;
- if(!client)return;
- clearTimeout(syncTimer);syncTimer=setTimeout(async()=>{
-  let data;try{data=JSON.parse(localStorage.getItem(userKey(currentUser.id))||'null');}catch{return;}
-  if(!data)return;
-  try{const user=currentUser,before=stableJson(data);await pushLocalWorkspace(user,data);applySyncedWorkspace(user,before);}catch(error){needsReconnect=true;console.error('HA cloud sync requires review',error);showMessage(error?.message||'المزامنة تنتظر مراجعة تعارض البيانات.');}
- },900);
+ const user=currentUser;
+ localStorage.setItem(pendingKey(user.id),'1');
+ showWorkspaceMessage(navigator.onLine?'محفوظ على الجهاز · جارٍ الرفع للسحابة':'محفوظ على الجهاز · بانتظار الإنترنت');
+ if(navigator.onLine)queueWorkspaceUpload(user);
 });
 if(!window.supabase?.createClient||!cfg.url||!cfg.publishableKey){
  if(startOfflineFromCache())return;
@@ -168,8 +190,13 @@ async function manualRefreshAccounting({allowReadOnlyModal=false}={}){
  if(!navigator.onLine){showSyncToast('ماكو إنترنت حالياً. بياناتك محفوظة بهذا الجهاز وتنتظر المزامنة.');return;}
  if(!client||!currentUser){showSyncToast('تعذر تحديد جلسة الحساب. حدّث الصفحة عند توفر الاتصال.');return;}
  const user=currentUser;manualSyncButton.disabled=true;const oldText=manualSyncButton.textContent;manualSyncButton.textContent='جارٍ التحديث…';
- try{clearTimeout(syncTimer);await withSyncDeadline(signal=>performManualSync(user,signal,allowReadOnlyModal));needsReconnect=localStorage.getItem(pendingKey(user.id))==='1';showSyncToast('تم تحديث البيانات ومزامنة التعديلات.',true);return true;}
- catch(error){needsReconnect=true;console.error('HA manual sync failed',error);showSyncToast(error?.message||'تعذّر التحديث؛ بياناتك محفوظة. حاول مجدداً.');return false;}
+ try{clearTimeout(syncTimer);await withSyncDeadline(signal=>performManualSync(user,signal,allowReadOnlyModal));needsReconnect=localStorage.getItem(pendingKey(user.id))==='1';
+ if(needsReconnect){
+  showSyncToast('توجد تعديلات على هذا الجهاز بانتظار اكتمال الرفع.');
+  return false;
+ }
+ showSyncToast('تم تحديث البيانات ومزامنة التعديلات.',true);return true;}
+ catch(error){needsReconnect=true;console.error('HA manual sync failed',error);showWorkspaceMessage(error?.message||'تعذّر التحديث؛ بياناتك محفوظة.');showSyncToast(error?.message||'تعذّر التحديث؛ بياناتك محفوظة. حاول مجدداً.');return false;}
  finally{manualSyncButton.disabled=false;manualSyncButton.textContent=oldText;}
 }
 window.HA_MANUAL_REFRESH=manualRefreshAccounting;manualSyncButton?.addEventListener('click',manualRefreshAccounting);
@@ -207,29 +234,66 @@ function mergeWorkspaces(base,local,remote){
  }
  return {data:merged,conflicts:[...conflicts]};
 }
-async function pushLocalWorkspace(user,data,{signal}={}){
+async function pushLocalWorkspace(user,fallback,{signal}={}){
+ const previous=workspaceWrites.get(user.id)||Promise.resolve();
+ const next=previous.catch(()=>{}).then(()=>{
+  if(signal?.aborted)throw Error('تم إيقاف محاولة التحديث.');
+  if(logoutRequested||currentUser&&currentUser.id!==user.id)return;
+  let data;try{data=JSON.parse(localStorage.getItem(userKey(user.id))||'null');}catch{}
+  data=data||fallback;
+  if(!data)return;
+  let base;try{base=JSON.parse(localStorage.getItem(baseKey(user.id))||'null');}catch{}
+  if(localStorage.getItem(pendingKey(user.id))!=='1'&&base&&stableJson(data)===stableJson(base))return;
+  return writeWorkspace(user,data,{signal});
+ });
+ workspaceWrites.set(user.id,next);
+ try{return await next;}finally{if(workspaceWrites.get(user.id)===next)workspaceWrites.delete(user.id);}
+}
+async function writeWorkspace(user,data,{signal}={}){
  if(window.HA_ADMIN_DEMO||data?.adminDemoSandbox)throw new Error('بيانات التجربة منفصلة ولا تُرفع إلى دفتر الحساب الحقيقي.');
  if(signal?.aborted)throw new Error('تم إيقاف محاولة التحديث.');
  const inputSignature=stableJson(data);
  const key=userKey(user.id),baseText=localStorage.getItem(baseKey(user.id)),base=(()=>{try{return JSON.parse(baseText||'null');}catch{return null;}})(),baseRevision=localStorage.getItem(revisionKey(user.id));
  const {data:remoteRow,error:readError}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
  if(readError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر فحص آخر نسخة قبل المزامنة. بقيت الفواتير محفوظة بهذا الجهاز وستتم إعادة المحاولة عند عودة الاتصال.');}
- let outgoing=data;
+ let outgoing=data,mergedRemote=false;
  if(remoteRow?.data){
   if(!baseRevision&&!base&&stableJson(data)!==stableJson(remoteRow.data)){localStorage.setItem(pendingKey(user.id),'1');window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:'لا توجد نسخة مقارنة لهذا الجهاز. التعديلات محفوظة محلياً ولم نستبدل نسخة السحابة.'}}));throw new Error('توجد نسخة سحابية سابقة ولا توجد نسخة مقارنة لهذا الجهاز. بقيت التعديلات محلياً حتى لا نستبدل بيانات الحساب.');}
   const changed=baseRevision&&remoteRow.updated_at?Date.parse(remoteRow.updated_at)!==Date.parse(baseRevision):stableJson(base)!==stableJson(remoteRow.data);
   if(changed){if(!base){localStorage.setItem(pendingKey(user.id),'1');window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:'تعارض بالمزامنة. بقيت الفواتير محفوظة على هذا الجهاز ولم نستبدل نسخة السحابة.'}}));throw new Error('تغيّر دفتر جهاز آخر قبل تجهيز نسخة المقارنة. احتفظنا بالتعديلات محلياً وأوقفنا الاستبدال حتى لا تضيع الفواتير.');}
    const result=mergeWorkspaces(base,data,remoteRow.data);
    if(result.conflicts.length){const names=result.conflicts.map(id=>(data.products||[]).find(p=>String(p.id)===id)?.name||(remoteRow.data.products||[]).find(p=>String(p.id)===id)?.name||'صنف '+id.slice(0,8));localStorage.setItem(pendingKey(user.id),'1');const warning='تعارض كمية أو تعديل متزامن: '+names.join('، ')+'. بقيت التعديلات بهذا الجهاز ولم نستبدل نسخة السحابة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning+' راجع الكميات في الجهازين قبل المتابعة.');}
-   outgoing=result.data;
+   outgoing=result.data;mergedRemote=true;
   }
  }else if(baseRevision){localStorage.setItem(pendingKey(user.id),'1');throw new Error('نسخة السحابة غير موجودة بعد مزامنة سابقة. بقيت البيانات محلياً ولم نرفعها فوق نسخة غير معروفة.');}
- outgoing.documents=(outgoing.documents||[]).map(d=>({...d,syncStatus:'synced'}));const previousTime=Date.parse(remoteRow?.updated_at||'');const revision=new Date(Math.max(Date.now(),Number.isFinite(previousTime)?previousTime+1:0)).toISOString();rememberSelfWrite(user.id,outgoing);let writeError=null;
+ outgoing={...outgoing,documents:(outgoing.documents||[]).map(d=>({...d,syncStatus:'synced'}))};const previousTime=Date.parse(remoteRow?.updated_at||'');const revision=new Date(Math.max(Date.now(),Number.isFinite(previousTime)?previousTime+1:0)).toISOString();rememberSelfWrite(user.id,outgoing);let writeError=null;
  if(remoteRow){const {data:written,error}=await syncQuery(client.from('accounting_workspaces').update({data:outgoing,updated_at:revision}).eq('user_id',user.id).eq('updated_at',remoteRow.updated_at).select('updated_at').maybeSingle(),signal);writeError=error;if(!error&&!written){localStorage.setItem(pendingKey(user.id),'1');const warning='تغيّر دفتر جهاز آخر أثناء المزامنة. بقيت تعديلات هذا الجهاز محفوظة ولم نستبدل آخر نسخة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning);}}
  else{const {error}=await syncQuery(client.from('accounting_workspaces').insert({user_id:user.id,data:outgoing,updated_at:revision}),signal);writeError=error;}
  if(writeError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر مزامنة البيانات مع السحابة. بقيت الفواتير محفوظة بهذا الجهاز.');}
  let currentLocal=null;try{currentLocal=JSON.parse(localStorage.getItem(key)||'null');}catch{}const newerLocal=stableJson(currentLocal)!==inputSignature;
- if(newerLocal){if(!base){localStorage.setItem(baseKey(user.id),inputSignature);if(remoteRow?.updated_at)localStorage.setItem(revisionKey(user.id),remoteRow.updated_at);}localStorage.setItem(pendingKey(user.id),'1');needsReconnect=true;}else{localStorage.setItem(key,JSON.stringify(outgoing));localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));localStorage.setItem(revisionKey(user.id),revision);localStorage.removeItem(pendingKey(user.id));window.dispatchEvent(new Event('ha-accounting-synced'));}
+ if(newerLocal){
+  // The server just confirmed our own snapshot. A later invoice on this device
+  // must compare against that revision so the previous upload is not a conflict.
+  if(!mergedRemote){
+   localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));
+   localStorage.setItem(revisionKey(user.id),revision);
+  }else if(!base){
+   localStorage.setItem(baseKey(user.id),inputSignature);
+   if(remoteRow?.updated_at)localStorage.setItem(revisionKey(user.id),remoteRow.updated_at);
+  }
+  localStorage.setItem(pendingKey(user.id),'1');
+  needsReconnect=true;
+  if(currentUser?.id===user.id&&!logoutRequested)queueWorkspaceUpload(user,0);
+  return;
+ }
+ localStorage.setItem(key,JSON.stringify(outgoing));
+ localStorage.setItem(baseKey(user.id),JSON.stringify(outgoing));
+ localStorage.setItem(revisionKey(user.id),revision);
+ localStorage.removeItem(pendingKey(user.id));
+ if(currentUser?.id===user.id&&!logoutRequested){
+  needsReconnect=false;showWorkspaceMessage('تمت مزامنة التعديلات مع السحابة',true);
+  window.dispatchEvent(new Event('ha-accounting-synced'));
+ }
 }
 async function prepareWorkspace(user,{signal}={}){
  if(window.HA_ADMIN_DEMO)return;

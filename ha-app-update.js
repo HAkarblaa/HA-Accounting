@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-all-sections-compact-v77';
+  const build = '20261124-market-sync-v78';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

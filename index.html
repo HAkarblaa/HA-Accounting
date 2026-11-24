@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261124-all-sections-compact-v77">
+<meta name="ha-app-build" content="20261124-market-sync-v78">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -819,6 +819,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
 </aside>
 <main class="main">
   <header class="topbar"><div class="ha-top-context"><button class="mobile-menu" id="menuBtn">☰</button><div class="ha-top-identity"><div class="top-title" id="topTitle">لوحة التحكم</div><span id="companyShort">مساحة محلية</span></div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="detailedStatementsButton" type="button" class="btn secondary small" data-ds-launch>كشف تفصيلي</button><button id="manualSyncButton" type="button" class="btn secondary small" title="جلب آخر البيانات ومزامنة تعديلات هذا الجهاز">⟳ تحديث البيانات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span></div></header>
+  <div id="workspaceSyncStatus" role="status" aria-live="polite" hidden></div>
   <div id="appStickyNavigation">
     <nav id="appTabs" class="ha-top-tabs" aria-label="التبويبات المفتوحة"></nav>
     <div id="cashierCategoryDock" hidden></div>
@@ -2971,8 +2972,8 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-2.118.0.js"></script>
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=5-live-stock"></script>
-<script defer src="./auth-client.js?v=96-resume-sync"></script>
-<script defer src="./ha-app-update.js?v=77"></script>
+<script defer src="./auth-client.js?v=97-workspace-sync"></script>
+<script defer src="./ha-app-update.js?v=78"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -3382,6 +3383,11 @@ html body #appWorkPanel #modal.hpw-invoice-dialog[data-ha-work-tab] .hpw-invoice
 
 
  </style>
+<style>
+#workspaceSyncStatus{padding:6px 12px;background:#fff5db;color:#694c18;font-size:12px;overflow-wrap:anywhere}
+#workspaceSyncStatus.sync-confirmed{background:#e5f5ed;color:#165942}
+#workspaceSyncStatus[hidden]{display:none}
+</style>
 <style id="ha-dashboard-interface">
 /* The account identity sits with the page title so it cannot strand a second toolbar row. */
 .main>.topbar{min-height:57px;height:auto;padding:7px 16px;gap:12px;background:#fff}
