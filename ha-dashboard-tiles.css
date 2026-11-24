@@ -1,0 +1,221 @@
+:is(#view,#modalBody) .dashboard-tiles,
+#view :is(.dashboard-shortcuts-panel.dashboard-quick-panel,.simple-home,.engineering-basics-page,.engineering-page .page-head) .dashboard-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#view .engineering-page .page-head .dashboard-tiles.engineering-dashboard-actions {
+  grid-column: 1 / -1;
+}
+
+#view .dashboard-tiles:is(.processor-module-grid,.engineering-module-grid) {
+  margin: 0 0 15px;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > :is(button,.personal-quick-card),
+#view .dashboard-shortcuts-panel.dashboard-quick-panel .dashboard-tiles > button,
+#view .simple-dashboard-quick-panel .dashboard-tiles > button,
+#view .simple-home .dashboard-tiles > :is(.simple-section-shortcut,.simple-voucher-card) {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  justify-items: start;
+  align-content: center;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 66px;
+  padding: 8px;
+  gap: 2px 9px;
+  border: 1px solid #d6e1ec;
+  border-radius: 9px;
+  background: #fff;
+  color: #173d64;
+  box-shadow: 0 2px 5px #182d4910;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > button:not(:has(.dashboard-tile-icon)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(#view,#modalBody) .dashboard-tiles > button:hover {
+  transform: none;
+  border-color: #87adc8;
+  background: #f8fcff;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > button:focus-visible,
+#view .dashboard-tiles .personal-quick-card button:focus-visible {
+  outline: 2px solid #286d9e;
+  outline-offset: 2px;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > [hidden] {
+  display: none !important;
+}
+
+#view .dashboard-tiles :is(.engineering-basic-copy,:is(.simple-section-shortcut,.simple-voucher-card,.engineering-module-card) > span:nth-child(2)) {
+  display: contents;
+}
+
+#view .dashboard-tiles :is(.engineering-module-arrow,.engineering-basic-arrow,.simple-section-arrow,.simple-voucher-arrow,.haym-dashboard-feature > i,.haym-dashboard-tile > i) {
+  display: none;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > button :is(strong,b) {
+  margin: 0;
+  color: #173d64;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+:is(#view,#modalBody) .dashboard-tiles > button small {
+  margin: 0;
+  color: #536c83;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+#view .dashboard-tiles > button .dashboard-tile-icon,
+#view .dashboard-tiles .personal-quick-main .dashboard-tile-icon {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #e9f3fb;
+  color: var(--card-color, var(--basic-accent, var(--simple-card-color, var(--voucher-color, #176f73))));
+  box-shadow: none;
+  font-size: 18px;
+  line-height: 1;
+}
+
+#view .dashboard-tiles > .personal-quick-card {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: stretch;
+  gap: 4px;
+  min-height: 90px;
+}
+
+#view .dashboard-tiles .personal-quick-main {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  gap: 2px 7px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  text-align: start;
+  color: #173d64;
+}
+
+#view .dashboard-tiles .personal-quick-main :is(strong,small,.personal-quick-value) {
+  margin: 0;
+  font-size: 11px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#view .dashboard-tiles .personal-quick-main > small {
+  grid-column: 2;
+  color: #536c83;
+}
+
+#view .dashboard-tiles .personal-quick-add {
+  min-height: 30px;
+  padding: 3px 4px;
+  margin: 0;
+  font-size: 10px;
+  white-space: normal;
+}
+
+@media (min-width: 1200px) {
+  :is(#view,#modalBody) .dashboard-tiles,
+  #view :is(.dashboard-shortcuts-panel.dashboard-quick-panel,.simple-home,.engineering-basics-page,.engineering-page .page-head) .dashboard-tiles {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 950px) {
+  :is(#view,#modalBody) .dashboard-tiles,
+  #view :is(.dashboard-shortcuts-panel.dashboard-quick-panel,.simple-home,.engineering-basics-page,.engineering-page .page-head) .dashboard-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  :is(#view,#modalBody) .dashboard-tiles,
+  #view :is(.dashboard-shortcuts-panel.dashboard-quick-panel,.simple-home,.engineering-basics-page,.engineering-page .page-head) .dashboard-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :is(#view,#modalBody) .dashboard-tiles > :is(button,.personal-quick-card),
+  #view .dashboard-shortcuts-panel.dashboard-quick-panel .dashboard-tiles > button,
+  #view .simple-dashboard-quick-panel .dashboard-tiles > button,
+  #view .simple-home .dashboard-tiles > :is(.simple-section-shortcut,.simple-voucher-card) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    justify-items: center;
+    min-height: 82px;
+    gap: 3px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  #view .dashboard-tiles > button .dashboard-tile-icon,
+  #view .dashboard-tiles .personal-quick-main .dashboard-tile-icon {
+    grid-row: auto;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  :is(#view,#modalBody) .dashboard-tiles > button :is(strong,b) {
+    font-size: 11px;
+  }
+
+  :is(#view,#modalBody) .dashboard-tiles > button small {
+    font-size: 9px;
+  }
+
+  #view .dashboard-tiles > .personal-quick-card,
+  #view .dashboard-tiles .personal-quick-main {
+    justify-items: stretch;
+  }
+
+  #view .dashboard-tiles .personal-quick-main {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  #view .processor-page-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #view .dashboard-tiles .personal-quick-main > small {
+    grid-column: auto;
+    font-size: 9px;
+  }
+}

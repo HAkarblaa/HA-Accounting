@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-processor-compact-v76';
+  const build = '20261124-all-sections-compact-v77';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
