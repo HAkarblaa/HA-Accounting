@@ -142,6 +142,7 @@ function documentHeaderEditor(company,formId,record,expanded=false){
   return `<div class="ha-document-header" data-ha-header-base="${esc(JSON.stringify(base))}">
     <div class="ha-document-header-preview">${companyHeader(current)}</div>
     <details${expanded?' open':''}><summary>تعديل ترويسة هذا المستند</summary>
+      <div class="ha-document-header-panel">
       <div class="ha-document-header-fields">${headerFields.map(([key,label,limit])=>
         `<label>${label}<input type="text" data-ha-header-field="${key}" maxlength="${limit}" value="${esc(current[key])}"${['phone','email','taxNumber'].includes(key)?' dir="auto"':''}></label>`).join('')}
         <label>شعار هذا المستند<input type="file" data-ha-header-file accept="image/*"></label>
@@ -149,8 +150,10 @@ function documentHeaderEditor(company,formId,record,expanded=false){
       <div class="ha-document-header-controls">
         <button type="button" class="btn secondary small" data-ha-header-remove-logo>إزالة الشعار من هذا المستند</button>
         <button type="button" class="btn secondary small" data-ha-header-reset>استخدام بيانات الشركة الافتراضية</button>
+        <button type="button" class="btn secondary small" data-ha-header-close>إغلاق التعديل</button>
       </div>
       <p class="ha-document-header-status" role="status">التغييرات تخص هذا المستند وتُحفظ عند الحفظ.</p>
+      </div>
     </details>
     <input type="hidden" name="haDocumentHeaderOverride" form="${esc(formId)}" value="${esc(JSON.stringify(override))}">
   </div>`;
@@ -188,7 +191,13 @@ document.addEventListener('input',event=>{
   updateHeader(event.target.closest('.ha-document-header'));
 });
 document.addEventListener('click',event=>{
-  const button=event.target.closest?.('[data-ha-header-reset],[data-ha-header-remove-logo]');
+  const button=event.target.closest?.('[data-ha-header-reset],[data-ha-header-remove-logo],[data-ha-header-close]');
+  if(button?.hasAttribute('data-ha-header-close')){
+    const details=button.closest('details');
+    details.open=false;
+    details.querySelector('summary').focus({preventScroll:true});
+    return;
+  }
   if(!button)return;
   const editor=button.closest('.ha-document-header'),reset=button.hasAttribute('data-ha-header-reset');
   logoConversions.delete(editor);
