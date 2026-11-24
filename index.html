@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261124-processor-mobile-finance-v74">
+<meta name="ha-app-build" content="20261124-processor-compact-v76">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -818,7 +818,7 @@ body{background:linear-gradient(145deg,#f6f9ff 0%,#edf7ff 55%,#f2fffb 100%);colo
   <div class="side-foot">مساحة محاسبية لكل حساب<br>مزامنة عند الاتصال بالإنترنت</div>
 </aside>
 <main class="main">
-  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="mobile-menu" id="menuBtn">☰</button><div class="top-title" id="topTitle">لوحة التحكم</div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="detailedStatementsButton" type="button" class="btn secondary small" data-ds-launch>كشف تفصيلي</button><button id="manualSyncButton" type="button" class="btn secondary small" title="جلب آخر البيانات ومزامنة تعديلات هذا الجهاز">⟳ تحديث البيانات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span><span class="user-chip"><span class="user-avatar">م</span><span id="companyShort">مساحة محلية</span></span></div></header>
+  <header class="topbar"><div class="ha-top-context"><button class="mobile-menu" id="menuBtn">☰</button><div class="ha-top-identity"><div class="top-title" id="topTitle">لوحة التحكم</div><span id="companyShort">مساحة محلية</span></div></div><div class="top-actions"><button id="openAdmin" type="button" class="btn secondary small hidden">إدارة الحسابات</button><button id="adminInterfacePreview" type="button" class="btn secondary small hidden">تجربة الواجهات</button><button id="detailedStatementsButton" type="button" class="btn secondary small" data-ds-launch>كشف تفصيلي</button><button id="manualSyncButton" type="button" class="btn secondary small" title="جلب آخر البيانات ومزامنة تعديلات هذا الجهاز">⟳ تحديث البيانات</button><button id="logoutButton" type="button" class="btn danger small">خروج</button><span class="date-chip" id="today"></span></div></header>
   <div id="appStickyNavigation">
     <nav id="appTabs" class="ha-top-tabs" aria-label="التبويبات المفتوحة"></nav>
     <div id="cashierCategoryDock" hidden></div>
@@ -1767,27 +1767,28 @@ function processorDashboard(){
  const chartMax=Math.max(1,...months.flatMap(m=>[m.revenue,m.expenses])),chartBars=months.map(m=>`<div class="processor-chart-month" aria-label="${esc(m.label)}"><div class="processor-chart-bars"><span class="processor-chart-bar revenue" style="height:${Math.max(m.revenue?3:0,Math.round(m.revenue/chartMax*100))}%" title="الإيرادات: ${esc(engineeringMoney(m.revenue))}"></span><span class="processor-chart-bar expense" style="height:${Math.max(m.expenses?3:0,Math.round(m.expenses/chartMax*100))}%" title="المصروفات: ${esc(engineeringMoney(m.expenses))}"></span></div><small>${esc(m.label)}</small></div>`).join('');const pieTotal=Math.max(0,revenue)+Math.max(0,expenseTotal),revenueShare=pieTotal?Math.round(Math.max(0,revenue)/pieTotal*100):0,expenseShare=pieTotal?100-revenueShare:0,pieStyle=pieTotal?`conic-gradient(#159a8c 0 ${revenueShare}%,#f09b3e ${revenueShare}% 100%)`:'conic-gradient(#e4ebf0 0 100%)';
  const latest=(kind)=>processorData.docs.map(processorNetDoc).filter(d=>d.kind===kind).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.createdAt||0)-(a.createdAt||0)).slice(0,5).map(d=>`<article class="processor-recent-invoice"><div class="processor-recent-invoice-main"><b>${esc(d.number||'—')}</b><small>${fmtDate(d.date)} · ${esc(d.party||'بدون تحديد')}</small></div><div class="processor-recent-invoice-total"><b>${processorInvoiceFormat(d,d.amount)}</b><small>المدفوع ${processorInvoiceFormat(d,d.paid)}</small></div><button type="button" class="btn secondary small" data-processor-print="${esc(d.id)}">طباعة</button></article>`).join('');
  const invoicePanel=(kind,title,items)=>`<section class="processor-invoice-list-panel"><div class="panel-head"><h3>${title}</h3><button class="btn secondary small" data-go="processor-${kind==='sale'?'sales':'purchases'}">عرض الكل</button></div><div class="processor-recent-invoices">${items||`<div class="processor-invoice-empty">لا توجد فواتير ${kind==='sale'?'مبيعات':'مشتريات'} مسجلة.</div>`}</div></section>`;
- return `<div class="engineering-page">${head('لوحة المعالجات','ملخص مرتب لمبيعات ومشتريات ومخزون المعالجات','<button type="button" class="btn secondary" data-processor-customize-dashboard>⚙ تخصيص المربعات</button>')}<p class="notice" data-processor-layout-empty hidden>كل المربعات مخفية حالياً. استخدم تخصيص المربعات لإرجاعها.</p>
+ return `<div class="engineering-page processor-dashboard-page">${head('لوحة المعالجات','المبيعات والمشتريات وحركة المخزون','<button type="button" class="btn secondary" data-processor-customize-dashboard>⚙ تخصيص المربعات</button>')}<p class="notice" data-processor-layout-empty hidden>كل المربعات مخفية حالياً. استخدم تخصيص المربعات لإرجاعها.</p>
  <div class="processor-module-grid" aria-label="الأقسام الرئيسية للمعالجات">
-<button type="button" class="processor-module-card" style="--card-color:#238e93" data-go="processor-partners"><span class="module-ico">♧</span><strong>الشركاء ورأس المال</strong><small>المساهمات والنسب وتوزيع الأرباح والكشوف</small></button>
-<button type="button" class="processor-module-card" style="--card-color:#9462c9" data-go="processor-quotes"><span class="module-ico">▤</span><strong>عرض سعر</strong><small>حفظ وطباعة وتحويل لفاتورة</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#4778ee" data-go="processor-sales"><span class="module-ico">🧾</span><strong>فواتير المبيعات</strong><small>إضافة ومتابعة البيع</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#f09b3e" data-go="processor-purchases"><span class="module-ico">🛒</span><strong>فواتير المشتريات</strong><small>إضافة ومتابعة الشراء</small></button>
 <button type="button" class="processor-module-card" style="--card-color:#159a8c" data-go="processor-pos"><span class="module-ico">▣</span><strong>نقطة بيع</strong><small>بيع سريع بالاسم أو الباركود</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#d98b32" data-go="processor-inventory"><span class="module-ico">📦</span><strong>المخزون</strong><small>الأقسام والمنتجات والجرد</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#17a78d" data-go="processor-vouchers"><span class="module-ico">🧾</span><strong>سندات القبض والدفع</strong><small>إدارة السندات واختيار الزبون أو المجهز</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#9462c9" data-go="processor-quotes"><span class="module-ico">▤</span><strong>عرض سعر</strong><small>حفظ وطباعة وتحويل لفاتورة</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#1ba4bd" data-go="processor-reports"><span class="module-ico">▥</span><strong>التقارير المالية</strong><small>اختر القسم والفترة</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#d85d68" data-go="processor-debts"><span class="module-ico">💳</span><strong>الديون</strong><small>أرصدة الزبائن والمجهزين المتبقية</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#8255c7" data-go="processor-dues"><span class="module-ico">◷</span><strong>المستحقات</strong><small>الأقساط والآجال حسب تواريخها</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#238e93" data-go="processor-partners"><span class="module-ico">♧</span><strong>الشركاء ورأس المال</strong><small>المساهمات والنسب وتوزيع الأرباح والكشوف</small></button>
 <button type="button" class="processor-module-card" style="--card-color:#d78e35" data-go="processor-consumption"><span class="module-ico">◒</span><strong>المواد المستهلكة</strong><small>استخدام داخلي وكشف بالكلفة</small></button>
-
- <button type="button" class="processor-module-card" style="--card-color:#159a8c" data-go="processor-dashboard"><span class="module-ico">▦</span><strong>لوحة التحكم</strong><small>ملخص حركة القسم</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#4778ee" data-go="processor-sales"><span class="module-ico">🧾</span><strong>فواتير المبيعات</strong><small>إضافة ومتابعة البيع</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#f09b3e" data-go="processor-purchases"><span class="module-ico">🛒</span><strong>فواتير المشتريات</strong><small>إضافة ومتابعة الشراء</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#17a78d" data-go="processor-vouchers"><span class="module-ico">🧾</span><strong>سندات القبض والدفع</strong><small>إدارة السندات واختيار الزبون أو المجهز</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#d85d68" data-go="processor-debts"><span class="module-ico">💳</span><strong>الديون</strong><small>أرصدة الزبائن والمجهزين المتبقية</small></button><button type="button" class="processor-module-card" style="--card-color:#8255c7" data-go="processor-dues"><span class="module-ico">◷</span><strong>المستحقات</strong><small>الأقساط والآجال حسب تواريخها</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#d98b32" data-go="processor-inventory"><span class="module-ico">📦</span><strong>المخزون</strong><small>الأقسام والمنتجات والجرد</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#9c67d9" data-go="processor-customers"><span class="module-ico">👤</span><strong>الزبائن</strong><small>البيانات وكشف الحساب</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#24a4a1" data-go="processor-suppliers"><span class="module-ico">🏭</span><strong>المجهزون</strong><small>البيانات وكشف الحساب</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#8a61c4" data-go="processor-representatives"><span class="module-ico">🧑‍💼</span><strong>المندوبون</strong><small>بيانات مندوبي البيع والشراء</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#1ba4bd" data-go="processor-reports"><span class="module-ico">▥</span><strong>التقارير المالية</strong><small>اختر القسم والفترة</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#17a78d" data-go="payroll"><span class="module-ico">♙</span><strong>الموظفون والرواتب</strong><small>إدارة الموظفين وسجلات الرواتب</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#c85b4b" data-go="processor-expenses"><span class="module-ico">−</span><strong>المصروفات</strong><small>تسجيل ومتابعة مصروفات المعالجات</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#159a8c" data-quick="receipt"><span class="module-ico">＋</span><strong>سند قبض</strong><small>تسجيل مبلغ مستلم</small></button>
- <button type="button" class="processor-module-card" style="--card-color:#c95a5a" data-quick="payment"><span class="module-ico">－</span><strong>سند دفع</strong><small>تسجيل مبلغ مدفوع</small></button><button type="button" class="processor-module-card" style="--card-color:#159a8c" data-external-income="processor"><span class="module-ico">＋</span><strong>إيراد خارجي</strong><small>تسجيل إيراد خارج الفواتير</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#159a8c" data-go="processor-dashboard"><span class="module-ico">▦</span><strong>لوحة التحكم</strong><small>ملخص حركة القسم</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#9c67d9" data-go="processor-customers"><span class="module-ico">👤</span><strong>الزبائن</strong><small>البيانات وكشف الحساب</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#24a4a1" data-go="processor-suppliers"><span class="module-ico">🏭</span><strong>المجهزون</strong><small>البيانات وكشف الحساب</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#8a61c4" data-go="processor-representatives"><span class="module-ico">🧑‍💼</span><strong>المندوبون</strong><small>بيانات مندوبي البيع والشراء</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#17a78d" data-go="payroll"><span class="module-ico">♙</span><strong>الموظفون والرواتب</strong><small>إدارة الموظفين وسجلات الرواتب</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#c85b4b" data-go="processor-expenses"><span class="module-ico">−</span><strong>المصروفات</strong><small>تسجيل ومتابعة مصروفات المعالجات</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#159a8c" data-quick="receipt"><span class="module-ico">＋</span><strong>سند قبض</strong><small>تسجيل مبلغ مستلم</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#c95a5a" data-quick="payment"><span class="module-ico">－</span><strong>سند دفع</strong><small>تسجيل مبلغ مدفوع</small></button>
+<button type="button" class="processor-module-card" style="--card-color:#159a8c" data-external-income="processor"><span class="module-ico">＋</span><strong>إيراد خارجي</strong><small>تسجيل إيراد خارج الفواتير</small></button>
  ${processorReturnDashboardCards()}</div>
  ${processorFundsPanel(today)}
  <section class="panel processor-finance-chart"><div class="panel-head"><div><h2>الإيرادات والمصروفات</h2><span>مقارنة شهرية لآخر ١٢ شهراً</span></div><button class="btn secondary small" data-go="processor-reports">التقرير المالي</button></div>
@@ -2971,7 +2972,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=5-live-stock"></script>
 <script defer src="./auth-client.js?v=96-resume-sync"></script>
-<script defer src="./ha-app-update.js?v=74"></script>
+<script defer src="./ha-app-update.js?v=76"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -3381,4 +3382,78 @@ html body #appWorkPanel #modal.hpw-invoice-dialog[data-ha-work-tab] .hpw-invoice
 
 
  </style>
+<style id="ha-dashboard-interface">
+/* The account identity sits with the page title so it cannot strand a second toolbar row. */
+.main>.topbar{min-height:57px;height:auto;padding:7px 16px;gap:12px;background:#fff}
+.main>.topbar>div.ha-top-context{display:flex;align-items:center;gap:8px;flex:0 1 170px;min-width:143px}
+.ha-top-identity{min-width:0;max-width:100%}
+.ha-top-identity .top-title{font-size:16px;line-height:1.25;color:#163b68}
+.ha-top-identity #companyShort{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5e7388;font-size:11px;line-height:1.6}
+.main>.topbar .top-actions{min-width:0;gap:5px;justify-content:flex-end}
+.main>.topbar .top-actions .btn{font-size:11px;min-height:30px;max-width:104px;padding:4px 6px;white-space:normal;line-height:1.2}
+.main>.topbar .top-actions #appUpdateButton{background:#e8f4ff;border-color:#b8d5f2;color:#19477d}
+.main>.topbar .top-actions .date-chip{max-width:94px;padding:3px 6px;font-size:10px;line-height:1.25}
+.layout>.sidebar{background:linear-gradient(170deg,#16305b 0%,#1b4778 70%,#136d79 100%)}
+.layout>.sidebar .nav .hps-current,.layout>.sidebar .nav button.active{background:#ffffff20}
+.layout>.sidebar .brand{border-bottom-color:#ffffff25}
+#appTabs.ha-top-tabs{background:#f5f8fc}
+#view:has(>.processor-dashboard-page){padding:18px 20px 92px!important;background:#edf3f8}
+#view .processor-dashboard-page{display:block;min-width:0}
+.processor-dashboard-page>.notice:not([hidden]){padding:6px 10px;margin:0 0 11px;border-radius:8px;font-size:11px;line-height:1.5}
+.processor-dashboard-page>.notice>.btn{min-height:27px;padding:3px 8px;margin-inline-start:5px}
+#view .processor-dashboard-page .processor-page-head{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:76px;padding:12px 15px;margin:0 0 15px;
+ border:1px solid #d5e2ee;border-radius:12px;background:linear-gradient(100deg,#f0f7fd,#fff 65%)
+}
+#view .processor-dashboard-page .processor-page-heading{width:auto;flex:1 1 auto}
+#view .processor-dashboard-page .processor-page-heading h1{margin:0 0 4px;color:#173a5c;font-size:23px}
+#view .processor-dashboard-page .processor-page-heading p{margin:0;color:#506b83;font-size:12px}
+#view .processor-dashboard-page .processor-page-controls{display:flex;flex:0 1 auto;width:auto;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+#view .processor-dashboard-page .processor-page-controls>.btn{flex:0 1 auto;width:auto;min-height:32px;padding:5px 10px;font-size:12px}
+#view .processor-dashboard-page .processor-page-controls>[data-ha-daily-profit-shortcut]{background:#176f73;color:#fff;border-color:#176f73}
+#view .processor-dashboard-page .processor-module-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 15px}
+#view .processor-dashboard-page .processor-module-card{
+ display:grid;grid-template-columns:34px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;
+ align-items:center;justify-items:start;gap:2px 9px;min-height:66px;padding:8px;
+ border:1px solid #d6e1ec;border-radius:9px;background:#fff;color:#173d64;text-align:start;
+ box-shadow:0 2px 5px #182d4910
+}
+#view .processor-dashboard-page .processor-module-card[hidden]{display:none}
+#view .processor-dashboard-page .processor-module-card:hover{transform:none;border-color:#87adc8;background:#f8fcff}
+#view .processor-dashboard-page .processor-module-card .module-ico{
+ grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:#e9f3fb;
+ color:var(--card-color,#176f73);font-size:18px;line-height:1
+}
+#view .processor-dashboard-page .processor-module-card strong{font-size:13px;line-height:1.3}
+#view .processor-dashboard-page .processor-module-card small{font-size:10px;line-height:1.35;color:#536c83}
+#view .processor-dashboard-page .processor-stat-cards{gap:9px;margin:0 0 15px}
+#view .processor-dashboard-page .processor-stat-cards .stat{min-height:101px;padding:9px;text-align:start}
+#view .processor-dashboard-page .processor-stat-cards .stat .value{font-size:19px;text-align:start;margin:5px 0}
+#view .processor-dashboard-page .processor-stat-cards .stat .change{font-size:10px}
+@media(min-width:1200px){
+ #view .processor-dashboard-page .processor-module-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media(max-width:950px){
+ #view .processor-dashboard-page .processor-module-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .main>.topbar{display:flex;flex-wrap:wrap;padding:5px 9px;gap:4px;min-height:50px}
+ .main>.topbar>div.ha-top-context{flex:1 1 100%;min-width:0}
+ .main>.topbar .top-actions{flex:1 1 100%;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-inline:contain;padding:2px 0 4px;scrollbar-width:thin}
+ .main>.topbar .top-actions .btn{flex:0 0 auto;font-size:11px;min-height:31px;max-width:none;white-space:nowrap}
+ #view:has(>.processor-dashboard-page){padding:9px 8px 90px!important}
+ #view .processor-dashboard-page .processor-page-head{align-items:flex-start;flex-direction:column;padding:9px 10px;gap:7px;margin-bottom:9px}
+ #view .processor-dashboard-page .processor-page-heading h1{font-size:19px}
+ #view .processor-dashboard-page .processor-page-controls{justify-content:flex-start;gap:4px}
+ #view .processor-dashboard-page .processor-page-controls>.btn{font-size:10px;min-height:29px;padding:4px 6px}
+ #view .processor-dashboard-page .processor-module-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #view .processor-dashboard-page .processor-module-card{
+  min-height:82px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;
+  justify-items:center;gap:3px;padding:6px 4px;text-align:center;overflow-wrap:anywhere
+ }
+ #view .processor-dashboard-page .processor-module-card .module-ico{grid-row:auto;width:24px;height:24px;font-size:14px}
+ #view .processor-dashboard-page .processor-module-card strong{font-size:11px}
+ #view .processor-dashboard-page .processor-module-card small{font-size:9px}
+}
+</style>
 </body></html>
