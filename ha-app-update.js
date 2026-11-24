@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-all-invoices-and-sync-v67';
+  const build = '20261124-compact-invoice-forms-v68';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
