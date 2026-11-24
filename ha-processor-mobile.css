@@ -245,3 +245,14 @@
     display: none !important;
   }
 }
+
+#view [data-eng-expense-date][hidden],
+#view [data-eng-expense-empty][hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  #modalBody .processor-mobile-form .field:has([name="paymentChannel"]) {
+    order: -2;
+  }
+}
