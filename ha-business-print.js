@@ -47,6 +47,8 @@ a{color:inherit;text-decoration:none}
 :is(body[data-ha-paper="58"],body[data-ha-paper="80"]) .ha-report-content :is(h2,h3){font-size:14px;margin:10px 0 4px}
 `;
 function report(mode='combined',shareTarget=''){ const scope=document.querySelector('.view.active')||document.querySelector('#view')||document.querySelector('main');if(!scope)return;const copy=scope.cloneNode(true);
+window.HA_PRINT_INVENTORY_MOVEMENTS?.(copy);
+window.HA_INLINE_PRODUCT_PRESETS?.(copy);
 for(const group of copy.querySelectorAll('.cards')){
  if(group.children.length&&[...group.children].every(item=>item.matches('.stat')))group.classList.add('ha-report-stats');
 }

@@ -1,6 +1,7 @@
 /* Presentation only: preserve existing form controls, events and financial posting. */
 (()=>{'use strict';if(window.HAProcessorDesign)return;let queued=false;const structures=new WeakMap();
 const setText=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
+const invoiceAmountFormat=new Intl.NumberFormat('en-US',{maximumFractionDigits:2});
 function field(form,selector){return form.querySelector(selector)?.closest('.field');}
 function move(node,host){if(node&&host&&node.parentElement!==host)host.append(node);}
 function packInvoice(form,refs,editing){
@@ -47,7 +48,7 @@ function decorateInvoice(form){
  for(const table of form.querySelectorAll('.processor-lines-table')){const heading=table.querySelector('thead th');setText(heading,'المنتج');for(const row of table.querySelectorAll('tbody tr'))if(row.firstElementChild?.hasAttribute('data-label'))row.firstElementChild.dataset.label='المنتج';}
  if(editing){
   const table=form.querySelector('.processor-lines-table');if(table&&!table.querySelector('[data-hpw-total-heading]')){const th=document.createElement('th');th.dataset.hpwTotalHeading='';th.textContent='الإجمالي';table.querySelector('thead tr')?.insertBefore(th,table.querySelector('thead tr')?.lastElementChild);}
-  const currency=form.dataset.hpwCurrency==='USD'?'$':'د.ع',format=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n)+' '+currency;
+  const currency=form.dataset.hpwCurrency==='USD'?'$':'د.ع',format=n=>invoiceAmountFormat.format(n)+' '+currency;
   for(const row of form.querySelectorAll('#peLines tr')){let cell=row.querySelector('[data-hpw-line-total]');if(!cell){cell=document.createElement('td');cell.dataset.hpwLineTotal='';cell.dataset.label='الإجمالي';row.insertBefore(cell,row.lastElementChild);}setText(cell,format((Number(row.querySelector('.pe-qty')?.value)||0)*(Number(row.querySelector('.pe-price')?.value)||0)));}
   let summary=form.querySelector('.hpw-edit-summary');if(!summary){summary=document.createElement('div');summary.className='processor-invoice-summary hpw-edit-summary';summary.setAttribute('aria-live','polite');for(const label of ['الإجمالي النهائي','المدفوع','المتبقي']){const card=document.createElement('div'),small=document.createElement('small'),strong=document.createElement('strong');small.textContent=label;card.append(small,strong);summary.append(card);}form.insertBefore(summary,form.querySelector('.hpw-actions'));}
   const balance=form.querySelector('#peBalanceHint')?.textContent||'',parts=balance.split('·');setText(summary.children[0]?.querySelector('strong'),form.querySelector('#peInvoiceAmount')?.textContent||'—');setText(summary.children[1]?.querySelector('strong'),parts[0]?.trim().replace(/^المدفوع\s*/,'')||'—');setText(summary.children[2]?.querySelector('strong'),parts[1]?.trim().replace(/^المتبقي\s*/,'')||'—');
