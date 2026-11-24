@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-market-sync-v78';
+  const build = '20261124-dashboard-width-v79';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

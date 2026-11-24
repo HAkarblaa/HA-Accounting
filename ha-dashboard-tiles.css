@@ -29,6 +29,7 @@
   align-items: center;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   min-height: 66px;
   padding: 8px;
   gap: 2px 9px;
@@ -90,6 +91,7 @@
 
 #view .dashboard-tiles > button .dashboard-tile-icon,
 #view .dashboard-tiles .personal-quick-main .dashboard-tile-icon {
+  grid-column: 1;
   grid-row: 1 / span 2;
   display: grid;
   place-items: center;
