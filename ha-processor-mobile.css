@@ -1,0 +1,247 @@
+.processor-funds .cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.processor-funds .stat-link,
+.processor-funds .stat {
+  min-width: 0;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.processor-funds .stat-link > .stat {
+  height: 100%;
+}
+
+.processor-funds .change {
+  line-height: 1.5;
+}
+
+.processor-fund-party {
+  border: 1px solid #dce8ec;
+  border-radius: 12px;
+  margin: 8px 0;
+  padding: 10px;
+}
+
+.processor-fund-party > summary {
+  cursor: pointer;
+  padding: 7px 4px;
+}
+
+.processor-fund-party > summary span {
+  display: inline-block;
+  margin-inline-start: 8px;
+  color: #176a65;
+}
+
+.processor-expense-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.processor-expense-summary dl {
+  margin: 0;
+}
+
+.processor-expense-summary dl div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e4ecef;
+}
+
+.processor-expense-summary dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.processor-expense-filter .form-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+}
+
+.processor-expense-filter .form-actions {
+  margin: 0;
+}
+
+#modalBody .processor-mobile-form [hidden],
+#modalBody [data-hpw-kind="purchase"] .hpw-drawer[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .processor-funds .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .processor-expense-filter .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .processor-expense-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  #modal.ha-processor-mobile-dialog #modalBody .modal-title {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    padding-block: 5px;
+  }
+
+  #modalBody [data-processor-invoice-kind="purchase"] .processor-invoice-view-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  #modalBody [data-processor-invoice-kind="purchase"] .processor-invoice-view-meta > * {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #modalBody .processor-mobile-form > .form-grid,
+  #modalBody [data-hpw-kind="purchase"] .hpw-metadata,
+  #modalBody [data-hpw-kind="purchase"] .processor-invoice-fields {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px;
+  }
+
+  #modalBody :is(.processor-mobile-form, [data-hpw-kind="purchase"]) .field {
+    min-width: 0;
+    align-content: start;
+  }
+
+  #modalBody .processor-mobile-form .field.full,
+  #modalBody .processor-mobile-form .field:has([name="party"]),
+  #modalBody [data-hpw-kind="purchase"] .hpw-metadata > .field:has([name="party"], [name="memo"]) {
+    grid-column: 1 / -1;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .hpw-metadata > .field:first-child:not(:has([name="party"])) {
+    grid-column: auto;
+  }
+
+  #modalBody .processor-mobile-form .field:has([name="amount"]) {
+    order: -3;
+  }
+
+  #modalBody .processor-mobile-form .field:has([name="cash"]) {
+    order: -2;
+  }
+
+  #modalBody .processor-mobile-form textarea {
+    min-height: 65px;
+    height: 65px;
+  }
+
+  #modalBody :is(.processor-mobile-form, [data-hpw-kind="purchase"]) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+    font-size: 16px !important;
+    min-height: 44px;
+    max-width: 100%;
+  }
+
+  #modalBody :is(.processor-mobile-form, [data-hpw-kind="purchase"]) .btn {
+    min-height: 44px;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .hpw-extra-tools {
+    position: static;
+    padding: 6px 0;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .hpw-products {
+    min-width: 0;
+    overflow: visible;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .hpw-products .table-wrap {
+    overflow: visible !important;
+    max-height: none !important;
+    min-height: 0;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table {
+    min-width: 0 !important;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table thead {
+    display: none;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table,
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    background: #f7fbfc;
+    border: 1px solid #dce9ef;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 7px;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table td {
+    display: grid;
+    min-width: 0;
+    width: auto !important;
+    align-content: start;
+    border: 0 !important;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table td:first-child {
+    grid-column: 1 / -1;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table td:has(.pexpiry, .pe-expiry) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  #modalBody [data-hpw-kind="purchase"] .processor-lines-table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    color: #33576c;
+  }
+
+  #modalBody :is(.processor-mobile-form, [data-hpw-kind="purchase"]) > .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    margin-top: 8px;
+    padding: 7px 0 max(5px, env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid #dce8ec;
+    display: flex;
+    gap: 6px;
+  }
+
+  #modalBody :is(.processor-mobile-form, [data-hpw-kind="purchase"]) > .form-actions > .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    padding-inline: 6px;
+  }
+}
+
+@media print {
+  .processor-expense-filter,
+  .processor-expense-row-actions {
+    display: none !important;
+  }
+}

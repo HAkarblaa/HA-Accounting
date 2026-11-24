@@ -7,18 +7,19 @@ function move(node,host){if(node&&host&&node.parentElement!==host)host.append(no
 function packInvoice(form,refs,editing){
  if(form.dataset.hpwPacked)return;
  const {meta,discount,payment}=refs;if(!meta||!discount||!payment)return;
+ const purchase=form.dataset.hpwKind==='purchase';
  const originalSections=[...form.children].filter(n=>n.classList.contains('processor-invoice-section'));
  const top=document.createElement('section'),products=document.createElement('section'),bottom=document.createElement('section'),drawer=document.createElement('section');
  top.className='hpw-top';products.className='hpw-products';bottom.className='hpw-bottom';drawer.className='hpw-drawer';drawer.hidden=true;drawer.setAttribute('aria-label','تفاصيل إضافية للفاتورة');
  const tools=document.createElement('div');tools.className='hpw-extra-tools';const extra=document.createElement('button');extra.type='button';extra.className='btn secondary small';extra.textContent='تفاصيل الدفع والصرف';extra.setAttribute('aria-expanded','false');tools.append(extra);
  const drawerHead=document.createElement('div'),close=document.createElement('button');drawerHead.className='hpw-drawer-head';drawerHead.append(document.createTextNode('تفاصيل الدفع والصرف'));close.type='button';close.className='btn secondary small';close.textContent='إغلاق التفاصيل';drawerHead.append(close);drawer.append(drawerHead);
  function show(value){drawer.hidden=!value;extra.setAttribute('aria-expanded',String(value));}
- extra.onclick=()=>show(drawer.hidden);close.onclick=()=>show(false);
+ extra.onclick=()=>{show(drawer.hidden);if(purchase&&!drawer.hidden&&window.matchMedia('(max-width:760px)').matches)drawer.scrollIntoView({block:'nearest'});};close.onclick=()=>show(false);
  // These are the very same controls used by the original calculation and saving handlers.
  move(field(form,editing?'#peRate':'#processorExchangeRate'),drawer);
  move(field(form,editing?'#peDeliveryStatus':'#processorDeliveryStatus'),drawer);
  const split=form.querySelector('.processor-receive-split');move(split,drawer);for(const label of form.querySelectorAll('.processor-receive-methods label'))for(const node of label.childNodes)if(node.nodeType===3)node.nodeValue=node.nodeValue.replace(/\s*\(.*/, '');
- for(const selector of ['#processorInstallmentFields','#processorCreditFields','#peCreditField','#peInstallmentField','#peInstallmentCountField','#processorNewCustomerPanel','#processorQuickProductPanel'])move(form.querySelector(selector),drawer);
+ for(const selector of ['#processorInstallmentFields','#processorCreditFields','#peCreditField','#peInstallmentField','#peInstallmentCountField','#processorNewCustomerPanel','#processorQuickProductPanel'])if(!purchase||selector!=='#processorQuickProductPanel')move(form.querySelector(selector),drawer);
  const note=field(form,'textarea[name="memo"]');if(note){move(note,meta);note.style.order='8';note.classList.add('hpw-metadata-note');note.querySelector('textarea').rows=1;}
  move(meta,top);top.append(tools);
  if(editing){move(form.querySelector(':scope > .panel-head'),products);move(form.querySelector('.processor-edit-lines'),products);move(form.querySelector('#processorEditProductOptions'),products);}
@@ -29,10 +30,10 @@ function packInvoice(form,refs,editing){
  // Keep explanatory and error text available, without enlarging the main desktop sheet.
  for(const node of [...form.children])if(node.matches('p.hint'))move(node,drawer);
  const actions=form.querySelector(':scope > .form-actions');if(actions){const print=document.createElement('button');print.type='submit';print.className='btn secondary';print.dataset.hpwPrint='';print.textContent=editing?'حفظ التعديل وطباعة':'حفظ وطباعة';actions.append(print);form.addEventListener('submit',event=>{form.dataset.hpwPrint=event.submitter?.hasAttribute('data-hpw-print')?'1':'0';},true);}
- form.prepend(top);top.after(products);products.after(bottom);form.append(drawer);
+ form.prepend(top);top.after(products);products.after(bottom);if(purchase&&actions)form.insertBefore(drawer,actions);else form.append(drawer);
  // Show advanced required fields when a payment/currency choice needs them.
  form.addEventListener('change',event=>{const id=event.target.id;if([editing?'pePaymentMode':'processorMode',editing?'peCurrency':'processorCurrency'].includes(id)){if(event.target.value==='USD'||['credit','installment'].includes(event.target.value))show(true);}if(['processorReceiveCash','processorReceiveBank'].includes(id)&&form.querySelector('#processorReceiveCash')?.checked&&form.querySelector('#processorReceiveBank')?.checked)show(true);if(id==='processorDeliveryStatus'||id==='peDeliveryStatus')if(event.target.value==='credit')show(true);});
- form.addEventListener('click',event=>{if(event.target.closest('#processorNewCustomerToggle,#processorQuickProductToggle'))show(true);});
+ form.addEventListener('click',event=>{if(event.target.closest(purchase?'#processorNewCustomerToggle':'#processorNewCustomerToggle,#processorQuickProductToggle'))show(true);});
  form.addEventListener('invalid',event=>{if(drawer.contains(event.target)){show(true);event.target.scrollIntoView?.({block:'nearest'});}},true);
  form.dataset.hpwPacked='1';
 }
@@ -59,6 +60,7 @@ function decorate(){
  const modal=document.getElementById('modal'),view=document.getElementById('view'),module=window.HA_APP_MODULE_TYPE||window.HA_ACCOUNTING_MODULE_TYPE,page=window.HA_APP_PAGE?.()||'';
  const processor=module==='processor'||String(page).startsWith('processor-');view?.classList.toggle('ha-processor-page',processor);
  if(!modal)return;const form=modal.querySelector('#processorInvoiceForm,#editProcessorInvoice'),scoped=!!form||processor;modal.classList.toggle('ha-processor-workspace',scoped);modal.classList.toggle('hpw-invoice-dialog',!!form);
+ modal.classList.toggle('ha-processor-mobile-dialog',!!modal.querySelector('.processor-mobile-form,[data-hpw-kind=purchase],[data-processor-invoice-kind=purchase]'));
  if(form)decorateInvoice(form);
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});}
