@@ -325,7 +325,7 @@ async function enter(user){
  }
  if(logoutRequested)return;currentUser=user;window.HA_ACCOUNTING_IS_ADMIN=isAdmin;window.HA_ACCOUNTING_MODULE_TYPE=isAdmin?'full':moduleType;
  if(!setWorkspaceKey(user.id))return;
- showApp();if(staffContext){await window.HAStaff.refresh().catch(error=>showMessage(error.message));return;}applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
+ showApp();if(staffContext){await window.HAStaff.refresh().catch(()=>{});return;}applySyncedWorkspace(user,(()=>{try{return stableJson(JSON.parse(before||'null'));}catch{return 'null';}})());
  try{if(user?.id)watchWorkspace(user);}catch(syncError){console.warn('تعذر تشغيل المزامنة المباشرة',syncError);}
  const company=(()=>{try{return JSON.parse(localStorage.getItem(window.HA_ADMIN_DEMO?window.HA_ACCOUNTING_KEY:userKey(user.id))||'{}').company?.name;}catch{return'';}})();
  if(company)document.getElementById('companyShort').textContent=company;

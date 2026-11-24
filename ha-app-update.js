@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-engineering-common-v80';
+  const build = '20261124-staff-access-feedback-v81';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
