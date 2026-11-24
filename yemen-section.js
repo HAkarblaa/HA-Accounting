@@ -60,7 +60,7 @@
     const isVoucher = kind => kind === 'receipt' || kind === 'payment';
     const table = rows => !rows.length ? '<div class="haym-empty">ماكو سجلات بعد.</div>' : `<div class="haym-tablewrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>الرقم / البيان</th><th>الجهة</th><th>المبلغ</th><th>العملة</th><th>ما يعادل ${esc(s().baseCode)}</th><th>إجراء</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.date)}</td><td>${esc(({sale:'بيع',purchase:'شراء',income:'إيراد',expense:'مصروف',workshop:'صيانة',receipt:'قبض',payment:'صرف',return_cash_in:'استرداد مرتجع وارد',return_cash_out:'رد مرتجع صادر'})[r.kind] || r.kind)}</td><td>${esc(r.detail || (r.invoiceId ? `فاتورة ${data.invoices.find(i => i.id === r.invoiceId)?.number || ''}` : '—'))}</td><td>${esc(r.party || '—')}</td><td>${fmt(r.amount)}</td><td>${esc(r.currency || s().baseCode)}</td><td>${fmt(baseAmount(r))} ${esc(s().baseCode)}</td><td>${r.invoiceId ? `<button class="haym-btn" data-ym-print="${esc(r.invoiceId)}">طباعة</button><button class="haym-btn" data-ym-save-pdf="${esc(r.invoiceId)}">حفظ PDF</button>${editHeaderButton('invoice',r.invoiceId)}` : `${isVoucher(r.kind)?`<button class="haym-btn" data-ym-print-voucher="${esc(r.id)}">طباعة السند</button><button class="haym-btn" data-ym-save-voucher="${esc(r.id)}">حفظ PDF</button>${editHeaderButton('voucher',r.id)}`:''}<button class="haym-btn" data-ym-delete-move="${esc(r.id)}">حذف</button>`}</td></tr>`).join('')}</tbody></table></div>`;
     const invoiceRows = () => !data.invoices.length ? '<div class="haym-empty">ماكو فواتير محفوظة بعد.</div>' : `<div class="haym-tablewrap"><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>النوع</th><th>الجهة</th><th>الإجمالي</th><th>طريقة الدفع</th><th>إجراء</th></tr></thead><tbody>${data.invoices.slice().sort((a,b) => b.date.localeCompare(a.date)).map(inv => `<tr><td>${esc(inv.number)}</td><td>${esc(inv.date)}</td><td>${inv.type === 'sale' ? 'مبيعات' : 'مشتريات'}</td><td>${esc(inv.party)}</td><td>${fmt(invoiceTotal(inv))} ${esc(inv.currency)}</td><td>${esc(({cash:'نقدي',credit:'آجل',card:'بطاقة'})[inv.paymentMode] || 'نقدي')}</td><td><button class="haym-btn" data-ym-print="${esc(inv.id)}">طباعة</button><button class="haym-btn" data-ym-save-pdf="${esc(inv.id)}">حفظ PDF</button>${editHeaderButton('invoice',inv.id)}</td></tr>`).join('')}</tbody></table></div>`;
-    function lineMarkup(item = {}) { return `<div class="haym-line" data-ym-line><input aria-label="اسم المادة" data-ym-item placeholder="اسم المادة" value="${esc(item.name || '')}"><input aria-label="العدد" data-ym-qty type="number" min="0.01" step="any" value="${number(item.qty) || 1}"><input aria-label="السعر" data-ym-price type="number" min="0" step="any" value="${number(item.price)}"><button type="button" class="haym-btn" data-ym-remove-line aria-label="حذف البند">×</button></div>`; }
+    function lineMarkup(item = {}) { return `<div class="haym-line" data-ym-line><input aria-label="اسم المادة" data-ym-item placeholder="اسم المادة" value="${esc(item.name || '')}"><input aria-label="العدد" data-ym-qty type="number" min="0.01" step="any" value="${number(item.qty) || 1}"><input aria-label="السعر" data-ym-price type="number" min="0" step="any" value="${number(item.price)}"><button type="button" class="haym-btn" data-ym-remove-line aria-label="حذف البند">×</button>${global.HA_INVOICE_STOCK?.hint||''}</div>`; }
     function invoiceCompany(){
       const parent=global.HA_ACCOUNTING_COMPANY||{},shop=s();
       return {...parent,name:shop.shopName||parent.name,address:shop.address||parent.address,
@@ -120,7 +120,14 @@
     }
     function refreshInvoicePreview(form=root.querySelector('[data-ym-invoice-form]')) {
       if (!form) return;
-      const sum=getLines(form).reduce((total,item)=>total+item.qty*item.price,0);
+      const items=getLines(form);
+      const productKey=name=>String(name||'').trim().toLowerCase();
+      const products=new Map(data.products.map(product=>[productKey(product.name),product]));
+      const rows=[...form.querySelectorAll('[data-ym-line]')].map((row,index)=>({
+        id:productKey(items[index].name),qty:items[index].qty,hint:row.querySelector('.processor-stock-hint')
+      }));
+      global.HA_INVOICE_STOCK?.render(rows,form.elements.type.value,id=>products.get(id));
+      const sum=items.reduce((total,item)=>total+item.qty*item.price,0);
       form.querySelector('[data-ym-invoice-total]').textContent=`الإجمالي: ${fmt(sum)} ${s().baseCode}`;
     }
     function printInvoice(invoiceId, outputMode='combined') {
