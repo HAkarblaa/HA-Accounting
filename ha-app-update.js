@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-fixed-document-header-v69';
+  const build = '20261124-compact-desktop-navigation-v70';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

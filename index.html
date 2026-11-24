@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="ha-app-build" content="20261124-fixed-document-header-v69">
+<meta name="ha-app-build" content="20261124-compact-desktop-navigation-v70">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a43"><meta name="description" content="نظام محاسبي مستقل لإدارة المبيعات والمشتريات والمخزون والقيود والتقارير."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HA محاسبة"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>HA محاسبة | نظام محاسبي</title>
 <style>
@@ -2582,7 +2582,7 @@ adminDemoSeedReturns();document.getElementById('today').textContent=new Date().t
 <script defer src="./supabase-config.js"></script>
 <script defer src="./ha-staff.js?v=4-invoice-lines"></script>
 <script defer src="./auth-client.js?v=96-resume-sync"></script>
-<script defer src="./ha-app-update.js?v=69"></script>
+<script defer src="./ha-app-update.js?v=70"></script>
 <script>
 (function(){
  const button=document.getElementById('adminInterfacePreview'),modal=document.getElementById('modal'),body=document.getElementById('modalBody');
@@ -2938,6 +2938,40 @@ html body #appWorkPanel #modal.hpw-invoice-dialog[data-ha-work-tab] .hpw-invoice
 })();
 </script>
 
+<style id="ha-compact-desktop-navigation">
+@media(min-width:1021px){
+ .layout.authenticated{--ha-sidebar-width:206px;grid-template-columns:var(--ha-sidebar-width) minmax(0,1fr)}
+ .layout.authenticated>.sidebar{box-sizing:border-box;padding:14px 12px}
+ .sidebar .brand{gap:8px;padding:0 5px 12px}
+ .sidebar .brand-mark{width:35px;height:35px;flex:0 0 35px;border-radius:11px;font-size:13px}
+ .sidebar .brand strong{font-size:14px}
+ .sidebar .brand small{font-size:10px}
+ .sidebar .nav{padding-top:8px;gap:3px}
+ .sidebar .nav button{min-height:36px;padding:6px 8px;gap:8px}
+ .sidebar .nav .ico{width:20px;font-size:15px}
+ .sidebar #nav .hps-group{min-height:36px;padding:6px 9px;gap:8px;font-size:12px}
+ .sidebar #nav .hps-group.hps-current{padding-inline-start:6px}
+ .sidebar .language-switch{padding:7px 5px 8px;gap:4px}
+ .sidebar .language-switch select{padding:5px 7px}
+ .sidebar .side-foot{padding:8px 5px 1px;font-size:10px}
+ .main>.topbar{height:auto;min-height:56px;gap:9px;padding:4px 13px}
+ .main>.topbar>div:first-child{flex:0 0 96px;min-width:0}
+ .topbar .top-title{font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+ .topbar .top-actions{min-width:0;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+ .topbar .top-actions>.btn{min-height:30px;padding:4px 7px;font-size:12px;line-height:1.2}
+ .topbar .top-actions :is(.date-chip,.user-chip){padding:4px 7px;font-size:12px;line-height:1.25}
+ .topbar .date-chip{max-width:120px}
+ .topbar .user-chip{gap:5px;max-width:145px;overflow-wrap:anywhere}
+ .topbar .user-avatar{width:25px;height:25px;flex:0 0 25px}
+ #appTabs.ha-top-tabs{min-height:40px;padding:3px 12px;gap:5px}
+ #appTabs .ha-open-tab{font-size:12px;line-height:1.2}
+ #appTabs .ha-open-tab:not(.ha-open-work-tab){min-height:28px;padding:3px 7px;gap:5px}
+ #appTabs .ha-open-work-label{padding:4px 7px}
+ #appTabs .ha-open-work-tab button.ha-open-tab-close{min-height:28px;min-width:24px}
+ #appTabs .ha-open-tab-new{height:28px;width:28px;font-size:17px}
+ .main>#appBottomShortcuts{inset-inline-start:var(--ha-sidebar-width,250px);inset-inline-end:0}
+}
+</style>
 <style id="ha-invoice-line-space">
  #docLines:not(:has(.cashier-simple-line)),#editDocLines,[data-ym-lines],.ha-staff-lines,
  #engInvoiceForm .table-wrap:has(#engInvoiceLines),#editEngInvoice .table-wrap:has(#engEditLines),#serviceNewForm .table-wrap:has(#serviceLinesBody){
