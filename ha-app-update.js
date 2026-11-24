@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-processor-invoice-lines-v66';
+  const build = '20261124-all-invoices-and-sync-v67';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
@@ -73,11 +73,12 @@
       message('تم فتح النسخة الجديدة بنجاح.');
     } else message('لم يكتمل تحديث الواجهة. اتصل بالإنترنت واضغط تحديث البرنامج مرة ثانية؛ بياناتك محفوظة.', true);
   }
+  const hasOpenForm = () => Boolean(window.HA_WORKSPACE_FORMS?.hasOpen() || window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form'));
   async function update(options = {}) {
     const automatic = options.automatic === true;
     if (automatic && !automaticSafe()) return false;
     if (busy) return false;
-    if (window.HA_WORKSPACE_FORMS?.hasOpen() || window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form')) {
+    if (hasOpenForm()) {
       message('احفظ النماذج المفتوحة أو أغلق تبويباتها قبل تحديث البرنامج.'); return false;
     }
     if (!navigator.onLine) { message('ماكو إنترنت. حدّث عند رجوع الاتصال؛ حسابك وبياناتك محفوظة.'); return false; }
@@ -94,16 +95,16 @@
       if (latest === build && pageBuild() === latest && controlled === latest) {
         if (!automatic) message('أنت تستخدم أحدث نسخة. زر تحديث البيانات يزامن حسابك.'); return true;
       }
-      if (typeof window.HA_MANUAL_REFRESH === 'function' && await limited(window.HA_MANUAL_REFRESH(), 30000) !== true) {
-        if (!automatic) message('لم تكتمل مزامنة البيانات. حاول تحديث البيانات أولاً.'); return false;
-      }
       if ('serviceWorker' in navigator) {
         let registration = await limited(navigator.serviceWorker.getRegistration());
         if (!registration) registration = await limited(navigator.serviceWorker.register('./service-worker.js', { scope: './', updateViaCache: 'none' }));
         await limited(registration.update());
         await awaitController(registration, latest);
       }
-      if (automatic && !automaticSafe()) return false;
+      if (hasOpenForm() || automatic && !automaticSafe()) {
+        if (!automatic) message('احفظ النماذج المفتوحة أو أغلق تبويباتها قبل تحديث البرنامج.');
+        return false;
+      }
       try { sessionStorage.setItem('ha-app-update-pending', JSON.stringify({ build: latest, at: Date.now() })); } catch {}
       const target = new URL(location.href); target.searchParams.delete('ha_check');
       target.searchParams.set('ha_update', latest); target.searchParams.set('ha_reload', Date.now());
@@ -119,6 +120,7 @@
     await update({ automatic: true });
   }
   window.addEventListener('online', automaticCheck);
+  window.addEventListener('pageshow', automaticCheck);
   document.addEventListener('visibilitychange', automaticCheck);
   setTimeout(automaticCheck, 15000);
   setInterval(automaticCheck, 60000);

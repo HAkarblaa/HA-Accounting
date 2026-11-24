@@ -3,7 +3,7 @@
 const cfg=window.HA_SUPABASE_CONFIG||{};
 const boot=document.getElementById('authBoot'),gate=document.getElementById('authGate'),form=document.getElementById('authForm'),msg=document.getElementById('authMessage'),loginBtn=document.getElementById('loginButton');
 const adminLayer=document.getElementById('subscriberAdmin'),adminMessage=document.getElementById('adminMessage');
-let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0,logoutRequested=false,reconnectRunning=false,needsReconnect=false,displayedModuleType=null,staffContext=null;
+let client=null,currentUser=null,isAdmin=false,moduleType='full',syncTimer=0,workspaceChannel=null,workspacePollTimer=0,refreshWorkspaceOnResume=null,logoutRequested=false,reconnectRunning=false,needsReconnect=false,displayedModuleType=null,staffContext=null;
 const selfWriteSnapshots=new Map();
 function rememberSelfWrite(userId,data){const token={signature:stableJson(data)};selfWriteSnapshots.set(userId,token);setTimeout(()=>{if(selfWriteSnapshots.get(userId)===token)selfWriteSnapshots.delete(userId);},30000);}
 const userKey=id=>'ha-accounting-v1:'+id;
@@ -19,7 +19,8 @@ function watchWorkspace(user){
   if(!remote||typeof remote!=='object'||logoutRequested||currentUser?.id!==user.id)return;
   const knownRevision=localStorage.getItem(revisionKey(user.id));if(revision&&knownRevision&&Date.parse(revision)<=Date.parse(knownRevision))return;
   const applyWhenSafe=()=>{
-   if(document.getElementById('modal')?.open){setTimeout(applyWhenSafe,500);return;}
+   if(logoutRequested||currentUser?.id!==user.id||window.HA_ADMIN_DEMO)return;
+   if(window.HA_WORKSPACE_FORMS?.hasOpen()||document.getElementById('modal')?.open)return;
    const ownWrite=selfWriteSnapshots.get(user.id);
    if(ownWrite&&stableJson(remote)===ownWrite.signature){
     if(localStorage.getItem(pendingKey(user.id))!=='1'){
@@ -72,8 +73,8 @@ function watchWorkspace(user){
   });
  if(workspacePollTimer)clearInterval(workspacePollTimer);
  let polling=false;
- workspacePollTimer=setInterval(async()=>{
-  if(polling||!currentUser||currentUser.id!==user.id||!navigator.onLine||document.visibilityState==='hidden'||localStorage.getItem(pendingKey(user.id))==='1')return;
+ const pollWorkspace=async()=>{
+  if(polling||!currentUser||currentUser.id!==user.id||!navigator.onLine||document.visibilityState==='hidden'||localStorage.getItem(pendingKey(user.id))==='1'||window.HA_WORKSPACE_FORMS?.hasOpen()||document.getElementById('modal')?.open)return;
   polling=true;
   try{await withSyncDeadline(async signal=>{
    const {data:metadata,error:metadataError}=await syncQuery(client.from('accounting_workspaces').select('updated_at').eq('user_id',user.id).maybeSingle(),signal);
@@ -85,8 +86,11 @@ function watchWorkspace(user){
    const {data,error}=await syncQuery(client.from('accounting_workspaces').select('data,updated_at').eq('user_id',user.id).maybeSingle(),signal);
    if(error)throw error;if(data?.data)receiveWorkspace({new:data});
   });}catch(error){console.warn('HA workspace refresh failed',error);}finally{polling=false;}
- },45000);
+ };
+ refreshWorkspaceOnResume=pollWorkspace;
+ workspacePollTimer=setInterval(pollWorkspace,45000);
 }
+
 const showMessage=(text,ok=false)=>{msg.textContent=text;msg.classList.toggle('success',ok);};
 const adminMsg=(text,ok=false)=>{adminMessage.textContent=text;adminMessage.classList.toggle('success',ok);};
 const hideApp=()=>{document.querySelector('.layout').classList.remove('authenticated');gate.classList.remove('auth-pending');gate.style.display='grid';boot?.remove();};
@@ -122,7 +126,7 @@ function applySyncedWorkspace(user,before){
  if(latest&&stableJson(latest)!==before)window.HA_APPLY_REMOTE_WORKSPACE?.(latest);
 }
 document.getElementById('logoutButton').addEventListener('click',async()=>{
- logoutRequested=true;currentUser=null;clearTimeout(syncTimer);clearInterval(workspacePollTimer);
+ logoutRequested=true;currentUser=null;clearTimeout(syncTimer);clearInterval(workspacePollTimer);refreshWorkspaceOnResume=null;
  localStorage.removeItem('ha-accounting-active-user');
  try{const projectRef=new URL(cfg.url).hostname.split('.')[0];localStorage.removeItem(cfg.auth?.storageKey||`sb-${projectRef}-auth-token`);}catch{}
  try{if(client)await Promise.race([client.auth.signOut({scope:'local'}),new Promise(resolve=>setTimeout(resolve,1200))]);}catch{}finally{location.reload();}
@@ -220,7 +224,7 @@ async function pushLocalWorkspace(user,data,{signal}={}){
    outgoing=result.data;
   }
  }else if(baseRevision){localStorage.setItem(pendingKey(user.id),'1');throw new Error('نسخة السحابة غير موجودة بعد مزامنة سابقة. بقيت البيانات محلياً ولم نرفعها فوق نسخة غير معروفة.');}
- outgoing.documents=(outgoing.documents||[]).map(d=>({...d,syncStatus:'synced'}));const revision=new Date().toISOString();rememberSelfWrite(user.id,outgoing);let writeError=null;
+ outgoing.documents=(outgoing.documents||[]).map(d=>({...d,syncStatus:'synced'}));const previousTime=Date.parse(remoteRow?.updated_at||'');const revision=new Date(Math.max(Date.now(),Number.isFinite(previousTime)?previousTime+1:0)).toISOString();rememberSelfWrite(user.id,outgoing);let writeError=null;
  if(remoteRow){const {data:written,error}=await syncQuery(client.from('accounting_workspaces').update({data:outgoing,updated_at:revision}).eq('user_id',user.id).eq('updated_at',remoteRow.updated_at).select('updated_at').maybeSingle(),signal);writeError=error;if(!error&&!written){localStorage.setItem(pendingKey(user.id),'1');const warning='تغيّر دفتر جهاز آخر أثناء المزامنة. بقيت تعديلات هذا الجهاز محفوظة ولم نستبدل آخر نسخة.';window.dispatchEvent(new CustomEvent('ha-accounting-sync-conflict',{detail:{text:warning}}));throw new Error(warning);}}
  else{const {error}=await syncQuery(client.from('accounting_workspaces').insert({user_id:user.id,data:outgoing,updated_at:revision}),signal);writeError=error;}
  if(writeError){localStorage.setItem(pendingKey(user.id),'1');throw new Error('تعذر مزامنة البيانات مع السحابة. بقيت الفواتير محفوظة بهذا الجهاز.');}
@@ -250,7 +254,7 @@ async function enter(user){
   try{await checkAccess(user);rememberAccess(user);}
   catch(err){if(!cached?.active||isAccessDenied(err))throw err;applyCachedAccess(cached);needsReconnect=true;}
   try{if(!staffContext)await withSyncDeadline(signal=>prepareWorkspace(user,{signal}));}
-  catch(err){const local=localStorage.getItem(userKey(user.id));if(!readCachedAccess(user.id)?.active||!local)throw err;localStorage.setItem(pendingKey(user.id),'1');}
+  catch(err){const local=localStorage.getItem(userKey(user.id));if(!readCachedAccess(user.id)?.active||!local)throw err;needsReconnect=true;}
  }else{
   if(!cached?.active)throw new Error('أول تسجيل دخول لهذا الحساب يحتاج إنترنت. بعده يشتغل على هذا الجهاز أوفلاين.');
   staffContext=cached.staffContext||null;isAdmin=!!cached.isAdmin;moduleType=['restaurant','wholesale','market','engineering','processor','yemen','simple','service','personal','generator','full'].includes(cached.moduleType)?cached.moduleType:'full';
@@ -287,7 +291,14 @@ async function reconnectAccount(){
  }finally{reconnectRunning=false;}
 }
 window.addEventListener('online',()=>{needsReconnect=true;reconnectAccount();});
-setInterval(()=>{if(needsReconnect&&document.visibilityState!=='hidden')reconnectAccount();},45000);
+function resumeAccountingSync(){
+ if(document.visibilityState==='hidden'||!navigator.onLine||!currentUser||window.HA_ADMIN_DEMO)return;
+ if(needsReconnect||staffContext||localStorage.getItem(pendingKey(currentUser.id))==='1')reconnectAccount();
+ else refreshWorkspaceOnResume?.();
+}
+window.addEventListener('pageshow',resumeAccountingSync);
+document.addEventListener('visibilitychange',resumeAccountingSync);
+setInterval(()=>{if(needsReconnect)resumeAccountingSync();},45000);
 const adminDeleteStyles=document.createElement('style');adminDeleteStyles.textContent='#subscriberAdmin .admin-card{width:min(1000px,100%)}#subscriberAdmin .subscriber-row{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}#subscriberAdmin .subscriber-row [data-sub-delete]:hover{background:#ffdede}@media(max-width:700px){#subscriberAdmin .subscriber-row{grid-template-columns:1fr 1fr}#subscriberAdmin .subscriber-row button{grid-column:1/-1}}';document.head.appendChild(adminDeleteStyles);
 document.getElementById('openAdmin').addEventListener('click',()=>{adminLayer.classList.add('open');adminLayer.setAttribute('aria-hidden','false');loadSubscribers();});
 document.getElementById('closeAdmin').addEventListener('click',()=>{adminLayer.classList.remove('open');adminLayer.setAttribute('aria-hidden','true');});
