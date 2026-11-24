@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261122-processor-iqd-only-v65';
+  const build = '20261124-processor-invoice-lines-v66';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;

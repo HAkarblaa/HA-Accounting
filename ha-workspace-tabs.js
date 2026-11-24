@@ -110,6 +110,7 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   if(!entry||ask&&!mayClose(entry))return false;
   if(entry===current)park();
   records.delete(id);
+  entry.form.dispatchEvent(new Event('ha-work-form-close'));
   onChange();
   return true;
  }
