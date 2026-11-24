@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-staff-actions-v83';
+  const build = '20261124-desktop-update-v84';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
@@ -17,7 +17,7 @@
   }, true);
   document.addEventListener('reset', event => dirtyForms.delete(event.target), true);
   function automaticSafe() {
-    if (document.visibilityState === 'hidden' || !navigator.onLine || window.HAStaff?.hasOpenForm?.() || window.HA_WORKSPACE_FORMS?.hasOpen()) return false;
+    if (document.visibilityState === 'hidden' || !navigator.onLine || window.HAStaff?.hasOpenForm?.() || window.HA_WORKSPACE_FORMS?.hasOpen?.()) return false;
     if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return false;
     if (document.getElementById('modal')?.open) return false;
     if (document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]')) return false;
@@ -49,10 +49,24 @@
       try { worker.postMessage({ type: 'HA_GET_BUILD' }, [channel.port2]); } catch { finish(null); }
     });
   }
-  async function awaitController(registration, expected) {
+  function workerUnavailable(error) {
+    return error?.name === 'InvalidStateError' || error?.name === 'SecurityError';
+  }
+  async function workerRegistration() {
+    try {
+      const workers = navigator.serviceWorker;
+      if (!workers?.getRegistration) return null;
+      const registration = await limited(workers.getRegistration());
+      return { workers, registration };
+    } catch (error) {
+      if (workerUnavailable(error)) return null;
+      throw error;
+    }
+  }
+  async function awaitController(workers, registration, expected) {
     const deadline = Date.now() + 30000;
     while (Date.now() < deadline) {
-      if (await workerBuild(navigator.serviceWorker.controller) === expected) return;
+      if (await workerBuild(workers.controller) === expected) return;
       registration.waiting?.postMessage({ type: 'HA_SKIP_WAITING' });
       await new Promise(resolve => setTimeout(resolve, 200));
     }
@@ -65,15 +79,18 @@
     try { pending = JSON.parse(sessionStorage.getItem('ha-app-update-pending') || 'null'); } catch {}
     const expected = url.searchParams.get('ha_update') || (pending && Date.now() - pending.at < 600000 ? pending.build : null);
     if (!expected) return;
-    const controlledBuild = 'serviceWorker' in navigator ? await workerBuild(navigator.serviceWorker.controller) : expected;
-    if (pageBuild() === expected && build === expected && controlledBuild === expected) {
+    const worker = await workerRegistration();
+    const controller = worker?.workers.controller;
+    const controlledBuild = controller ? await workerBuild(controller) : null;
+    const workerConfirmed = !worker || controlledBuild === expected || !controller && pending?.build === expected && pending.direct;
+    if (pageBuild() === expected && build === expected && workerConfirmed) {
       try { sessionStorage.removeItem('ha-app-update-pending'); } catch {}
       ['ha_update', 'ha_reload', 'ha_check'].forEach(key => url.searchParams.delete(key));
       history.replaceState(history.state, '', url.href);
       message('تم فتح النسخة الجديدة بنجاح.');
     } else message('لم يكتمل تحديث الواجهة. اتصل بالإنترنت واضغط تحديث البرنامج مرة ثانية؛ بياناتك محفوظة.', true);
   }
-  const hasOpenForm = () => Boolean(window.HA_WORKSPACE_FORMS?.hasOpen() || window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form'));
+  const hasOpenForm = () => Boolean(window.HA_WORKSPACE_FORMS?.hasOpen?.() || window.HAStaff?.hasOpenForm?.() || document.getElementById('modal')?.open && document.getElementById('modalBody')?.querySelector('form'));
   async function update(options = {}) {
     const automatic = options.automatic === true;
     if (automatic && !automaticSafe()) return false;
@@ -82,6 +99,10 @@
       message('احفظ النماذج المفتوحة أو أغلق تبويباتها قبل تحديث البرنامج.'); return false;
     }
     if (!navigator.onLine) { message('ماكو إنترنت. حدّث عند رجوع الاتصال؛ حسابك وبياناتك محفوظة.'); return false; }
+    if (!['https:', 'http:'].includes(location.protocol)) {
+      if (!automatic) message('هاي نسخة محلية. حدّثها من ملفات الإصدار على الحاسبة، أو افتح رابط المحاسبة المنشور حتى تستخدم التحديث أونلاين.');
+      return false;
+    }
     busy = true; button.disabled = true; button.textContent = 'جارٍ فحص النسخة…';
     try {
       const url = new URL('./index.html', location.href); url.searchParams.set('ha_check', Date.now());
@@ -91,26 +112,33 @@
       if (!response.ok) throw Error('تعذر جلب أحدث نسخة.');
       const latest = (await response.text()).match(/name="ha-app-build" content="([^"]+)"/)?.[1];
       if (!latest) throw Error('نشر ملفات النسخة لم يكتمل بعد؛ حاول لاحقاً.');
-      const controlled = 'serviceWorker' in navigator ? await workerBuild(navigator.serviceWorker.controller) : latest;
+      const worker = await workerRegistration();
+      const controlled = worker ? await workerBuild(worker.workers.controller) : latest;
       if (latest === build && pageBuild() === latest && controlled === latest) {
-        if (!automatic) message('أنت تستخدم أحدث نسخة. زر تحديث البيانات يزامن حسابك.'); return true;
+        if (!automatic) message('أنت تستخدم أحدث نسخة. زر تحديث البيانات يزامن حسابك.');
+        return true;
       }
-      if ('serviceWorker' in navigator) {
-        let registration = await limited(navigator.serviceWorker.getRegistration());
-        if (!registration) registration = await limited(navigator.serviceWorker.register('./service-worker.js', { scope: './', updateViaCache: 'none' }));
-        await limited(registration.update());
-        await awaitController(registration, latest);
+      let direct = !worker;
+      if (worker) {
+        try {
+          const registration = worker.registration || await limited(worker.workers.register('./service-worker.js', { scope: './', updateViaCache: 'none' }));
+          await limited(registration.update());
+          await awaitController(worker.workers, registration, latest);
+        } catch (error) {
+          if (!workerUnavailable(error) || worker.workers.controller) throw error;
+          direct = true;
+        }
       }
       if (hasOpenForm() || automatic && !automaticSafe()) {
         if (!automatic) message('احفظ النماذج المفتوحة أو أغلق تبويباتها قبل تحديث البرنامج.');
         return false;
       }
-      try { sessionStorage.setItem('ha-app-update-pending', JSON.stringify({ build: latest, at: Date.now() })); } catch {}
+      try { sessionStorage.setItem('ha-app-update-pending', JSON.stringify({ build: latest, at: Date.now(), direct })); } catch {}
       const target = new URL(location.href); target.searchParams.delete('ha_check');
       target.searchParams.set('ha_update', latest); target.searchParams.set('ha_reload', Date.now());
-      message('تم تفعيل النسخة الجديدة؛ جارٍ فتحها…'); location.replace(target.href); return true;
+      message('جارٍ فتح النسخة الجديدة…'); location.replace(target.href); return true;
     } catch (error) {
-      if (!automatic) message(error.name === 'AbortError' ? 'الاتصال بطيء؛ أعد المحاولة. بياناتك محفوظة.' : error.message || 'تعذر التحديث.', true); return false;
+      if (!automatic) message(error.name === 'AbortError' ? 'الاتصال بطيء؛ أعد المحاولة. بياناتك محفوظة.' : workerUnavailable(error) ? 'تعذّر تحديث نافذة البرنامج. سكّرها وافتحها مرة ثانية بوجود الإنترنت، أو افتح موقع المحاسبة بالمتصفح.' : error.message || 'تعذر التحديث.', true); return false;
     } finally { busy = false; button.disabled = false; button.textContent = '⟳ تحديث البرنامج'; }
   }
   button.addEventListener('click', () => update()); window.HA_UPDATE_APPLICATION = update;
