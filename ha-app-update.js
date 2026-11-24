@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261124-compact-desktop-navigation-v70';
+  const build = '20261124-processor-invoice-stock-v71';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
