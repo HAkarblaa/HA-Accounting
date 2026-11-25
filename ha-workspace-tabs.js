@@ -4,14 +4,17 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
  const body=modal.querySelector('#modalBody'),home=modal.parentNode,anchor=modal.nextSibling;
  const nativeClose=modal.close.bind(modal),nativeCancel=window.confirm.bind(window);
  const records=new Map();
- let current=null,sequence=0;
+ let current=null,sequence=0,controlSequence=0;
+ const controlIds=new WeakMap();
  const initialized=entry=>entry.baseline!==undefined;
  const values=root=>JSON.stringify([...root.querySelectorAll('input,select,textarea,[contenteditable="true"]')].map(el=>{
-  if(el.type==='file')return [...el.files||[]].map(f=>[f.name,f.size,f.lastModified]);
-  if(el.type==='checkbox'||el.type==='radio')return [el.value,el.checked];
-  if(el.multiple&&el.selectedOptions)return [...el.selectedOptions].map(option=>option.value);
-  return el.value??el.textContent;
- }));
+  if(!controlIds.has(el))controlIds.set(el,++controlSequence);
+  let value=el.value??el.textContent;
+  if(el.type==='file')value=[...el.files||[]].map(f=>[f.name,f.size,f.lastModified]);
+  else if(el.type==='checkbox'||el.type==='radio')value=[el.value,el.checked];
+  else if(el.multiple&&el.selectedOptions)value=[...el.selectedOptions].map(option=>option.value);
+  return [controlIds.get(el),value];
+ }).sort((a,b)=>a[0]-b[0]));
  const snapshot=entry=>values(entry===current?body:entry.fragment);
  const changed=entry=>initialized(entry)&&entry.baseline!==snapshot(entry);
  const scope=()=>context();
@@ -20,10 +23,13 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
  function showSection(){
   panel.hidden=true;
   view.hidden=false;
-  if(modal.parentNode!==home)home.insertBefore(modal,anchor);
+  if(modal.parentNode!==home)home.insertBefore(modal,anchor?.parentNode===home?anchor:null);
+ }
+ function closeNative(){
+  try{nativeClose();}catch(error){console.warn('تعذر إغلاق تبويب النموذج بالطريقة الأصلية',error);modal.removeAttribute('open');}
  }
  function clearModal(){
-  if(modal.open)nativeClose();
+  if(modal.open)closeNative();
   delete modal.dataset.haWorkTab;
   showSection();
  }
@@ -50,7 +56,15 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   view.hidden=true;
   if(modal.parentNode!==panel)panel.append(modal);
   modal.dataset.haWorkTab=entry.id;
-  if(!modal.open)modal.show();
+  if(!modal.open){
+   try{modal.show();}
+   catch(error){
+    // Embedded work tabs are non-modal. Keep the form connected and usable
+    // if a desktop WebView cannot enter the native dialog state.
+    console.warn('تعذر إظهار تبويب النموذج بالطريقة الأصلية',error);
+    modal.setAttribute('open','');
+   }
+  }
  }
  function beforeOpen(){
   if(park())onChange();
@@ -63,7 +77,7 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   const now=scope(),form=eligible(),heading=body.querySelector('.modal-title h2')?.textContent?.trim()||'مستند';
   const entry={id:'work-'+(++sequence),page:getPage(),section:getSection(),title:heading,
    account:now.account,module:now.module,owner:now.owner,fragment:document.createDocumentFragment(),form};
-  if(modal.open)nativeClose();
+  if(modal.open)closeNative();
   records.set(entry.id,entry);
   current=entry;
   display(entry);
@@ -81,7 +95,7 @@ function create({modal,panel,view,context,getPage,getSection,activateSection,onC
   const entry=records.get(id);
   if(!entry||!sameScope(entry)||entry===current)return false;
   park();
-  if(modal.open)nativeClose();
+  if(modal.open)closeNative();
   activateSection(entry);
   for(const attribute of [...modal.attributes]){
    if(!['id','open'].includes(attribute.name))modal.removeAttribute(attribute.name);

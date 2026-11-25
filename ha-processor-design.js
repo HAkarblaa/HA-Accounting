@@ -44,9 +44,9 @@ function decorateInvoice(form){
  move(field(form,editing?'#pePaymentMode':'#processorMode'),meta);
  move(field(form,editing?'#peDeliveryFee':'#processorDeliveryFee'),discount?.querySelector('.processor-invoice-fields'));
  if(!form.dataset.hpwPacked)move(field(form,editing?'#peDeliveryStatus':'#processorDeliveryStatus'),payment?.querySelector('.processor-invoice-fields'));
- if(meta){for(const [index,name]of ['party','number','date','currency','exchangeRate','representative',editing?'paymentMode':'mode'].entries()){const node=field(form,'[name="'+name+'"]');if(node?.parentElement===meta)node.style.order=String(index);}}
+ if(meta){for(const [index,name]of ['party','number','date','currency','exchangeRate','representative',editing?'paymentMode':'mode'].entries()){const node=field(form,'[name="'+name+'"]');if(node?.parentElement===meta)if(node.style.order!==String(index))node.style.order=String(index);}}
  const note=field(form,'textarea[name="memo"]');note?.classList.add('hpw-notes');const breakdown=form.querySelector(':scope > .processor-invoice-breakdown');if(note&&breakdown&&note.nextElementSibling!==breakdown)form.insertBefore(note,breakdown);form.querySelector(':scope > .form-actions')?.classList.add('hpw-actions');
- for(const table of form.querySelectorAll('.processor-lines-table')){const heading=table.querySelector('thead th');setText(heading,'المنتج');for(const row of table.querySelectorAll('tbody tr'))if(row.firstElementChild?.hasAttribute('data-label'))row.firstElementChild.dataset.label='المنتج';}
+ for(const table of form.querySelectorAll('.processor-lines-table')){const heading=table.querySelector('thead th');setText(heading,'المنتج');for(const row of table.querySelectorAll('tbody tr'))if(row.firstElementChild?.hasAttribute('data-label')&&row.firstElementChild.dataset.label!=='المنتج')row.firstElementChild.dataset.label='المنتج';}
  if(editing){
   const table=form.querySelector('.processor-lines-table');if(table&&!table.querySelector('[data-hpw-total-heading]')){const th=document.createElement('th');th.dataset.hpwTotalHeading='';th.textContent='الإجمالي';table.querySelector('thead tr')?.insertBefore(th,table.querySelector('thead tr')?.lastElementChild);}
   const currency=form.dataset.hpwCurrency==='USD'?'$':'د.ع',format=n=>invoiceAmountFormat.format(n)+' '+currency;
@@ -64,6 +64,9 @@ function decorate(){
  if(form)decorateInvoice(form);
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});}
-const observer=new MutationObserver(schedule);const modal=document.getElementById('modal'),view=document.getElementById('view');for(const target of [modal,view])if(target)observer.observe(target,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['open']});
+const modal=document.getElementById('modal'),view=document.getElementById('view');
+const observer=new MutationObserver(()=>{if(modal?.open||modal?.querySelector('#processorInvoiceForm,#editProcessorInvoice'))schedule();});
+if(modal)observer.observe(modal,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['open']});
+if(view)new MutationObserver(schedule).observe(view,{childList:true});
 document.addEventListener('input',event=>{if(event.target.closest('#processorInvoiceForm,#editProcessorInvoice'))schedule();});document.addEventListener('change',event=>{if(event.target.closest('#processorInvoiceForm,#editProcessorInvoice'))schedule();});window.addEventListener('ha-accounting-auth-ready',schedule);window.addEventListener('popstate',schedule);window.HAProcessorDesign={decorate};schedule();
 })();
