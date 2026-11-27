@@ -12,7 +12,10 @@ function buildMarket(source,day){
  }
  for(const entry of source.entries){
   if(entry.date!==day||entry.processorVoucher||entry.processorPartnerId)continue;
-  const finance=(entry.lines||[]).filter(line=>['expense','revenue'].includes(accounts.get(line.accountId)?.type));
+  const finance=(entry.lines||[]).filter(line=>{
+   const account=accounts.get(line.accountId);
+   return String(account?.code)!=='5202'&&['expense','revenue'].includes(account?.type);
+  });
   if(!finance.length)continue;
   const profit=finance.reduce((sum,line)=>sum+number(line.credit)-number(line.debit),0);
   const id=String(entry.docId??'');
@@ -36,7 +39,7 @@ function buildMarket(source,day){
  const otherRows=[...adjustments.values()].map(row=>({...row,profit:round(row.profit)}));
  const total=round([...rows,...otherRows].reduce((sum,row)=>sum+row.profit,0));
  return {scope:source.scope,market:true,date:day,currency:source.currency||'IQD',rows,otherRows,total,unresolved:[],
-  basis:'الإجمالي يشمل القيود المرحلة. ربح الفاتورة يحسب من صافي إيرادها بعد استبعاد الضريبة وكلفة البضاعة، وتظهر المرتجعات والمصروفات اليومية كحركات منفصلة.'};
+  basis:'صافي اليوم يستبعد فروقات الجرد. ربح الفاتورة يحسب من صافي البيع بعد طرح كلفة البضاعة، وتظهر المرتجعات والمصروفات اليومية كحركات منفصلة.'};
 }
 function build(source,day){
  if(source.market&&source.scope==='standard')return buildMarket(source,day);

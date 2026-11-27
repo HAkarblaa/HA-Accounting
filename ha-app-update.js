@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const build = '20261127-market-daily-profit-v89';
+  const build = '20261127-market-daily-profit-v90';
   window.HA_ACCOUNTING_BUILD = build;
   const sync = document.getElementById('manualSyncButton');
   if (!sync) return;
